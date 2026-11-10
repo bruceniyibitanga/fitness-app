@@ -1,5 +1,6 @@
 package app.levitx.wear.workout
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.health.services.client.ExerciseClient
@@ -97,6 +98,10 @@ class ExerciseTracker @Inject constructor(@param:ApplicationContext private val 
      *
      * @return True when heart rate is now being tracked.
      */
+    // The ExerciseTrackedStatus values are the ones the Health Services guide
+    // uses, but the library marks the object holding them as internal, which
+    // lint reports. There is no other public way to read the status.
+    @SuppressLint("RestrictedApi")
     suspend fun start(): Boolean = guarded("start") {
         val capabilities = client.getCapabilities()
         val type = PREFERRED_EXERCISE_TYPES.firstOrNull { it in capabilities.supportedExerciseTypes }
@@ -123,6 +128,7 @@ class ExerciseTracker @Inject constructor(@param:ApplicationContext private val 
     }
 
     /** Stops recording and turns the sensor off. Only ever ends this app's own exercise. */
+    @SuppressLint("RestrictedApi") // See start().
     suspend fun stop() {
         guarded("stop") {
             if (client.getCurrentExerciseInfo().exerciseTrackedStatus ==
