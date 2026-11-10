@@ -1,77 +1,64 @@
 package app.levitx.phone.home
 
-import app.levitx.core.skills.PathProgress
 import app.levitx.core.skills.SkillCatalogue
-import app.levitx.core.skills.SkillPath
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.progress.InMemoryProgressRepository
 import app.levitx.data.progress.ProgressRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import app.levitx.phone.MainDispatcherRule
+import app.levitx.testing.FakeGoalRepository
+import app.levitx.testing.FakeProgressRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
-import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
+    @get:Rule
+    val mainDispatcher = MainDispatcherRule()
+
     private val path = SkillCatalogue.muscleUp
-    private val repository = InMemoryProgressRepository()
+    private val progress = FakeProgressRepository()
 
-    @Before
-    fun setUp() {
-        // viewModelScope runs on the main dispatcher, which unit tests don't have.
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
+    @Test
+    fun noGoalShowsNoGoal() = runTest {
+        assertEquals(HomeUiState.NoGoal, currentState(HomeViewModel(FakeGoalRepository(), progress)))
     }
 
     @Test
-    fun newPersonSeesTheFirstGate() = runTest {
-        val state = readyState(HomeViewModel(repository))
-        assertEquals(path.gates.first(), state.currentGate)
-        assertEquals(1, state.gateNumber)
-        assertEquals(path.gates.size, state.gateCount)
+    fun newPersonTrainsTheFirstGate() = runTest {
+        val state = currentState(HomeViewModel(FakeGoalRepository(path), progress)) as HomeUiState.Ready
+        assertEquals(path.gates.first(), state.day.currentGate)
+        assertEquals(1, state.day.gateNumber)
     }
 
     @Test
     fun passingAGateMovesToTheNextOne() = runTest {
-        val viewModel = HomeViewModel(repository)
+        val viewModel = HomeViewModel(FakeGoalRepository(path), progress)
         val first = path.gates.first()
-        repository.recordBest(first.id, first.target)
-        assertEquals(2, readyState(viewModel).gateNumber)
+        progress.recordBest(first.id, first.target)
+        assertEquals(2, (currentState(viewModel) as HomeUiState.Ready).day.gateNumber)
     }
 
     @Test
-    fun completedPathHasNoCurrentGate() = runTest {
-        path.gates.forEach { repository.recordBest(it.id, it.target) }
-        val state = readyState(HomeViewModel(repository))
-        assertNull(state.currentGate)
-        assertEquals(path.gates.size, state.gateNumber)
+    fun completedPathHasNoPlan() = runTest {
+        path.gates.forEach { progress.recordBest(it.id, it.target) }
+        val state = currentState(HomeViewModel(FakeGoalRepository(path), progress)) as HomeUiState.Ready
+        assertNull(state.day.plan)
     }
 
     @Test
     fun lockedDataShowsUnavailableInsteadOfCrashing() = runTest {
         val locked = object : ProgressRepository {
-            override fun observeProgress(path: SkillPath): Flow<PathProgress> = flow {
-                throw DataUnavailableException("locked")
-            }
+            override fun observeBests(): Flow<Map<String, Int>> = flow { throw DataUnavailableException("locked") }
 
             override suspend fun recordBest(gateId: String, best: Int) = Unit
         }
-        assertEquals(HomeUiState.Unavailable, currentState(HomeViewModel(locked)))
+        assertEquals(HomeUiState.Unavailable, currentState(HomeViewModel(FakeGoalRepository(path), locked)))
     }
 
     /** Subscribes like a screen would, then returns the latest state. */
@@ -79,7 +66,4 @@ class HomeViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
         return viewModel.uiState.value
     }
-
-    private fun TestScope.readyState(viewModel: HomeViewModel): HomeUiState.Ready =
-        currentState(viewModel) as HomeUiState.Ready
 }

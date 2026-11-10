@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.wear.compose.navigation3)
     implementation(libs.kotlinx.serialization.core)
 
+    testImplementation(project(":testing"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

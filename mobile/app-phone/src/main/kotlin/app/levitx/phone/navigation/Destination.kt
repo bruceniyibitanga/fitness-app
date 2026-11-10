@@ -13,7 +13,23 @@ import kotlinx.serialization.Serializable
  * because saved state is written to disk).
  */
 sealed interface Destination : NavKey {
-    /** The home screen: the person's path and their current gate. */
+    /** Choose what to work toward. */
+    @Serializable
+    data object GoalPicker : Destination
+
+    /** Short test of each gate on the active goal, to find the starting point. */
+    @Serializable
+    data object StartingTest : Destination
+
+    /** The person's path and today's training. */
     @Serializable
     data object Home : Destination
+
+    /** A live session: sets, reps in reserve and rest. */
+    @Serializable
+    data object Session : Destination
+
+    /** Every gate on the path, with bests. */
+    @Serializable
+    data object Path : Destination
 }

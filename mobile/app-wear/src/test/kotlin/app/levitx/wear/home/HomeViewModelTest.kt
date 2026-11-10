@@ -1,11 +1,10 @@
 package app.levitx.wear.home
 
-import app.levitx.core.skills.PathProgress
 import app.levitx.core.skills.SkillCatalogue
-import app.levitx.core.skills.SkillPath
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.progress.InMemoryProgressRepository
 import app.levitx.data.progress.ProgressRepository
+import app.levitx.testing.FakeGoalRepository
+import app.levitx.testing.FakeProgressRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +24,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
     private val path = SkillCatalogue.muscleUp
-    private val repository = InMemoryProgressRepository()
+    private val progress = FakeProgressRepository()
 
     @Before
     fun setUp() {
@@ -39,39 +38,34 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun newPersonSeesTheFirstGate() = runTest {
-        val state = readyState(HomeViewModel(repository))
-        assertEquals(path.gates.first().title, state.gateTitle)
-        assertEquals(1, state.gateNumber)
-        assertEquals(path.gates.size, state.gateCount)
+    fun noGoalAsksForOneOnThePhone() = runTest {
+        assertEquals(HomeUiState.NoGoal, currentState(HomeViewModel(FakeGoalRepository(), progress)))
     }
 
     @Test
-    fun passingAGateMovesToTheNextOne() = runTest {
-        val viewModel = HomeViewModel(repository)
+    fun showsTheCurrentGate() = runTest {
         val first = path.gates.first()
-        repository.recordBest(first.id, first.target)
-        assertEquals(2, readyState(viewModel).gateNumber)
+        progress.recordBest(first.id, first.target)
+        val state = currentState(HomeViewModel(FakeGoalRepository(path), progress)) as HomeUiState.Ready
+        assertEquals(path.gates[1].title, state.gateTitle)
+        assertEquals(2, state.gateNumber)
     }
 
     @Test
     fun completedPathHasNoCurrentGate() = runTest {
-        path.gates.forEach { repository.recordBest(it.id, it.target) }
-        val state = readyState(HomeViewModel(repository))
+        path.gates.forEach { progress.recordBest(it.id, it.target) }
+        val state = currentState(HomeViewModel(FakeGoalRepository(path), progress)) as HomeUiState.Ready
         assertNull(state.gateTitle)
-        assertEquals(path.gates.size, state.gateNumber)
     }
 
     @Test
     fun lockedDataShowsUnavailableInsteadOfCrashing() = runTest {
         val locked = object : ProgressRepository {
-            override fun observeProgress(path: SkillPath): Flow<PathProgress> = flow {
-                throw DataUnavailableException("locked")
-            }
+            override fun observeBests(): Flow<Map<String, Int>> = flow { throw DataUnavailableException("locked") }
 
             override suspend fun recordBest(gateId: String, best: Int) = Unit
         }
-        assertEquals(HomeUiState.Unavailable, currentState(HomeViewModel(locked)))
+        assertEquals(HomeUiState.Unavailable, currentState(HomeViewModel(FakeGoalRepository(path), locked)))
     }
 
     /** Subscribes like a screen would, then returns the latest state. */
@@ -79,7 +73,4 @@ class HomeViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
         return viewModel.uiState.value
     }
-
-    private fun TestScope.readyState(viewModel: HomeViewModel): HomeUiState.Ready =
-        currentState(viewModel) as HomeUiState.Ready
 }

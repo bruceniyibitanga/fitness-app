@@ -1,21 +1,20 @@
 package app.levitx.data.progress
 
-import app.levitx.core.skills.PathProgress
-import app.levitx.core.skills.SkillPath
 import kotlinx.coroutines.flow.Flow
 
 /**
- * The person's best result for each gate, and their progress along skill paths.
+ * The person's best result for each gate.
  *
- * This is the only way the UI reads or changes progress, so how it is stored
- * can change without touching any screen.
+ * This is the only way the UI reads or changes bests, so how they are stored
+ * can change without touching any screen. Progress along a path and today's
+ * plan are worked out from these bests by `:core` (`SkillPath.trainingDay`).
  */
 interface ProgressRepository {
     /**
-     * Emits progress along [path] straight away, then again whenever a best
-     * result changes. Never emits the same progress twice in a row.
+     * Emits the best result per gate id straight away, then again whenever
+     * one changes. Gates without a result are missing from the map.
      */
-    fun observeProgress(path: SkillPath): Flow<PathProgress>
+    fun observeBests(): Flow<Map<String, Int>>
 
     /**
      * Records [best] reps or seconds for [gateId]. Keeps the stored value if

@@ -13,6 +13,13 @@ comments:
     active: true
     excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
 
+complexity:
+  LongParameterList:
+    # Compose screens take their state plus one lambda per user action, which
+    # is how Compose wants state hoisted. Grouping lambdas into objects only to
+    # please this rule would make screens harder to read.
+    ignoreAnnotated: ['Composable']
+
 naming:
   FunctionNaming:
     # Composable functions are named like types.
@@ -30,3 +37,14 @@ style:
   UnusedPrivateMember:
     # Previews are private and only called by Android Studio.
     ignoreAnnotated: ['Preview', 'WearPreviewDevices']
+
+exceptions:
+  SwallowedException:
+    # DataUnavailableException is an expected failure: ViewModels catch it and
+    # show an explanation instead, which is the point, not swallowing it.
+    ignoredExceptionTypes:
+      - 'InterruptedException'
+      - 'MalformedURLException'
+      - 'NumberFormatException'
+      - 'ParseException'
+      - 'DataUnavailableException'

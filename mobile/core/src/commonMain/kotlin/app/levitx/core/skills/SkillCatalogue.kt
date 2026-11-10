@@ -57,6 +57,54 @@ public object SkillCatalogue {
         ),
     )
 
-    /** Every built-in path. */
-    public val all: List<SkillPath> = listOf(muscleUp)
+    /** Path from no pull-ups to a first strict pull-up. */
+    public val firstPullUp: SkillPath = SkillPath(
+        id = "first_pull_up",
+        name = "First pull-up",
+        gates = listOf(
+            Gate(
+                id = "first_pull_up.dead_hang",
+                title = "30 s dead hang",
+                measure = GateMeasure.HOLD_SECONDS,
+                target = 30,
+                trains = "Grip strength and comfortable shoulders under load.",
+            ),
+            Gate(
+                id = "first_pull_up.scapular_pulls",
+                title = "10 scapular pull-ups",
+                measure = GateMeasure.REPS,
+                target = 10,
+                trains = "Starting the pull with your shoulder blades, not your arms.",
+            ),
+            Gate(
+                id = "first_pull_up.flexed_arm_hang",
+                title = "15 s chin-over-bar hold",
+                measure = GateMeasure.HOLD_SECONDS,
+                target = 15,
+                trains = "Strength at the top, where most first attempts stall.",
+            ),
+            Gate(
+                id = "first_pull_up.negatives",
+                title = "5 slow negatives",
+                measure = GateMeasure.REPS,
+                target = 5,
+                trains = "Lowering under control for 3 to 5 seconds builds the pulling strength.",
+            ),
+            Gate(
+                id = "first_pull_up.pull_up",
+                title = "Pull-up",
+                measure = GateMeasure.REPS,
+                target = 1,
+                trains = "The goal.",
+            ),
+        ),
+    )
+
+    /** Every built-in path, easiest goal first. */
+    public val all: List<SkillPath> = listOf(firstPullUp, muscleUp)
+
+    private val pathsById: Map<String, SkillPath> = all.associateBy { it.id }
+
+    /** Finds a path by its [SkillPath.id], or returns null. */
+    public fun byId(id: String): SkillPath? = pathsById[id]
 }

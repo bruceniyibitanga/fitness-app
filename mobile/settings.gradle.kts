@@ -43,5 +43,6 @@ rootProject.name = "levitx"
 include(":core")
 include(":design")
 include(":data")
+include(":testing")
 include(":app-phone")
 include(":app-wear")
