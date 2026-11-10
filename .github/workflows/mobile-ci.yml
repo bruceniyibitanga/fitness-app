@@ -86,4 +86,4 @@ jobs:
 
       - name: Lint, test and build
         if: ${{ !cancelled() }}
-        run: ./gradlew check assembleDebug assembleRelease
+        run: ./gradlew check assembleDebug assembleRelease --warning-mode all

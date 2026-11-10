@@ -43,7 +43,9 @@ android {
     lint {
         warningsAsErrors = true
         abortOnError = true
-        sarifReport = true
+        // Print every issue to the build log, not just the first one.
+        textReport = true
+        textOutput = file("stdout")
         // Version bumps are Dependabot's job. Lint flagging them would fail
         // the build every time a library ships, for no code problem.
         disable += setOf("GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable")
