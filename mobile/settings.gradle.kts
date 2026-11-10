@@ -8,6 +8,8 @@
  */
 
 pluginManagement {
+    // Convention plugins shared by the Android modules (levitx.android.*).
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -39,5 +41,7 @@ dependencyResolutionManagement {
 rootProject.name = "levitx"
 
 include(":core")
+include(":design")
+include(":data")
 include(":app-phone")
 include(":app-wear")

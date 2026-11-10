@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Levitx</string>
-    <string name="home_placeholder">Your training plan will appear here.</string>
+
+    <!-- Home -->
+    <string name="home_path_label">YOUR PATH</string>
+    <string name="home_gate_label">GATE %1$d OF %2$d</string>
+    <string name="home_path_complete">Path complete. Time to pick your next goal.</string>
 </resources>

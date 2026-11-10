@@ -10,10 +10,14 @@
 
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt) apply false
     // Declaring the Kotlin plugins here puts this Kotlin version on the build
     // classpath for every module, including the AGP built-in Kotlin compiler.
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.spotless)
 }
@@ -38,7 +42,10 @@ detekt {
     config.setFrom(files("config/detekt/detekt.yml"))
     source.setFrom(
         files(
+            "build-logic/convention/src",
             "core/src",
+            "design/src",
+            "data/src",
             "app-phone/src",
             "app-wear/src",
         ),
