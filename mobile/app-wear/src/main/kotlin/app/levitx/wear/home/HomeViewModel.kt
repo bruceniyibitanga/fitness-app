@@ -8,12 +8,12 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
 /**
  * Keep collecting for this long after the screen stops listening, so a
@@ -29,10 +29,8 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
  * its own (empty) database and asks the person to choose a goal on the phone.
  */
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    goalRepository: GoalRepository,
-    progressRepository: ProgressRepository,
-) : ViewModel() {
+class HomeViewModel @Inject constructor(goalRepository: GoalRepository, progressRepository: ProgressRepository) :
+    ViewModel() {
     /** The current screen state. Starts as [HomeUiState.Loading]. */
     val uiState: StateFlow<HomeUiState> =
         combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->

@@ -6,11 +6,11 @@ import app.levitx.core.skills.SkillCatalogue
 import app.levitx.core.skills.SkillPath
 import app.levitx.data.goal.GoalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Lists the goals and saves the one the person picks.

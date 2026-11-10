@@ -106,7 +106,13 @@ fun FlatProgressBar(fraction: Float, modifier: Modifier = Modifier) {
  * typing. Never goes below zero or above [max].
  */
 @Composable
-fun NumberInput(value: Int, onValueChange: (Int) -> Unit, label: String, modifier: Modifier = Modifier, max: Int = MAX_ENTRY) {
+fun NumberInput(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    max: Int = MAX_ENTRY,
+) {
     Column(modifier = modifier) {
         SectionLabel(text = label)
         Row(

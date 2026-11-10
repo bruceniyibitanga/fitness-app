@@ -1,13 +1,13 @@
 package app.levitx.data.progress
 
 import app.levitx.data.database.LevitxDatabaseProvider
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Stores bests in the encrypted database.
@@ -16,9 +16,8 @@ import javax.inject.Singleton
  * when the table changes, so screens update by themselves after a new best.
  */
 @Singleton
-internal class RoomProgressRepository @Inject constructor(
-    private val databaseProvider: LevitxDatabaseProvider,
-) : ProgressRepository {
+internal class RoomProgressRepository @Inject constructor(private val databaseProvider: LevitxDatabaseProvider) :
+    ProgressRepository {
     override fun observeBests(): Flow<Map<String, Int>> = flow {
         emitAll(databaseProvider.database().gateBestDao().observeAll())
     }

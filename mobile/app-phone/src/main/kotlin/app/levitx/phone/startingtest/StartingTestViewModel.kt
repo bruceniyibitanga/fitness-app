@@ -9,13 +9,13 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** What the starting test screen shows. */
 sealed interface StartingTestUiState {
@@ -73,7 +73,9 @@ class StartingTestViewModel @Inject constructor(
                 else -> StartingTestUiState.Testing(path, index, path.gates[index])
             }
         }
-            .catch { error -> if (error is DataUnavailableException) emit(StartingTestUiState.Unavailable) else throw error }
+            .catch { error ->
+                if (error is DataUnavailableException) emit(StartingTestUiState.Unavailable) else throw error
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), StartingTestUiState.Loading)
 
     /**

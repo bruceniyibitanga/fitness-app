@@ -12,13 +12,13 @@ import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
 import app.levitx.data.session.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 private const val KEY_STARTED_AT = "startedAt"
 private const val KEY_VALUES = "values"
@@ -56,7 +56,10 @@ class SessionViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                val today = combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->
+                val today = combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) {
+                        path,
+                        bests,
+                    ->
                     path?.trainingDay(bests)
                 }.first()
                 if (today?.plan == null) {

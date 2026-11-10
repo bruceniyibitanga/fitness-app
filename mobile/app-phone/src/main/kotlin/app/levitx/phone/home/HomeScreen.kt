@@ -159,7 +159,10 @@ private fun TodayCard(plan: SessionPlan) {
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = stringResource(R.string.home_today_best_effort, measureText(plan.gate.measure, bestEffort.target)),
+                text = stringResource(
+                    R.string.home_today_best_effort,
+                    measureText(plan.gate.measure, bestEffort.target),
+                ),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(

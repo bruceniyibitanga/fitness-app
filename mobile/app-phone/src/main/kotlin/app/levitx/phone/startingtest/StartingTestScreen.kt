@@ -88,7 +88,13 @@ private fun TestingGate(state: StartingTestUiState.Testing, onSubmit: (Int) -> U
     }
     Text(
         text = stringResource(
-            if (state.gate.measure == GateMeasure.REPS) R.string.test_instructions_reps else R.string.test_instructions_hold,
+            if (state.gate.measure ==
+                GateMeasure.REPS
+            ) {
+                R.string.test_instructions_reps
+            } else {
+                R.string.test_instructions_hold
+            },
         ),
         style = MaterialTheme.typography.bodyLarge,
         color = LevitxColors.TextSoft,

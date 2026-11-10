@@ -7,12 +7,12 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
 /** What the path screen shows. */
 sealed interface PathUiState {
@@ -34,10 +34,8 @@ sealed interface PathUiState {
 
 /** Every gate on the active path with the person's best at each. */
 @HiltViewModel
-class PathViewModel @Inject constructor(
-    goalRepository: GoalRepository,
-    progressRepository: ProgressRepository,
-) : ViewModel() {
+class PathViewModel @Inject constructor(goalRepository: GoalRepository, progressRepository: ProgressRepository) :
+    ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<PathUiState> =
         combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->

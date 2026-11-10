@@ -55,7 +55,9 @@ fun PathScreen(uiState: PathUiState, onBack: () -> Unit, modifier: Modifier = Mo
             item { TextButton(onClick = onBack) { Text(stringResource(R.string.back)) } }
             when (uiState) {
                 PathUiState.Loading -> Unit
+
                 PathUiState.Unavailable -> item { Text(stringResource(R.string.data_unavailable)) }
+
                 is PathUiState.Ready -> {
                     item {
                         Column(modifier = Modifier.padding(vertical = LevitxSpacing.Medium)) {
@@ -132,7 +134,15 @@ private fun PathScreenPreview() {
     val path = SkillCatalogue.muscleUp
     LevitxTheme {
         PathScreen(
-            uiState = PathUiState.Ready(path, 2, mapOf(path.gates[0].id to 30, path.gates[1].id to 10, path.gates[2].id to 7)),
+            uiState = PathUiState.Ready(
+                path,
+                2,
+                mapOf(
+                    path.gates[0].id to 30,
+                    path.gates[1].id to 10,
+                    path.gates[2].id to 7,
+                ),
+            ),
             onBack = {},
         )
     }

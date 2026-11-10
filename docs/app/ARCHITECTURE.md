@@ -14,11 +14,14 @@ mobile/
   core/                      Kotlin Multiplatform: training rules (no Android)
   design/                    design tokens: colours, fonts, type, spacing
   data/                      repositories, encrypted database, database key
+  testing/                   in-memory fakes of the repositories, for unit tests only
   app-phone/                 Android phone app (Compose, Navigation 3)
   app-wear/                  Wear OS app (Compose for Wear OS, Navigation 3)
 ```
 
-Each app module is split by feature (`home/`), plus `navigation/` and `theme/`. A feature folder holds its screen, ViewModel and UI state.
+Each app module is split by feature (`goal/`, `startingtest/`, `home/`, `session/`, `path/`), plus `navigation/`, `theme/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
+
+Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan; ViewModels only combine flows and map the result to UI state.
 
 ## Layers
 
@@ -95,6 +98,8 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 
 - `:core`: a unit test for every rule, including bad input.
 - ViewModels: unit tests with fake repositories and `kotlinx-coroutines-test`.
-- Repositories: `InMemoryProgressRepository` is the fake that ViewModel tests use.
+- Repositories: fakes in `:testing` (`FakeGoalRepository`, `FakeProgressRepository`, `FakeSessionRepository`) keep state in memory, so ViewModel tests run on the JVM. Only `testImplementation` depends on them, so they never ship.
+- Process death: a test rebuilds the session ViewModel from the same `SavedStateHandle` to check a session in progress survives the app being killed.
+- Migrations: an emulator test upgrades a version 1 database to the latest and checks nothing was lost.
 - Encryption: on an emulator, a test checks the database file doesn't start with SQLite's plain-text header, and that a tampered key file refuses to unlock.
 - Health Services and the Data Layer: tested on emulators in Phase 3, using Health Services' synthetic data on the Wear OS emulator.

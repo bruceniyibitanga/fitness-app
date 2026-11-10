@@ -7,13 +7,13 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.goal.GoalRepository
 import app.levitx.phone.navigation.Destination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
-import javax.inject.Inject
 
 /**
  * Decides the first screen: choosing a goal for someone new, home for

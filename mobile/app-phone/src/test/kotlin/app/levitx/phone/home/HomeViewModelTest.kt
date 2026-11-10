@@ -6,6 +6,7 @@ import app.levitx.data.progress.ProgressRepository
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeGoalRepository
 import app.levitx.testing.FakeProgressRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -17,6 +18,8 @@ import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 
+// UnconfinedTestDispatcher is still marked experimental in kotlinx-coroutines-test.
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
     @get:Rule
     val mainDispatcher = MainDispatcherRule()

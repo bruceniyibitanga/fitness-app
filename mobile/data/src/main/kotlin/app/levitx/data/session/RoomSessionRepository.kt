@@ -11,9 +11,8 @@ import javax.inject.Singleton
 
 /** Stores sessions in the encrypted database. */
 @Singleton
-internal class RoomSessionRepository @Inject constructor(
-    private val databaseProvider: LevitxDatabaseProvider,
-) : SessionRepository {
+internal class RoomSessionRepository @Inject constructor(private val databaseProvider: LevitxDatabaseProvider) :
+    SessionRepository {
     override suspend fun saveCompletedSession(session: CompletedSession) {
         val database = databaseProvider.database()
         val sessionId = UUID.randomUUID().toString()

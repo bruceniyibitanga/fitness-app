@@ -21,12 +21,7 @@ public data class PlannedSet(val target: Int, val isBestEffort: Boolean)
  * @property restSeconds Rest between sets.
  * @property repsInReserve How many reps to leave in the tank on work sets.
  */
-public data class SessionPlan(
-    val gate: Gate,
-    val sets: List<PlannedSet>,
-    val restSeconds: Int,
-    val repsInReserve: Int,
-)
+public data class SessionPlan(val gate: Gate, val sets: List<PlannedSet>, val restSeconds: Int, val repsInReserve: Int)
 
 /**
  * Builds a session from the person's current best at a gate.

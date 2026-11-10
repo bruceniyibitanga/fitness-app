@@ -25,8 +25,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -96,16 +96,20 @@ fun SessionScreen(
         ) {
             when (uiState) {
                 SessionUiState.Loading -> Unit
+
                 SessionUiState.Unavailable -> Text(stringResource(R.string.data_unavailable))
+
                 SessionUiState.NothingToTrain -> {
                     Text(stringResource(R.string.session_nothing), style = MaterialTheme.typography.titleLarge)
                     PrimaryButton(stringResource(R.string.session_back_home), onDone)
                 }
+
                 is SessionUiState.Active -> if (uiState.restEndsAtElapsedMillis != null) {
                     Rest(uiState, uiState.restEndsAtElapsedMillis, now, onEndRest, onFinish)
                 } else {
                     NextSet(uiState, onLogSet, onFinish)
                 }
+
                 is SessionUiState.Finished -> Summary(uiState, onDone)
             }
         }
@@ -128,7 +132,11 @@ private fun NextSet(state: SessionUiState.Active, onLogSet: (Int, Int?) -> Unit,
         text = if (set.isBestEffort) {
             stringResource(R.string.session_best_effort_instructions)
         } else {
-            pluralStringResource(R.plurals.session_work_instructions, state.plan.repsInReserve, state.plan.repsInReserve)
+            pluralStringResource(
+                R.plurals.session_work_instructions,
+                state.plan.repsInReserve,
+                state.plan.repsInReserve,
+            )
         },
         style = MaterialTheme.typography.bodyLarge,
         color = LevitxColors.TextSoft,
@@ -137,7 +145,15 @@ private fun NextSet(state: SessionUiState.Active, onLogSet: (Int, Int?) -> Unit,
     NumberInput(
         value = value,
         onValueChange = { value = it },
-        label = stringResource(if (measure == GateMeasure.REPS) R.string.input_reps_done else R.string.input_seconds_held),
+        label = stringResource(
+            if (measure ==
+                GateMeasure.REPS
+            ) {
+                R.string.input_reps_done
+            } else {
+                R.string.input_seconds_held
+            },
+        ),
     )
     if (measure == GateMeasure.REPS) {
         ReserveChooser(selected = reserve, onSelect = { reserve = it })
@@ -166,7 +182,15 @@ private fun ReserveChooser(selected: Int, onSelect: (Int) -> Unit) {
                     onClick = { onSelect(choice) },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = ReserveChoices.count()),
                     label = {
-                        Text(if (choice == ReserveChoices.last) stringResource(R.string.session_reserve_max, choice) else "$choice")
+                        Text(
+                            if (choice ==
+                                ReserveChoices.last
+                            ) {
+                                stringResource(R.string.session_reserve_max, choice)
+                            } else {
+                                "$choice"
+                            },
+                        )
                     },
                 )
             }
@@ -201,7 +225,11 @@ private fun Rest(
 
     SectionLabel(stringResource(R.string.session_rest_label), color = LevitxColors.Ice)
     Text(
-        text = stringResource(R.string.clock_format, totalSeconds / SECONDS_PER_MINUTE, totalSeconds % SECONDS_PER_MINUTE),
+        text = stringResource(
+            R.string.clock_format,
+            totalSeconds / SECONDS_PER_MINUTE,
+            totalSeconds % SECONDS_PER_MINUTE,
+        ),
         style = LevitxType.Numeral.copy(fontSize = LevitxType.Display.fontSize),
         // A polite live region lets screen readers hear the countdown without
         // it interrupting whatever they are reading.
@@ -232,8 +260,11 @@ private fun LoggedSoFar(state: SessionUiState.Active) {
         state.logged.forEachIndexed { index, set ->
             val amount = measureText(state.plan.gate.measure, set.value)
             Text(
-                text = set.repsInReserve?.let { stringResource(R.string.session_logged_with_reserve, index + 1, amount, it) }
-                    ?: stringResource(R.string.session_logged, index + 1, amount),
+                text =
+                    set.repsInReserve?.let {
+                        stringResource(R.string.session_logged_with_reserve, index + 1, amount, it)
+                    }
+                        ?: stringResource(R.string.session_logged, index + 1, amount),
                 style = MaterialTheme.typography.bodyMedium,
                 color = LevitxColors.TextMuted,
             )

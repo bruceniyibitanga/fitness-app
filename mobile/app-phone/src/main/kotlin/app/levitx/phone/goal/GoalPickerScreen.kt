@@ -83,7 +83,12 @@ private fun GoalCard(path: SkillPath, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(LevitxSpacing.Medium)) {
             Text(text = path.name, style = MaterialTheme.typography.headlineSmall)
             Text(
-                text = pluralStringResource(R.plurals.goal_card_detail, path.gates.size, path.gates.size, path.gates.first().title),
+                text = pluralStringResource(
+                    R.plurals.goal_card_detail,
+                    path.gates.size,
+                    path.gates.size,
+                    path.gates.first().title,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = LevitxColors.TextMuted,
                 modifier = Modifier.padding(top = LevitxSpacing.XSmall),

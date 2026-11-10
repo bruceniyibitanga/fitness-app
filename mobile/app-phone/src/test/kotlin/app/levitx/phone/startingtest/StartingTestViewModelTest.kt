@@ -5,6 +5,7 @@ import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeGoalRepository
 import app.levitx.testing.FakeProgressRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -14,12 +15,15 @@ import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 
+// UnconfinedTestDispatcher is still marked experimental in kotlinx-coroutines-test.
+@OptIn(ExperimentalCoroutinesApi::class)
 class StartingTestViewModelTest {
     @get:Rule
     val mainDispatcher = MainDispatcherRule()
 
     private val path = SkillCatalogue.firstPullUp
     private val progress = FakeProgressRepository()
+
     // Lazy so it is built after the main dispatcher rule has run.
     private val viewModel by lazy { StartingTestViewModel(FakeGoalRepository(path), progress, SavedStateHandle()) }
 

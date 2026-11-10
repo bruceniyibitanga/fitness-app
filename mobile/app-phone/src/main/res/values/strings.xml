@@ -70,7 +70,7 @@
     <string name="session_skip_rest">Skip rest</string>
     <string name="session_done_so_far">DONE SO FAR</string>
     <string name="session_logged">Set %1$d: %2$s</string>
-    <string name="session_logged_with_reserve">Set %1$d: %2$s, %3$d left</string>
+    <string name="session_logged_with_reserve">Set %1$d: %2$s, reps left: %3$d</string>
     <string name="session_end_early">End session and save</string>
     <string name="session_summary_label">SESSION SAVED</string>
     <string name="session_new_best">New best: %1$s</string>
