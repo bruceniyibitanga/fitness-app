@@ -1,0 +1,58 @@
+# Security and privacy baseline
+
+The app handles health information: pain ratings, injuries, physio plans and bodyweight. Under the Australian Privacy Act, health information is sensitive information. We treat it that way from the first line of code.
+
+## Principles
+
+1. **Keep it on the device.** No accounts, no server and no cloud database in the early phases. Nothing to breach centrally.
+2. **Collect less.** If a feature works without a piece of data, we don't ask for it.
+3. **No third-party tracking.** No analytics, ad or crash SDKs that send data off the device. If we add crash reporting later, it gets its own ADR and is opt-in.
+4. **Ask at the moment of need.** Permissions are requested when a feature needs them, with a sentence on why. Never all at once at launch.
+5. **Fail closed.** If the database key can't be read, the app shows an error. It never falls back to an unencrypted database.
+
+## What we store and how
+
+| Data | Class | Where | Protection |
+|---|---|---|---|
+| Pain check-ins, red flags, physio plans | Health | Local database | Encrypted database, key in Android Keystore |
+| Bodyweight, progress photos | Health | Local database / app-private files | Encrypted |
+| Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
+| Settings | Low | Local database | Encrypted |
+| Database passphrase | Secret | App-private file, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
+
+The database passphrase is 256 random bits made on the device the first time the app runs. The Keystore key that protects it never leaves the device's secure hardware.
+
+## Backups
+
+- **Nothing is backed up or transferred automatically.** Both apps set `allowBackup="false"` and ship data extraction rules that exclude everything from cloud backup and from device-to-device transfer. From Android 12, `allowBackup` alone doesn't stop device transfer, so the rules are needed too.
+- **Why.** The database can only be decrypted with a Keystore key, and Keystore keys never leave the device. A backup would be unreadable on a new phone, and keeping one would only add another copy of health data to worry about. [Android's guidance](https://developer.android.com/privacy-and-security/risks/backup-best-practices) is to keep sensitive data out of backups.
+- **Moving to a new phone** works through a password-protected export the person makes themselves (Phase 4). See [ADR 0002](adr/0002-local-first-encrypted-storage.md).
+
+## Phone and watch traffic
+
+- **Who can read it.** Android's docs say Data Layer traffic [may at some point use Google-owned servers](https://developer.android.com/training/wearables/data/overview), though no other app can read it.
+- **What goes over it.** We only send what the watch needs to run a session: the plan, and the sets that come back.
+- **What never goes over it.** Pain notes, physio documents and photos. They stay on the phone.
+- **How payloads are handled.** Every payload has a version number and is validated on arrival. Anything unexpected is dropped and logged without its contents.
+
+## Photos and text recognition (Phase 5)
+
+- Text is read on the device. No image or text is sent anywhere.
+- We only extract the fields we need (exercises, sets, reps, limits). The user confirms each one.
+- The photo is deleted as soon as the user confirms, and names and other identifiers are not kept.
+
+## Code and build
+
+- **Logs.** No personal data in logs. Log codes and counts, never values.
+- **Release builds.** R8 shrinking, optimisation and obfuscation are on, and CI builds the release variant on every push.
+- **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Use Play App Signing.
+- **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
+- **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
+- **Gradle wrapper.** The wrapper jar is checked against Gradle's published checksums in CI, and the distribution download is checked against its SHA-256.
+- **Permissions.** None yet. Each one is added only when a feature needs it, with a comment in the manifest saying which feature.
+- **CI.** Uses a read-only token and actions pinned to commit SHAs.
+- **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
+
+## Reporting a problem
+
+If you find a security issue, don't open a public issue. Contact the maintainer directly.

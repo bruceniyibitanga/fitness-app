@@ -1,0 +1,24 @@
+# Gradle and Android build output
+.gradle/
+.kotlin/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Local machine settings. Android Studio writes the SDK path here.
+local.properties
+
+# Signing material and secrets. Never commit these.
+*.jks
+*.keystore
+*.p12
+keystore.properties
+key.properties
+.env*
+google-services.json

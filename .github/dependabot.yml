@@ -1,0 +1,27 @@
+# Weekly dependency update pull requests, so security fixes don't sit unnoticed.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Reads mobile/gradle/libs.versions.toml and the Gradle wrapper version.
+  - package-ecosystem: gradle
+    directory: "/mobile"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Compose, Wear Compose and AGP are released together often enough that
+      # one PR per family is easier to review and test than one per artifact.
+      androidx:
+        patterns: ["androidx.*", "com.android.*"]
+      kotlin:
+        patterns: ["org.jetbrains.kotlin*"]

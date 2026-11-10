@@ -1,0 +1,97 @@
+# Checks for the Android phone and Wear OS apps in mobile/.
+#
+# One Gradle invocation runs formatting (Spotless + ktlint), static analysis
+# (detekt), Android Lint, unit tests and debug and release builds. Release
+# builds run R8, so shrinking problems show up here rather than at launch.
+#
+# Formatting failures are written as GitHub annotations with the diff, so the
+# fix shows up on the pull request next to the line that needs it.
+name: Mobile CI
+
+on:
+  push:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+
+# Read-only token: this workflow never needs to write to the repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wrapper:
+    name: Validate Gradle wrapper
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Actions are pinned to full commit SHAs so a moved tag can't change what runs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Fails if gradle-wrapper.jar isn't byte-for-byte an official Gradle release.
+      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+  build:
+    name: Format, analyse, lint, test and build
+    needs: wrapper
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # AGP 9 needs JDK 17 or later. Builds target Java 17 bytecode either way.
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only builds on main write the shared cache, so a branch can't
+          # poison what other branches restore.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Check formatting
+        id: format
+        run: ./gradlew spotlessCheck --stacktrace
+
+      - name: Annotate formatting changes
+        if: failure() && steps.format.outcome == 'failure'
+        run: |
+          ./gradlew spotlessApply --quiet
+          # The full patch, so it can be applied locally with `git apply`.
+          git diff -- .
+          for file in $(git diff --name-only -- .); do
+            rel=${file#mobile/}
+            diff=$(git diff -U1 -- "$rel" | head -c 6000 \
+              | sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error file=$file::Needs formatting (run ./gradlew spotlessApply):%0A$diff"
+          done
+
+      - name: detekt
+        if: ${{ !cancelled() }}
+        run: ./gradlew detekt
+
+      - name: Lint, test and build
+        id: build
+        if: ${{ !cancelled() }}
+        run: ./gradlew check assembleDebug assembleRelease --warning-mode all
+
+      # Gradle only prints the first lint issue. Print the full text reports.
+      - name: Print lint findings
+        if: failure() && steps.build.outcome == 'failure'
+        run: find . -path '*lint_intermediate_text_report*' -name '*.txt' -exec cat {} +

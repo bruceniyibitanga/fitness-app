@@ -1,0 +1,65 @@
+# Every dependency and plugin version for the mobile apps lives here.
+# Only list what a module actually uses; add entries when the code needs them.
+#
+# Dependabot reads this file and opens weekly update PRs. Pin exact versions
+# (no "+" or ranges) so a build today and a build next month resolve the same
+# code. Before bumping a major version, read its release notes and check the
+# compatibility notes at the top of each section.
+
+[versions]
+# Android SDK levels, shared by both apps so they never drift apart.
+# compileSdk and targetSdk track the newest stable Android release. AGP 9.5
+# supports API 37.
+android-compileSdk = "37"
+android-targetSdk = "37"
+# Phone: Android 9. Covers the vast majority of active devices and every
+# device Health Connect supports.
+android-minSdk-phone = "28"
+# Watch: Wear OS 3 (API 30) is the first version with Health Services and the
+# unified Wear OS platform. Older watches can't run the exercise APIs we need.
+android-minSdk-wear = "30"
+
+# Build tooling. AGP 9 compiles Kotlin itself ("built-in Kotlin"), so the app
+# modules don't apply the Kotlin Android plugin. Declaring the Kotlin plugins
+# below at a newer version upgrades the compiler AGP uses.
+agp = "9.5.1"
+kotlin = "2.4.21"
+
+# AndroidX
+androidx-activity = "1.13.0"
+androidx-lifecycle = "2.11.0"
+compose-bom = "2026.09.00"
+wear-compose = "1.7.1"
+
+# Code quality
+# detekt 1.23.8 is built against Kotlin 2.0.21. Its Gradle task runs the
+# analyser on its own classpath, pinned to that Kotlin version in the root
+# build file, so it is independent of the compiler version above.
+detekt = "1.23.8"
+detekt-kotlin = "2.0.21"
+spotless = "8.11.0"
+ktlint = "1.8.0"
+
+[libraries]
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+
+# Compose. The BOM picks matching versions of every Compose library, and
+# both apps import it so their Compose versions never differ.
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+
+# Watch UI. Wear Compose is released separately from the BOM.
+wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
+wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
+wear-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "wear-compose" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

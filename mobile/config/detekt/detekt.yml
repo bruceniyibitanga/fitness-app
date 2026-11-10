@@ -1,0 +1,32 @@
+# Changes to detekt's default rules. Everything not listed here uses the
+# default from detekt 1.23.8.
+
+comments:
+  # Every public class, function and property must say what it is for.
+  UndocumentedPublicClass:
+    active: true
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+  UndocumentedPublicFunction:
+    active: true
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+  UndocumentedPublicProperty:
+    active: true
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+
+naming:
+  FunctionNaming:
+    # Composable functions are named like types.
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    # A number assigned to a named property is a named constant, which is
+    # what this rule asks for. Compose tokens like `val ScreenPadding = 24.dp`
+    # are written that way.
+    ignorePropertyDeclaration: true
+    # Tests are full of literal expected values; that is the point of them.
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    ignoreAnnotated: ['Preview', 'WearPreviewDevices']
+  UnusedPrivateMember:
+    # Previews are private and only called by Android Studio.
+    ignoreAnnotated: ['Preview', 'WearPreviewDevices']
