@@ -27,6 +27,7 @@ kotlin = "2.4.21"
 
 # AndroidX
 androidx-activity = "1.13.0"
+androidx-lifecycle = "2.11.0"
 compose-bom = "2026.09.00"
 wear-compose = "1.7.1"
 
@@ -41,6 +42,7 @@ ktlint = "1.8.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 
 # Compose. The BOM picks matching versions of every Compose library, and
 # both apps import it so their Compose versions never differ.

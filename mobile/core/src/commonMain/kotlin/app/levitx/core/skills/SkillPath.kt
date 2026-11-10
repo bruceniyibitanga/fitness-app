@@ -38,11 +38,7 @@ public data class Gate(
  * @property gatesRemaining Gates left to pass, including the current one.
  * @property currentFraction Progress toward the current gate, from 0 to 1. 1 when complete.
  */
-public data class PathProgress(
-    val currentIndex: Int?,
-    val gatesRemaining: Int,
-    val currentFraction: Double,
-) {
+public data class PathProgress(val currentIndex: Int?, val gatesRemaining: Int, val currentFraction: Double) {
     /** True once every gate is passed. */
     val isComplete: Boolean
         get() = currentIndex == null
@@ -59,11 +55,7 @@ public data class PathProgress(
  * @property gates Gates from first to last. The last gate is the skill itself.
  * @throws IllegalArgumentException if [gates] is empty or has duplicate ids.
  */
-public data class SkillPath(
-    val id: String,
-    val name: String,
-    val gates: List<Gate>,
-) {
+public data class SkillPath(val id: String, val name: String, val gates: List<Gate>) {
     init {
         require(gates.isNotEmpty()) { "a path needs at least one gate" }
         require(gates.map { it.id }.toSet().size == gates.size) { "gate ids must be unique" }

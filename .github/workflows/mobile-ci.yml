@@ -73,6 +73,8 @@ jobs:
         if: failure() && steps.format.outcome == 'failure'
         run: |
           ./gradlew spotlessApply --quiet
+          # The full patch, so it can be applied locally with `git apply`.
+          git diff -- .
           for file in $(git diff --name-only -- .); do
             rel=${file#mobile/}
             diff=$(git diff -U1 -- "$rel" | head -c 6000 \
@@ -85,5 +87,11 @@ jobs:
         run: ./gradlew detekt
 
       - name: Lint, test and build
+        id: build
         if: ${{ !cancelled() }}
         run: ./gradlew check assembleDebug assembleRelease --warning-mode all
+
+      # Gradle only prints the first lint issue. Print the full text reports.
+      - name: Print lint findings
+        if: failure() && steps.build.outcome == 'failure'
+        run: find . -path '*lint_intermediate_text_report*' -name '*.txt' -exec cat {} +

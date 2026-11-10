@@ -110,10 +110,13 @@ public fun assessPain(checkIn: PainCheckIn): PainAssessment {
     return when {
         checkIn.redFlags.isNotEmpty() ->
             PainAssessment(PainAdvice.SEE_PROFESSIONAL, PainReason.RED_FLAG)
+
         checkIn.duringExercise > MAX_ACCEPTABLE_PAIN_DURING_EXERCISE ->
             PainAssessment(PainAdvice.EASE_OFF, PainReason.TOO_HIGH_DURING_EXERCISE)
+
         before != null && after != null && after > before ->
             PainAssessment(PainAdvice.EASE_OFF, PainReason.WORSE_NEXT_MORNING)
+
         else ->
             PainAssessment(PainAdvice.CONTINUE_AS_PLANNED, PainReason.WITHIN_GUIDE)
     }

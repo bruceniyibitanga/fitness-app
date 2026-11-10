@@ -43,9 +43,6 @@ android {
     lint {
         warningsAsErrors = true
         abortOnError = true
-        // Print every issue to the build log, not just the first one.
-        textReport = true
-        textOutput = file("stdout")
         // Version bumps are Dependabot's job. Lint flagging them would fail
         // the build every time a library ships, for no code problem.
         disable += setOf("GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable")
@@ -63,6 +60,10 @@ dependencies {
 
     implementation(platform(libs.compose.bom))
     implementation(libs.androidx.activity.compose)
+    // Lifecycle-aware state collection for Compose. Also lifts the lifecycle
+    // libraries above the version activity-compose pulls in, whose bundled
+    // lint checks no longer load in AGP 9.5's lint.
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui.tooling.preview)
