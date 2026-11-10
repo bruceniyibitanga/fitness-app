@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher icon mark: a bar with a rising chevron above it. Drawn inside the
+  66 dp safe zone of the 108 dp adaptive icon canvas.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="@color/levitx_accent"
+        android:pathData="M54,34 L68,48 L60,48 L54,42 L48,48 L40,48 Z" />
+    <path
+        android:fillColor="@color/levitx_accent"
+        android:pathData="M30,62 L78,62 L78,68 L30,68 Z" />
+</vector>

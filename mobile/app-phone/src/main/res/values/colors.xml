@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Brand colours used by resources the system draws (icon, window). -->
+<resources>
+    <color name="levitx_background">#FF0B0B0A</color>
+    <color name="levitx_accent">#FFFF6A2B</color>
+</resources>

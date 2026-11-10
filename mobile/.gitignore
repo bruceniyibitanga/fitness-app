@@ -1,16 +1,24 @@
-# Dart and Flutter build output
-.dart_tool/
+# Gradle and Android build output
+.gradle/
+.kotlin/
 build/
-coverage/
+captures/
+.externalNativeBuild/
+.cxx/
 
 # IDE files
 .idea/
 *.iml
 .vscode/
 
-# Local secrets and signing material. Never commit these.
+# Local machine settings. Android Studio writes the SDK path here.
+local.properties
+
+# Signing material and secrets. Never commit these.
 *.jks
 *.keystore
+*.p12
+keystore.properties
 key.properties
-local.properties
 .env*
+google-services.json

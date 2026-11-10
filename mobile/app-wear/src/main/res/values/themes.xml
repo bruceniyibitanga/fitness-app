@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Window theme. Compose draws everything inside the window; this only sets
+  what shows before the first frame.
+-->
+<resources>
+    <style name="Theme.Levitx" parent="android:Theme.DeviceDefault">
+        <item name="android:windowBackground">@color/levitx_background</item>
+    </style>
+</resources>
