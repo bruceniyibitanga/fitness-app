@@ -84,6 +84,12 @@
     <string name="workout_status_rest">Rest</string>
     <string name="workout_status_set">Set %1$d of %2$d</string>
 
+    <!-- Tile -->
+    <string name="tile_label">Next session</string>
+    <string name="tile_no_goal">Choose a goal on your phone</string>
+    <string name="tile_path_complete">Path complete</string>
+    <string name="tile_unavailable">Open Levitx to see your session</string>
+
     <!-- Errors -->
     <string name="data_unavailable">Couldn\'t unlock your data. Nothing was deleted. Reopen the app to retry.</string>
 </resources>
