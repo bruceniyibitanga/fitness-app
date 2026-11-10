@@ -19,6 +19,7 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | Bands and the help they give | Personal | Local database | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
 | The watch's copy of the goal, bests and bands, and its own sessions | Personal | The watch's local database | Encrypted the same way, with the watch's own Keystore key |
+| Heart rate | Health | Watch memory only, while a session runs | Never written to disk, never sent to the phone or anywhere else |
 | Settings | Low | Local database | Encrypted |
 | Database key | Secret | `noBackupFilesDir`, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
 
@@ -64,7 +65,11 @@ The database key is 256 random bits made on the device the first time the app ru
 - **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
 - **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
 - **Gradle wrapper.** The wrapper jar is checked against Gradle's published checksums in CI, and the distribution download is checked against its SHA-256.
-- **Permissions.** None yet. Sync needs none. Each one is added only when a feature needs it, with a comment in the manifest saying which feature.
+- **Permissions.** The phone app has none. The watch app has these, each with a comment in the manifest saying which feature needs it:
+  - heart rate (`BODY_SENSORS` up to Wear OS 5, `READ_HEART_RATE` from Wear OS 6): shown during a session. Asked for when the first session starts. A session runs without it.
+  - notifications: the "session in progress" notification. Asked for at the same time.
+  - foreground service (type `health`), vibrate and wake lock: granted at install. They keep the session going off-screen and give the rest alert ([ADR 0006](adr/0006-watch-workout-service.md)).
+- **The workout notification is public** (it shows on a locked watch) and only ever says "Set 2 of 4" or "Rest".
 - **CI.** Uses a read-only token and actions pinned to commit SHAs.
 - **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
 

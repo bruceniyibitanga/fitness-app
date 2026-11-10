@@ -1,5 +1,7 @@
 package app.levitx.wear.session
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,14 +22,17 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import app.levitx.core.skills.GateMeasure
+import app.levitx.design.LevitxColors
 import app.levitx.wear.R
 import app.levitx.wear.theme.LevitxWearTheme
 import app.levitx.wear.ui.CenteredText
+import app.levitx.wear.workout.WorkoutPermissions
 
 /*
  * The session screen is split over three files so each stays short:
  * this one (the screen and what every phase shares), SetPhase.kt (doing and
- * logging a set) and RestAndSummary.kt (rest and the summary).
+ * logging a set), RestAndSummary.kt (rest and the summary) and
+ * TrackingPrompt.kt (asking to read heart rate).
  */
 
 /** Session destination: connects [SessionViewModel] to [SessionScreen]. */
@@ -39,6 +44,16 @@ fun SessionRoute(onClose: () -> Unit, viewModel: SessionViewModel = hiltViewMode
     LaunchedEffect(uiState) {
         if (uiState is SessionUiState.NoSession) onClose()
     }
+    // The workout service may only be started while the app is on screen, so
+    // it is started (or restarted, after the app was killed) from here.
+    val isRunning = uiState is SessionUiState.Working || uiState is SessionUiState.Resting
+    LaunchedEffect(isRunning) {
+        if (isRunning) viewModel.ensureTracking()
+    }
+    // Whatever the answer, the session carries on; only heart rate depends on it.
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { viewModel.onTrackingAnswered() }
     SessionScreen(
         uiState = uiState,
         nowElapsedMillis = viewModel::elapsedRealtimeMillis,
@@ -46,6 +61,8 @@ fun SessionRoute(onClose: () -> Unit, viewModel: SessionViewModel = hiltViewMode
         onEndRest = viewModel::endRest,
         onFinishEarly = viewModel::finishEarly,
         onDone = viewModel::dismissSummary,
+        onAllowTracking = { permissionLauncher.launch(WorkoutPermissions.toRequest) },
+        onSkipTracking = viewModel::onTrackingAnswered,
     )
 }
 
@@ -67,6 +84,8 @@ fun SessionScreen(
     onEndRest: () -> Unit,
     onFinishEarly: () -> Unit,
     onDone: () -> Unit,
+    onAllowTracking: () -> Unit,
+    onSkipTracking: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize().keepScreenOn()) {
@@ -78,6 +97,8 @@ fun SessionScreen(
 
             SessionUiState.NoSession ->
                 SessionList { item { CenteredText(stringResource(R.string.session_none)) } }
+
+            SessionUiState.AskTracking -> TrackingPrompt(onAllowTracking, onSkipTracking)
 
             is SessionUiState.Working -> when (uiState.measure) {
                 GateMeasure.REPS -> CountEntry(uiState, uiState.target, onLogSet, onFinishEarly)
@@ -117,6 +138,14 @@ internal fun EndButton(canSaveEarly: Boolean, onFinishEarly: () -> Unit) {
     )
 }
 
+/** "128 bpm" in the rest colour, or nothing when heart rate isn't being read. */
+@Composable
+internal fun HeartRateText(heartRate: Int?) {
+    if (heartRate != null) {
+        CenteredText(stringResource(R.string.session_heart_rate, heartRate), color = LevitxColors.Ice)
+    }
+}
+
 @WearPreviewDevices
 @Composable
 private fun SessionScreenPreview() {
@@ -136,6 +165,8 @@ private fun SessionScreenPreview() {
             onEndRest = {},
             onFinishEarly = {},
             onDone = {},
+            onAllowTracking = {},
+            onSkipTracking = {},
         )
     }
 }

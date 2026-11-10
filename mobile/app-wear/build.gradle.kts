@@ -46,6 +46,10 @@ dependencies {
     implementation(libs.wear.compose.navigation3)
     implementation(libs.kotlinx.serialization.core)
 
+    // The workout: heart rate from Health Services, shown as an ongoing activity.
+    implementation(libs.health.services.client)
+    implementation(libs.wear.ongoing)
+
     testImplementation(project(":testing"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

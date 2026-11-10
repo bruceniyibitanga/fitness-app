@@ -9,6 +9,7 @@ import app.levitx.testing.FakeSessionDraftRepository
 import app.levitx.testing.FakeSessionRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.wear.MainDispatcherRule
+import app.levitx.wear.workout.FakeWorkoutMonitor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -17,6 +18,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +40,8 @@ class SessionViewModelTest {
         clock,
         CoroutineScope(UnconfinedTestDispatcher()),
     )
-    private val viewModel by lazy { SessionViewModel(controller, clock) }
+    private val monitor = FakeWorkoutMonitor()
+    private val viewModel by lazy { SessionViewModel(controller, clock, monitor) }
 
     @Test
     fun withNoSessionTheScreenClosesItself() = runTest {
@@ -89,6 +92,60 @@ class SessionViewModelTest {
 
         viewModel.dismissSummary()
         assertEquals(SessionUiState.NoSession, currentState())
+    }
+
+    @Test
+    fun asksAboutHeartRateOnceBeforeTheFirstSession() = runTest {
+        monitor.permissionGranted = false
+        controller.start()
+        assertEquals(SessionUiState.AskTracking, currentState())
+
+        // "Not now": the session carries on, and the question isn't asked again.
+        viewModel.onTrackingAnswered()
+
+        val working = currentState() as SessionUiState.Working
+        assertNull(working.heartRate)
+        assertFalse(monitor.isActive.value)
+    }
+
+    @Test
+    fun allowingHeartRateStartsTheWorkout() = runTest {
+        monitor.permissionGranted = false
+        controller.start()
+        currentState()
+
+        monitor.permissionGranted = true
+        viewModel.onTrackingAnswered()
+        monitor.heartRate.value = 128
+
+        assertEquals(128, (currentState() as SessionUiState.Working).heartRate)
+        assertTrue(monitor.isActive.value)
+    }
+
+    @Test
+    fun doesntAskWhenHeartRateIsAlreadyAllowed() = runTest {
+        controller.start()
+        assertTrue(currentState() is SessionUiState.Working)
+    }
+
+    @Test
+    fun heartRateIsOnlyShownWhileTheWorkoutIsTracked() = runTest {
+        controller.start()
+        monitor.heartRate.value = 120
+        assertNull((currentState() as SessionUiState.Working).heartRate)
+
+        viewModel.ensureTracking()
+        assertEquals(120, (currentState() as SessionUiState.Working).heartRate)
+    }
+
+    @Test
+    fun theScreenOnlyBuzzesAtTheEndOfRestWhenTheServiceIsntRunning() = runTest {
+        controller.start()
+        viewModel.logSet(4)
+        assertTrue((currentState() as SessionUiState.Resting).buzzOnScreen)
+
+        viewModel.ensureTracking()
+        assertFalse((currentState() as SessionUiState.Resting).buzzOnScreen)
     }
 
     /** Subscribes like a screen would, then returns the latest state. */
