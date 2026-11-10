@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { footer, site } from "@/content/site";
-import { UNSPLASH_URL, photoCredits } from "@/content/photos";
+import { SOURCE_URLS, photoCredits, photoSources } from "@/content/photos";
 import { LogoMark } from "./Logo";
 
 export function Footer() {
   const credits = photoCredits();
+  const sources = photoSources();
   return (
     <footer className="border-t border-line">
       <div className="gutter mx-auto flex max-w-[1320px] flex-wrap justify-between gap-x-8 gap-y-4 pt-10 pb-12">
@@ -34,9 +35,14 @@ export function Footer() {
             </span>
           ))}
           on{" "}
-          <a href={UNSPLASH_URL} rel="noopener noreferrer" target="_blank" className="hover:text-text">
-            Unsplash
-          </a>
+          {sources.map((source, i) => (
+            <span key={source}>
+              {i > 0 ? " and " : ""}
+              <a href={SOURCE_URLS[source]} rel="noopener noreferrer" target="_blank" className="hover:text-text">
+                {source}
+              </a>
+            </span>
+          ))}
         </p>
       </div>
     </footer>

@@ -98,9 +98,9 @@ export const skills = {
   title: "Progressions for the big four.",
   lede: "Free guides, coming soon. Each one is a path inside the app.",
   items: ([
-    { name: "Muscle-up", range: "Dead hang → bar", photo: "ringsChinUp" },
-    { name: "Front lever", range: "Tuck → full", photo: "barMono" },
-    { name: "Planche", range: "Lean → straddle", photo: "ringsArcher" },
+    { name: "Muscle-up", range: "Dead hang → bar", photo: "muscleUp" },
+    { name: "Front lever", range: "Tuck → full", photo: "frontLever" },
+    { name: "Planche", range: "Lean → straddle", photo: "planche" },
     { name: "Handstand", range: "Wall → freestanding", photo: "handstand" },
   ] satisfies SkillItem[]) as SkillItem[],
 };
