@@ -48,9 +48,13 @@ class SessionViewModel @Inject constructor(
 
 private fun WorkoutState.toUiState(): SessionUiState = when (this) {
     WorkoutState.Loading, WorkoutState.Starting -> SessionUiState.Loading
+
     WorkoutState.Unavailable -> SessionUiState.Unavailable
+
     is WorkoutState.Idle -> SessionUiState.NoSession
+
     is WorkoutState.Running -> run.toUiState()
+
     is WorkoutState.Finished -> SessionUiState.Finished(
         gateTitle = gate.title,
         measure = gate.measure,

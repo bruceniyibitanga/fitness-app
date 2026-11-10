@@ -33,8 +33,7 @@ class SyncCodecTest {
         startedAt: Long = 1_000,
         finishedAt: Long = 2_000,
         sets: String = """[{"value":4}]""",
-        version: Int = 1,
-    ) = """{"v":$version,"id":"$id","gateId":"$gateId","startedAt":$startedAt,"finishedAt":$finishedAt,"sets":$sets}"""
+    ) = """{"v":1,"id":"$id","gateId":"$gateId","startedAt":$startedAt,"finishedAt":$finishedAt,"sets":$sets}"""
 
     @Test
     fun aSessionSurvivesTheRoundTrip() {
@@ -61,7 +60,7 @@ class SyncCodecTest {
 
     @Test
     fun newerVersionsAreKeptForLater() {
-        assertEquals(Decoded.NewerVersion, session(sessionJson(version = 2)))
+        assertEquals(Decoded.NewerVersion, session(sessionJson().replace("\"v\":1", "\"v\":2")))
         assertEquals(Decoded.NewerVersion, state("""{"v":99,"somethingNew":true}"""))
     }
 

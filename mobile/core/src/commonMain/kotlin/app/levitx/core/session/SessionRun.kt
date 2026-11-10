@@ -15,6 +15,7 @@ public data class SetLoad(val addedKg: Double = 0.0, val assistanceKg: Double = 
         require(assistanceKg.isValidModifier()) { "assistanceKg out of range" }
     }
 
+    /** Ready-made loads. */
     public companion object {
         /** Bodyweight only. */
         public val None: SetLoad = SetLoad()
