@@ -21,11 +21,11 @@ const sections = [
   },
   {
     title: "Where it's stored",
-    body: "In a database that only our server can reach. The address is sent over HTTPS and is never shown in the page or the browser.",
+    body: "With Kit (kit.com), the email service we use to send updates. Our server sends it there over HTTPS. Kit stores it under its own privacy policy.",
   },
   {
     title: "Removing it",
-    body: "Reply to any email we send, or contact us, and we'll delete your address. Every email will include an unsubscribe link.",
+    body: "Every email has an unsubscribe link. Reply to any email and we'll delete your address completely.",
   },
 ];
 

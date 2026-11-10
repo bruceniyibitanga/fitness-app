@@ -1,15 +1,22 @@
 import "server-only";
 import { z } from "zod";
 
+/** Treats `KEY=` (empty) the same as not set, so copying .env.example doesn't break validation. */
+function optional<T extends z.ZodType>(type: T) {
+  return z.preprocess((value) => (value === "" ? undefined : value), type.optional());
+}
+
 /**
  * Server-only settings, checked once when first read.
- * The Supabase keys are optional so the site runs locally without them;
+ * Storage keys are optional so the site runs locally without them;
  * the waitlist repository decides what to do when they're missing.
  */
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  SUPABASE_URL: z.url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
+  KIT_API_KEY: optional(z.string().min(10)),
+  KIT_TAG_ID: optional(z.string().regex(/^\d+$/, "must be the numeric tag ID")),
+  SUPABASE_URL: optional(z.url()),
+  SUPABASE_SERVICE_ROLE_KEY: optional(z.string().min(20)),
 });
 
 export type ServerEnv = z.infer<typeof schema>;
