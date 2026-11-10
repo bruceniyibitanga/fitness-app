@@ -46,10 +46,23 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 - Phone and watch sync over the Wearable Data Layer: the goal, bests and bands go to the watch, finished sessions come back. Sync works offline and survives retries. Done.
 - A session on the watch survives leaving the screen and the app being killed. Done.
 - Health Services `ExerciseClient` for heart rate and an ongoing workout, in a `health` foreground service, with a rest alert that fires with the screen off. Built; not yet run on a real watch.
-- A Tile showing the next session.
+- A Tile showing the next session. Built; it still needs a preview image for the tile picker, taken from a real render.
 - Still to do before calling the phase done: a full session on a real watch with the phone out of reach, then checking it arrives on the phone.
 
 **Done when** a full session runs on the watch with the phone in a bag, and the results show up on the phone afterwards.
+
+### Decisions to check on a real watch
+
+These were made without a watch to test on. Each one has the result that would change it.
+
+| Decision | Why | Change it if |
+|---|---|---|
+| The rest alert keeps the processor awake during rest with a short wake lock ([ADR 0006](adr/0006-watch-workout-service.md)). | It needs no setup from the person and always fires on time. An exact alarm needs a setting switched on from Android 14. | The buzz is late with the wrist down, or a session costs noticeably more battery than other workout apps. Then try a Health Services duration goal first, an exact alarm second. |
+| The watch app is non-standalone: it needs the phone app. | The goal is chosen and the starting test is taken on the phone. A test on a watch screen would be slow and easy to get wrong. | People ask to set up on the watch alone. Then add a goal picker and starting test to the watch and mark it standalone. |
+| The watch doesn't ask for reps in reserve. Watch sets are saved as "didn't say". | Nothing uses reps in reserve yet, and our own rule is not to ask for data a feature doesn't need. One more question between sets is friction on a small screen. | A training rule starts using reps in reserve. Then ask on the rest screen, with one optional tap, so it never holds up a set. |
+| The load is chosen once per session on the watch, in 1 kg steps. | Most people keep the same vest or band for a whole session. Per-set changes and half kilograms are on the phone. | Testing shows people change load between sets on the watch. |
+| The screen stays on while the session screen is showing. | The hold timer runs on that screen and would be late if the watch dimmed. | Battery cost is noticeable. Then move the hold timer into the workout service and let the screen dim. |
+| The Tile has no preview image for the tile picker yet. | It has to be a screenshot of the real Tile. A made-up picture would misrepresent it. | As soon as the Tile has been seen on a watch or emulator: take the screenshot, add round and square versions, and switch the lint check back on. |
 
 ## Phase 4: Body and progress
 

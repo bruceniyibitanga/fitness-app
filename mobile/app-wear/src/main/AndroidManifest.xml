@@ -78,6 +78,28 @@
         </activity>
 
         <!--
+          The Tile: the next gate and today's session, one swipe from the
+          watch face. Exported because the system's tile renderer binds to it;
+          the permission means only the system can.
+
+          TODO before release: add the preview image the tile picker shows
+          (the androidx.wear.tiles.PREVIEW meta-data, in round and square
+          versions). It has to be a screenshot of the real Tile, which needs
+          a watch or emulator, so the lint check is switched off until then
+          rather than satisfied with a made-up picture. Tracked in ROADMAP.md.
+        -->
+        <service
+            android:name=".tile.NextSessionTileService"
+            android:exported="true"
+            android:label="@string/tile_label"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER"
+            tools:ignore="TilePreviews">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+
+        <!--
           Runs the workout while a session is in progress: heart rate from
           Health Services, the ongoing-activity indicator and the rest alert.
           Not exported: only this app starts it.

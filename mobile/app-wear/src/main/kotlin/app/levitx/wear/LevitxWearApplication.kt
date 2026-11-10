@@ -2,6 +2,7 @@ package app.levitx.wear
 
 import android.app.Application
 import app.levitx.sync.WatchSync
+import app.levitx.wear.tile.TileRefresher
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -12,9 +13,14 @@ class LevitxWearApplication : Application() {
     @Inject
     lateinit var watchSync: WatchSync
 
+    /** Keeps the Tile up to date. Set by Hilt. */
+    @Inject
+    lateinit var tileRefresher: TileRefresher
+
     override fun onCreate() {
         super.onCreate()
-        // Returns at once: the work runs on a background scope, so app start isn't slowed.
+        // Both return at once: the work runs on a background scope, so app start isn't slowed.
         watchSync.start()
+        tileRefresher.start()
     }
 }

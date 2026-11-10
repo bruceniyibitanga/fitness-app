@@ -81,6 +81,12 @@ The main thread only draws. It never waits on I/O or heavy work.
 - **Screens only watch and tap.** `SessionViewModel` maps the controller's state to UI state and passes actions on.
 - **`WorkoutService` runs alongside,** a foreground service of type `health`. It reads heart rate through Health Services, shows the ongoing activity, and buzzes when rest ends. It watches the controller and stops when no session is running. The session doesn't depend on it. See [ADR 0006](adr/0006-watch-workout-service.md).
 
+## The Tile
+
+- **`NextSessionTileService`** shows the current gate and today's sets. It builds them from the same `trainingDay` as the home screen, so the two always agree.
+- **It shows targets only,** never results or health data, because a Tile is visible to anyone who can see the watch.
+- **`TileRefresher`** asks the system to redraw it when the goal or a best changes.
+
 ## Errors
 
 - `:core` throws `IllegalArgumentException` for impossible input. The UI validates first, so a throw there is a bug, and tests cover it. Messages name the input but never its value, because values are often health data.

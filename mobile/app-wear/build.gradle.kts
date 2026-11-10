@@ -50,6 +50,12 @@ dependencies {
     implementation(libs.health.services.client)
     implementation(libs.wear.ongoing)
 
+    // The Tile that shows the next session.
+    implementation(libs.wear.tiles)
+    implementation(libs.wear.protolayout)
+    implementation(libs.wear.protolayout.material3)
+    implementation(libs.kotlinx.coroutines.guava)
+
     testImplementation(project(":testing"))
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
