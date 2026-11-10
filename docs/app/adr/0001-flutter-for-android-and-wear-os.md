@@ -1,6 +1,8 @@
 # 0001: Flutter for the Android phone and Wear OS apps
 
-**Status:** Accepted, November 2026
+**Status:** Superseded by [0005](0005-kotlin-compose-and-wear-compose.md), November 2026
+
+Kept for the record. We chose Flutter, then moved to Kotlin before any app code was written, because the watch needs too many Android-only APIs for a cross-platform layer to pay off. ADR 0005 explains why.
 
 ## Context
 

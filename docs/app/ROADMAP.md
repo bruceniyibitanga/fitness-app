@@ -2,32 +2,31 @@
 
 The app ships in phases. Each phase has a clear finish line and doesn't start until the one before it passes CI and has been tried on a real device or emulator.
 
-Android phone and Wear OS come first, built with Flutter. iPhone and Apple Watch come after the Android release (see [ADR 0001](adr/0001-flutter-for-android-and-wear-os.md)).
+Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose for Wear OS. iPhone and Apple Watch come after the Android release (see [ADR 0005](adr/0005-kotlin-compose-and-wear-compose.md)).
 
 ## Phase 0: Foundation (this phase)
 
-- Dart workspace in `mobile/` with one shared package, `training_core`.
-- `training_core` holds the training maths, with tests:
+- Gradle build in `mobile/` with a version catalog and a verified Gradle wrapper.
+- `:core`, a Kotlin Multiplatform module holding the training rules, with tests:
   - load per rep, including vests, belts and bands
   - estimated one-rep max
   - pain-monitoring guidance
   - skill paths and gates
-- CI checks formatting, analysis and tests on every push.
+- `:app-phone` and `:app-wear` shells that open to a placeholder screen. Same application id, no permissions, no backup, R8 on for release.
+- CI validates the wrapper and runs formatting, detekt, Android Lint, unit tests, and debug and release builds of both apps.
 - Decision records, architecture notes and the security baseline written down.
 
 **Done when** CI is green and these docs are reviewed.
 
-## Phase 1: App shells
+## Phase 1: Design system and app skeleton
 
-- Generate the phone app and the Wear OS app with `flutter create`. Both get the same application ID and signing key, which the Wearable Data Layer requires.
-- Theme and design tokens from the design system (colours, Archivo and JetBrains Mono, square edges).
-- MVVM skeleton following Flutter's architecture guide: views, view models, repositories, services.
-- Navigation and dependency injection.
-- Encrypted local database, with its key held by the Android Keystore.
-- Backup rules, so health data only ever leaves the phone end-to-end encrypted.
-- CI builds a release app bundle for both apps.
+- `:design` module with the design tokens (colours, Archivo and JetBrains Mono, square edges) for phone and watch.
+- Shared Gradle settings move into a convention plugin in `build-logic/`.
+- ViewModel and UI state pattern, navigation (Navigation 3 on the phone, Wear Compose navigation on the watch) and dependency injection.
+- Encrypted Room database with its passphrase protected by the Android Keystore.
+- CI builds release app bundles for both apps.
 
-**Done when** both apps open on an emulator and read and write the encrypted database.
+**Done when** both apps open on an emulator with the real theme and read and write the encrypted database.
 
 ## Phase 2: The core loop on the phone
 
@@ -41,8 +40,9 @@ Android phone and Wear OS come first, built with Flutter. iPhone and Apple Watch
 ## Phase 3: The watch
 
 - Wear OS session screens: rep counter, hold timer, rest timer.
-- Health Services `ExerciseClient` for heart rate and an ongoing workout, through a small Kotlin bridge generated with Pigeon.
+- Health Services `ExerciseClient` for heart rate and an ongoing workout, in a `health` foreground service.
 - Phone and watch sync over the Wearable Data Layer: the plan goes to the watch, finished sets come back. Sync works offline and survives retries.
+- A Tile showing the next session.
 
 **Done when** a full session runs on the watch with the phone in a bag, and the results show up on the phone afterwards.
 
@@ -51,6 +51,7 @@ Android phone and Wear OS come first, built with Flutter. iPhone and Apple Watch
 - Bodyweight log feeding load per rep.
 - Strength trends: kg per rep and estimated max over time.
 - Health Connect: read bodyweight, write workouts. Only the permissions actually used.
+- Password-protected export and import.
 
 ## Phase 5: Pain-aware training
 
@@ -72,5 +73,5 @@ Android phone and Wear OS come first, built with Flutter. iPhone and Apple Watch
 
 ## Later
 
-- iPhone app from the same Flutter code, plus a native SwiftUI Apple Watch app.
+- iPhone app (Compose Multiplatform or SwiftUI) and a SwiftUI Apple Watch app, both reusing `:core`.
 - Optional sync between devices, if users ask for it.

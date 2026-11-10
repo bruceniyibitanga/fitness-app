@@ -1,19 +1,20 @@
-# 0004: MVVM from the Flutter guide, plus a pure Dart core package
+# 0004: Android's recommended architecture, plus a pure Kotlin core
 
-**Status:** Accepted, November 2026
+**Status:** Accepted, November 2026. Revised the same month when the stack moved to Kotlin ([0005](0005-kotlin-compose-and-wear-compose.md)).
 
 ## Context
 
-We want a structure that's easy to test, easy to follow, and the same in both apps. Flutter's [architecture guide](https://docs.flutter.dev/app-architecture/guide) recommends MVVM: views, view models, repositories and services. It mentions an optional domain layer for complex logic.
+We want a structure that's easy to test, easy to follow, and the same in both apps. Android's [guide to app architecture](https://developer.android.com/topic/architecture) recommends a UI layer (screens and ViewModels with unidirectional data flow), a data layer (repositories and data sources), and an optional domain layer for logic that is complex or shared.
 
 ## Decision
 
-- **Follow the guide** in both apps. View models use `ChangeNotifier` and commands, as in the guide's case study.
-- **Shared rules go in `training_core`,** a pure Dart package with no Flutter imports and no I/O. That covers load per rep, strength estimates, pain guidance and skill paths.
-- **No state-management framework** until a real need shows up. The guide's built-in approach is enough to start.
+- **Follow the guide in both apps.** Each screen has a ViewModel that exposes one immutable UI state as a `StateFlow` and takes user actions as function calls. Composables collect the state with `collectAsStateWithLifecycle` and hold no logic.
+- **Repositories are the source of truth** for each kind of data, and expose `Flow`s and `suspend` functions. Data sources wrap one outside thing each: the database, the Keystore, the Data Layer, Health Services.
+- **Shared rules go in `:core`,** a Kotlin Multiplatform module with no Android imports and no I/O. That covers load per rep, strength estimates, pain guidance and skill paths. It is the domain layer.
+- **Dependency injection with Hilt,** Android's recommended library, added in Phase 1 once we confirm it works with AGP 9's built-in Kotlin. If it doesn't yet, we use a small hand-written container, as Android's [manual DI guide](https://developer.android.com/training/dependency-injection/manual) describes, and switch later.
 
 ## Consequences
 
-- **Fast tests.** The training rules are tested without a device and run in milliseconds in CI.
+- **Fast tests.** The training rules are tested without a device. ViewModels are tested with fake repositories and `kotlinx-coroutines-test`.
 - **One copy of the rules.** The phone and the watch can't disagree about a number.
-- **Some boilerplate.** We accept a little extra code per screen (a view model each) in exchange for screens that are testable.
+- **Some boilerplate.** A ViewModel and a UI state class per screen. We accept that in exchange for screens that are testable and predictable.

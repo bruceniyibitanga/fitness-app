@@ -18,19 +18,15 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | Bodyweight, progress photos | Health | Local database / app-private files | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
 | Settings | Low | Local database | Encrypted |
-| Database key | Secret | Android Keystore-backed secure storage | Never in code, logs or backups |
+| Database passphrase | Secret | App-private file, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
 
-The database key is 256 random bits made on the device the first time the app runs.
+The database passphrase is 256 random bits made on the device the first time the app runs. The Keystore key that protects it never leaves the device's secure hardware.
 
 ## Backups
 
-- **What Android does.** Auto Backup can copy app data to the user's Google Drive. [Android's guidance](https://developer.android.com/privacy-and-security/risks/backup-best-practices) is to leave sensitive data out, or to require end-to-end encryption. On Android 9 and later with a screen lock set, backups are encrypted with a key Google doesn't know.
-- **Our rule.** App data goes into a backup only when that client-side encryption is on (`requireFlags="clientSideEncryption"`).
-- **Open question for Phase 1.** Keystore keys can't be exported, so a backed-up database restored on a new phone couldn't be decrypted. The options are:
-  - leave the database out of backup and offer an explicit, password-protected export
-  - or wrap the database key in a way that survives a restore
-
-  We'll decide with an ADR before any real data is stored.
+- **Nothing is backed up or transferred automatically.** Both apps set `allowBackup="false"` and ship data extraction rules that exclude everything from cloud backup and from device-to-device transfer. From Android 12, `allowBackup` alone doesn't stop device transfer, so the rules are needed too.
+- **Why.** The database can only be decrypted with a Keystore key, and Keystore keys never leave the device. A backup would be unreadable on a new phone, and keeping one would only add another copy of health data to worry about. [Android's guidance](https://developer.android.com/privacy-and-security/risks/backup-best-practices) is to keep sensitive data out of backups.
+- **Moving to a new phone** works through a password-protected export the person makes themselves (Phase 4). See [ADR 0002](adr/0002-local-first-encrypted-storage.md).
 
 ## Phone and watch traffic
 
@@ -48,9 +44,12 @@ The database key is 256 random bits made on the device the first time the app ru
 ## Code and build
 
 - **Logs.** No personal data in logs. Log codes and counts, never values.
-- **Release builds.** Code shrinking and obfuscation are on.
+- **Release builds.** R8 shrinking, optimisation and obfuscation are on, and CI builds the release variant on every push.
 - **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Use Play App Signing.
-- **Dependencies.** Kept few and reviewed before adding. Versions are locked by `pubspec.lock`, and Dependabot opens update PRs weekly.
+- **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
+- **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
+- **Gradle wrapper.** The wrapper jar is checked against Gradle's published checksums in CI, and the distribution download is checked against its SHA-256.
+- **Permissions.** None yet. Each one is added only when a feature needs it, with a comment in the manifest saying which feature.
 - **CI.** Uses a read-only token and actions pinned to commit SHAs.
 - **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
 
