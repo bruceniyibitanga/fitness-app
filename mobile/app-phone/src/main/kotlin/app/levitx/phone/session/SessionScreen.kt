@@ -1,7 +1,9 @@
 package app.levitx.phone.session
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -19,8 +22,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -36,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.levitx.core.load.LoadLimits
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.SessionPlanner
 import app.levitx.core.skills.GateMeasure
@@ -45,10 +51,12 @@ import app.levitx.design.LevitxSpacing
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
+import app.levitx.phone.ui.DecimalInput
 import app.levitx.phone.ui.NumberInput
 import app.levitx.phone.ui.PrimaryButton
 import app.levitx.phone.ui.SecondaryButton
 import app.levitx.phone.ui.SectionLabel
+import app.levitx.phone.ui.formatKg
 import app.levitx.phone.ui.measureText
 import kotlinx.coroutines.delay
 
@@ -79,7 +87,7 @@ fun SessionRoute(onDone: () -> Unit, viewModel: SessionViewModel = hiltViewModel
 fun SessionScreen(
     uiState: SessionUiState,
     now: () -> Long,
-    onLogSet: (value: Int, repsInReserve: Int?) -> Unit,
+    onLogSet: (value: Int, repsInReserve: Int?, addedKg: Double, assistanceKg: Double) -> Unit,
     onEndRest: () -> Unit,
     onFinish: () -> Unit,
     onDone: () -> Unit,
@@ -117,30 +125,26 @@ fun SessionScreen(
 }
 
 @Composable
-private fun NextSet(state: SessionUiState.Active, onLogSet: (Int, Int?) -> Unit, onFinish: () -> Unit) {
+private fun NextSet(
+    state: SessionUiState.Active,
+    onLogSet: (Int, Int?, Double, Double) -> Unit,
+    onFinish: () -> Unit,
+) {
     val set = state.nextSet
     val measure = state.plan.gate.measure
     // Keyed on the set so each set starts at its target.
     var value by rememberSaveable(state.setIndex) { mutableIntStateOf(set.target) }
     val defaultReserve = if (set.isBestEffort) 0 else state.plan.repsInReserve
     var reserve by rememberSaveable(state.setIndex) { mutableIntStateOf(defaultReserve) }
+    // Load carries over from the previous set: most people keep the same vest or band.
+    val previous = state.logged.lastOrNull()
+    var addedKg by rememberSaveable(state.setIndex) { mutableDoubleStateOf(previous?.addedKg ?: 0.0) }
+    var bandId by rememberSaveable(state.setIndex) {
+        mutableStateOf(previous?.let { last -> state.bands.firstOrNull { it.assistanceKg == last.assistanceKg }?.id })
+    }
+    val assistanceKg = state.bands.firstOrNull { it.id == bandId }?.assistanceKg ?: 0.0
 
-    SectionLabel(stringResource(R.string.session_set_label, state.setIndex + 1, state.plan.sets.size))
-    Text(text = measureText(measure, set.target), style = LevitxType.Display)
-    Text(text = state.plan.gate.title, style = MaterialTheme.typography.titleMedium)
-    Text(
-        text = if (set.isBestEffort) {
-            stringResource(R.string.session_best_effort_instructions)
-        } else {
-            pluralStringResource(
-                R.plurals.session_work_instructions,
-                state.plan.repsInReserve,
-                state.plan.repsInReserve,
-            )
-        },
-        style = MaterialTheme.typography.bodyLarge,
-        color = LevitxColors.TextSoft,
-    )
+    SetHeader(state)
 
     NumberInput(
         value = value,
@@ -158,16 +162,50 @@ private fun NextSet(state: SessionUiState.Active, onLogSet: (Int, Int?) -> Unit,
     if (measure == GateMeasure.REPS) {
         ReserveChooser(selected = reserve, onSelect = { reserve = it })
     }
+    if (state.tracksLoad) {
+        LoadChooser(
+            state = state,
+            addedKg = addedKg,
+            onAddedKgChange = { addedKg = it },
+            bandId = bandId,
+            onBandChange = { bandId = it },
+            assistanceKg = assistanceKg,
+        )
+    }
 
     Spacer(Modifier.height(LevitxSpacing.Small))
     PrimaryButton(
         text = stringResource(R.string.session_log_set),
-        onClick = { onLogSet(value, if (measure == GateMeasure.REPS) reserve else null) },
+        onClick = {
+            onLogSet(value, if (measure == GateMeasure.REPS) reserve else null, addedKg, assistanceKg)
+        },
     )
     LoggedSoFar(state)
     if (state.logged.isNotEmpty()) {
         TextButton(onClick = onFinish) { Text(stringResource(R.string.session_end_early)) }
     }
+}
+
+/** Which set this is, its target, and how hard to push. */
+@Composable
+private fun SetHeader(state: SessionUiState.Active) {
+    val set = state.nextSet
+    SectionLabel(stringResource(R.string.session_set_label, state.setIndex + 1, state.plan.sets.size))
+    Text(text = measureText(state.plan.gate.measure, set.target), style = LevitxType.Display)
+    Text(text = state.plan.gate.title, style = MaterialTheme.typography.titleMedium)
+    Text(
+        text = if (set.isBestEffort) {
+            stringResource(R.string.session_best_effort_instructions)
+        } else {
+            pluralStringResource(
+                R.plurals.session_work_instructions,
+                state.plan.repsInReserve,
+                state.plan.repsInReserve,
+            )
+        },
+        style = MaterialTheme.typography.bodyLarge,
+        color = LevitxColors.TextSoft,
+    )
 }
 
 /** "Reps left in the tank" as one tap: 0, 1, 2, 3 or 4+. */
@@ -195,6 +233,73 @@ private fun ReserveChooser(selected: Int, onSelect: (Int) -> Unit) {
                 )
             }
         }
+    }
+}
+
+/**
+ * Vest or belt weight, and which band (if any), with the load per rep they
+ * add up to. The load is the number that makes progress visible when the reps
+ * stay the same but the help goes down or the weight goes up.
+ */
+@Composable
+private fun LoadChooser(
+    state: SessionUiState.Active,
+    addedKg: Double,
+    onAddedKgChange: (Double) -> Unit,
+    bandId: String?,
+    onBandChange: (String?) -> Unit,
+    assistanceKg: Double,
+) {
+    DecimalInput(
+        value = addedKg,
+        onValueChange = onAddedKgChange,
+        label = stringResource(R.string.session_added_weight_label),
+        max = LoadLimits.MAX_MODIFIER_KG,
+    )
+    if (state.bands.isNotEmpty()) {
+        Column(verticalArrangement = Arrangement.spacedBy(LevitxSpacing.Small)) {
+            SectionLabel(stringResource(R.string.session_band_label))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(LevitxSpacing.Small),
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+            ) {
+                FilterChip(
+                    selected = bandId == null,
+                    onClick = { onBandChange(null) },
+                    label = { Text(stringResource(R.string.session_band_none)) },
+                )
+                state.bands.forEach { band ->
+                    FilterChip(
+                        selected = bandId == band.id,
+                        onClick = { onBandChange(band.id) },
+                        label = {
+                            Text(stringResource(R.string.session_band_choice, band.name, formatKg(band.assistanceKg)))
+                        },
+                    )
+                }
+            }
+        }
+    }
+    val load = LoggedSet(0, null, false, addedKg = addedKg, assistanceKg = assistanceKg)
+        .loadPerRep(state.plan.gate, state.bodyweightKg)
+    Text(
+        text = when {
+            load == null -> stringResource(R.string.session_load_needs_bodyweight)
+
+            load.isEstimate || assistanceKg > 0.0 ->
+                stringResource(R.string.session_load_estimate, formatKg(load.totalKg))
+
+            else -> stringResource(R.string.session_load, formatKg(load.totalKg))
+        },
+        style = MaterialTheme.typography.titleMedium,
+        color = if (load == null) LevitxColors.TextMuted else LevitxColors.Text,
+    )
+    if (assistanceKg > 0.0) {
+        Text(
+            text = stringResource(R.string.session_band_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = LevitxColors.TextMuted,
+        )
     }
 }
 
@@ -259,12 +364,12 @@ private fun LoggedSoFar(state: SessionUiState.Active) {
         SectionLabel(stringResource(R.string.session_done_so_far))
         state.logged.forEachIndexed { index, set ->
             val amount = measureText(state.plan.gate.measure, set.value)
+            val line = set.repsInReserve
+                ?.let { stringResource(R.string.session_logged_with_reserve, index + 1, amount, it) }
+                ?: stringResource(R.string.session_logged, index + 1, amount)
+            val load = set.loadPerRep(state.plan.gate, state.bodyweightKg)
             Text(
-                text =
-                    set.repsInReserve?.let {
-                        stringResource(R.string.session_logged_with_reserve, index + 1, amount, it)
-                    }
-                        ?: stringResource(R.string.session_logged, index + 1, amount),
+                text = load?.let { stringResource(R.string.session_logged_load, line, formatKg(it.totalKg)) } ?: line,
                 style = MaterialTheme.typography.bodyMedium,
                 color = LevitxColors.TextMuted,
             )
@@ -293,6 +398,13 @@ private fun Summary(state: SessionUiState.Finished, onDone: () -> Unit) {
         style = MaterialTheme.typography.bodyLarge,
         color = LevitxColors.TextSoft,
     )
+    if (state.usedBand) {
+        Text(
+            text = stringResource(R.string.session_summary_band_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = LevitxColors.TextMuted,
+        )
+    }
     Spacer(Modifier.height(LevitxSpacing.Small))
     PrimaryButton(stringResource(R.string.session_done), onDone)
 }
@@ -310,7 +422,7 @@ private fun SessionScreenPreview() {
                 restEndsAtElapsedMillis = null,
             ),
             now = { 0L },
-            onLogSet = { _, _ -> },
+            onLogSet = { _, _, _, _ -> },
             onEndRest = {},
             onFinish = {},
             onDone = {},

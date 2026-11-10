@@ -50,11 +50,12 @@ fun HomeRoute(
     onStartSession: () -> Unit,
     onViewPath: () -> Unit,
     onChooseGoal: () -> Unit,
+    onOpenEquipment: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     // Stops collecting while the app is in the background.
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(uiState, onStartSession, onViewPath, onChooseGoal)
+    HomeScreen(uiState, onStartSession, onViewPath, onChooseGoal, onOpenEquipment)
 }
 
 /** The home screen: the goal, the gate in front of the person, and today's session. */
@@ -64,6 +65,7 @@ fun HomeScreen(
     onStartSession: () -> Unit,
     onViewPath: () -> Unit,
     onChooseGoal: () -> Unit,
+    onOpenEquipment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -86,7 +88,11 @@ fun HomeScreen(
 
                 HomeUiState.NoGoal -> PrimaryButton(stringResource(R.string.home_choose_goal), onChooseGoal)
 
-                is HomeUiState.Ready -> TrainingDayContent(uiState.day, onStartSession, onViewPath, onChooseGoal)
+                is HomeUiState.Ready -> {
+                    TrainingDayContent(uiState.day, onStartSession, onViewPath, onChooseGoal)
+                    if (!uiState.hasBodyweight) BodyweightPrompt(onOpenEquipment)
+                    TextButton(onClick = onOpenEquipment) { Text(stringResource(R.string.home_equipment)) }
+                }
             }
         }
     }
@@ -132,6 +138,25 @@ private fun TrainingDayContent(
     TodayCard(plan)
     PrimaryButton(stringResource(R.string.home_start_session), onStartSession)
     TextButton(onClick = onViewPath) { Text(stringResource(R.string.home_view_path)) }
+}
+
+/** Asks for bodyweight, which every load-per-rep figure needs. */
+@Composable
+private fun BodyweightPrompt(onOpenEquipment: () -> Unit) {
+    Surface(
+        onClick = onOpenEquipment,
+        color = LevitxColors.Surface,
+        border = BorderStroke(Dp.Hairline, LevitxColors.Ice),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(LevitxSpacing.XSmall),
+            modifier = Modifier.padding(LevitxSpacing.Medium),
+        ) {
+            SectionLabel(stringResource(R.string.home_bodyweight_label), color = LevitxColors.Ice)
+            Text(stringResource(R.string.home_bodyweight_prompt), style = MaterialTheme.typography.bodyLarge)
+        }
+    }
 }
 
 /** Today's session in two lines: the work sets, then the best effort. */
@@ -185,6 +210,7 @@ private fun HomeScreenPreview() {
             onStartSession = {},
             onViewPath = {},
             onChooseGoal = {},
+            onOpenEquipment = {},
         )
     }
 }

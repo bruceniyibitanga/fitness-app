@@ -23,6 +23,7 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
                     gateId = session.gateId,
                     startedAtEpochMillis = session.startedAtEpochMillis,
                     finishedAtEpochMillis = session.finishedAtEpochMillis,
+                    bodyweightKg = session.bodyweightKg,
                 ),
             )
             database.sessionDao().insertSets(
@@ -33,14 +34,19 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
                         value = set.value,
                         repsInReserve = set.repsInReserve,
                         isBestEffort = set.isBestEffort,
+                        addedKg = set.addedKg,
+                        assistanceKg = set.assistanceKg,
                     )
                 },
             )
-            database.gateBestDao().recordBest(
-                gateId = session.gateId,
-                best = session.best,
-                achievedAtEpochMillis = session.finishedAtEpochMillis,
-            )
+            // An all-assisted session has no best to record.
+            if (session.best > 0) {
+                database.gateBestDao().recordBest(
+                    gateId = session.gateId,
+                    best = session.best,
+                    achievedAtEpochMillis = session.finishedAtEpochMillis,
+                )
+            }
         }
     }
 }

@@ -2,6 +2,8 @@ package app.levitx.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import app.levitx.data.equipment.EquipmentRepository
+import app.levitx.data.equipment.RoomEquipmentRepository
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.goal.RoomGoalRepository
 import app.levitx.data.progress.ProgressRepository
@@ -35,6 +37,9 @@ internal interface DataModule {
 
     @Binds
     fun bindSessionRepository(repository: RoomSessionRepository): SessionRepository
+
+    @Binds
+    fun bindEquipmentRepository(repository: RoomEquipmentRepository): EquipmentRepository
 
     companion object {
         @Provides

@@ -16,6 +16,6 @@ class FakeSessionRepository(private val progress: FakeProgressRepository) : Sess
 
     override suspend fun saveCompletedSession(session: CompletedSession) {
         saved += session
-        progress.recordBest(session.gateId, session.best)
+        if (session.best > 0) progress.recordBest(session.gateId, session.best)
     }
 }

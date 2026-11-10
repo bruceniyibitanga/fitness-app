@@ -99,7 +99,8 @@ jobs:
       # committed so migrations can be written and tested against it. The new
       # schema is printed so it can be copied in.
       - name: Check Room schema is committed
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        # Runs even when another module failed: the schema comes from :data alone.
+        if: ${{ !cancelled() }}
         run: |
           changed=$(git status --porcelain --untracked-files=all -- data/schemas)
           if [ -n "$changed" ]; then

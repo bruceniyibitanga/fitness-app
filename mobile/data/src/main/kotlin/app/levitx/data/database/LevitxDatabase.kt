@@ -16,12 +16,16 @@ import androidx.room.RoomDatabase
         ActiveGoalEntity::class,
         TrainingSessionEntity::class,
         LoggedSetEntity::class,
+        BodyweightEntity::class,
+        BandEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
         // Version 2 only adds tables, which Room can migrate by itself.
         AutoMigration(from = 1, to = 2),
+        // Version 3 adds tables and columns with defaults, which Room can also migrate by itself.
+        AutoMigration(from = 2, to = 3),
     ],
 )
 internal abstract class LevitxDatabase : RoomDatabase() {
@@ -33,4 +37,7 @@ internal abstract class LevitxDatabase : RoomDatabase() {
 
     /** Access to finished sessions and their sets. */
     abstract fun sessionDao(): SessionDao
+
+    /** Access to bodyweight and bands. */
+    abstract fun equipmentDao(): EquipmentDao
 }
