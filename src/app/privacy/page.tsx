@@ -3,8 +3,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy · LEVER",
-  description: "What LEVER collects on this website and what we do with it.",
+  title: "Privacy · Levitx",
+  description: "What Levitx collects on this website and what we do with it.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -17,11 +17,11 @@ const sections = [
   },
   {
     title: "What we use it for",
-    body: "To email you when early access opens and to send occasional updates about LEVER. We don't sell or share your email.",
+    body: "To email you when early access opens and to send occasional updates about Levitx. We don't sell or share your email.",
   },
   {
     title: "Where it's stored",
-    body: "With Kit (kit.com), the email service we use to send updates. Our server sends it there over HTTPS. Kit stores it under its own privacy policy.",
+    body: "With Plunk (useplunk.com), the email service we use to send updates. Our server sends it there over HTTPS. Plunk stores it under its own privacy policy, and may store it outside Australia.",
   },
   {
     title: "Removing it",

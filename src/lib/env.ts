@@ -13,8 +13,9 @@ function optional<T extends z.ZodType>(type: T) {
  */
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  KIT_API_KEY: optional(z.string().min(10)),
-  KIT_TAG_ID: optional(z.string().regex(/^\d+$/, "must be the numeric tag ID")),
+  // The secret key, which Plunk's contacts endpoint requires. The check stops
+  // the public key (pk_) being pasted here by mistake.
+  PLUNK_SECRET_KEY: optional(z.string().regex(/^sk_\S{10,}$/, "must be the Plunk secret key (sk_...)")),
   SUPABASE_URL: optional(z.url()),
   SUPABASE_SERVICE_ROLE_KEY: optional(z.string().min(20)),
 });

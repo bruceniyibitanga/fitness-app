@@ -9,38 +9,58 @@ export interface WaitlistRepository {
 const TIMEOUT_MS = 5_000;
 
 /**
- * Kit (formerly ConvertKit). Free for up to 10,000 subscribers, and it handles
- * unsubscribes and the launch email, so there's no database to run.
- * Creating a subscriber is an upsert, so a repeat signup is harmless.
- * If a tag ID is set, the subscriber is tagged so the waitlist is easy to filter.
+ * Plunk (useplunk.com). Its free tier covers the launch email, and it handles
+ * unsubscribes, so there's no database to run.
+ *
+ * `POST /contacts` is an upsert matched by email, so a repeat signup updates
+ * the same contact instead of failing. It needs the secret key (`sk_`), which
+ * is why this only ever runs on the server.
+ *
+ * Contacts get `waitlist: true` in their data, so a Plunk segment on that
+ * field gives the launch list.
  */
-export class KitWaitlistRepository implements WaitlistRepository {
-  private static readonly API = "https://api.kit.com/v4";
+export class PlunkWaitlistRepository implements WaitlistRepository {
+  private static readonly API = "https://next-api.useplunk.com";
 
   constructor(
-    private readonly apiKey: string,
-    private readonly tagId?: string,
+    private readonly secretKey: string,
     private readonly fetchFn: typeof fetch = fetch,
   ) {}
 
   async add(email: string): Promise<void> {
-    await this.post("/subscribers", { email_address: email });
-    if (this.tagId) {
-      await this.post(`/tags/${this.tagId}/subscribers`, { email_address: email });
-    }
-  }
-
-  private async post(path: string, body: Record<string, string>) {
-    const response = await this.fetchFn(`${KitWaitlistRepository.API}${path}`, {
+    const response = await this.fetchFn(`${PlunkWaitlistRepository.API}/contacts`, {
       method: "POST",
-      headers: { "X-Kit-Api-Key": this.apiKey, "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body),
+      headers: {
+        Authorization: `Bearer ${this.secretKey}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        // Joining the list is the opt-in. Set it explicitly: Plunk's docs
+        // disagree on whether new contacts default to subscribed.
+        subscribed: true,
+        data: { waitlist: true },
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!response.ok) {
-      throw new Error(`Kit request to ${path.split("/")[1]} failed with status ${response.status}`);
+      // Only Plunk's error code goes in the message, never the email or the key.
+      const code = await errorCode(response);
+      throw new Error(`Plunk contact request failed with status ${response.status}${code ? ` (${code})` : ""}`);
     }
+  }
+}
+
+/** Reads `error.code` from a Plunk error body, if there is one. */
+async function errorCode(response: Response): Promise<string | undefined> {
+  try {
+    const body: unknown = await response.json();
+    const code = (body as { error?: { code?: unknown } }).error?.code;
+    return typeof code === "string" && /^[A-Z_]{1,64}$/.test(code) ? code : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -83,17 +103,17 @@ export class DevLogWaitlistRepository implements WaitlistRepository {
   }
 }
 
-/** Picks storage from whichever keys are set. Kit first, then Supabase. */
+/** Picks storage from whichever keys are set. Plunk first, then Supabase. */
 export function createWaitlistRepository(env: ServerEnv): WaitlistRepository {
-  if (env.KIT_API_KEY) {
-    return new KitWaitlistRepository(env.KIT_API_KEY, env.KIT_TAG_ID);
+  if (env.PLUNK_SECRET_KEY) {
+    return new PlunkWaitlistRepository(env.PLUNK_SECRET_KEY);
   }
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     return new SupabaseWaitlistRepository(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
   }
   if (env.NODE_ENV === "production") {
     // Fail loudly rather than drop signups on the floor.
-    throw new Error("Waitlist storage is not configured. Set KIT_API_KEY.");
+    throw new Error("Waitlist storage is not configured. Set PLUNK_SECRET_KEY.");
   }
   return new DevLogWaitlistRepository();
 }
