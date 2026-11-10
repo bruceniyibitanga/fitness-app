@@ -23,8 +23,11 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 /** Combines the active goal, the person's bests and whether bodyweight is known into [HomeUiState]. */
 @HiltViewModel
-class HomeViewModel @Inject constructor(goalRepository: GoalRepository, progressRepository: ProgressRepository) :
-    ViewModel() {
+class HomeViewModel @Inject constructor(
+    goalRepository: GoalRepository,
+    progressRepository: ProgressRepository,
+    equipmentRepository: EquipmentRepository,
+) : ViewModel() {
     /** The current screen state. Starts as [HomeUiState.Loading]. */
     val uiState: StateFlow<HomeUiState> =
         combine(
