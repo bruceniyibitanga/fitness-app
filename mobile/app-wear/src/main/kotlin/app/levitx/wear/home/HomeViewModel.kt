@@ -7,11 +7,11 @@ import app.levitx.core.skills.SkillCatalogue
 import app.levitx.core.skills.SkillPath
 import app.levitx.data.progress.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
 /**
  * Keep collecting for this long after the screen stops listening, so a

@@ -13,10 +13,6 @@ sealed interface HomeUiState {
      * @property gateNumber 1-based position of the current gate.
      * @property gateCount Gates on the path.
      */
-    data class Ready(
-        val skillName: String,
-        val gateTitle: String?,
-        val gateNumber: Int,
-        val gateCount: Int,
-    ) : HomeUiState
+    data class Ready(val skillName: String, val gateTitle: String?, val gateNumber: Int, val gateCount: Int) :
+        HomeUiState
 }

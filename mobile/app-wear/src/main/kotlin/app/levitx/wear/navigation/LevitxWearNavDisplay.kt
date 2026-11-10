@@ -9,11 +9,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
 import app.levitx.wear.home.HomeRoute
-import kotlinx.serialization.Serializable
-
-/** The watch home screen: the next gate at a glance. */
-@Serializable
-data object HomeKey : NavKey
 
 /**
  * The watch app's navigation, built on Navigation 3 as the Wear OS docs
@@ -24,7 +19,7 @@ data object HomeKey : NavKey
  */
 @Composable
 fun LevitxWearNavDisplay() {
-    val backStack = rememberNavBackStack(HomeKey)
+    val backStack = rememberNavBackStack(Destination.Home)
     val swipeToDismiss = rememberSwipeDismissableSceneStrategy<NavKey>()
     NavDisplay(
         backStack = backStack,
@@ -35,7 +30,7 @@ fun LevitxWearNavDisplay() {
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            entry<HomeKey> { HomeRoute() }
+            entry<Destination.Home> { HomeRoute() }
         },
     )
 }

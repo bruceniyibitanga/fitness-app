@@ -53,6 +53,7 @@ fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier) {
             // Progress is local, so loading takes milliseconds. Showing a
             // spinner for that long would only flicker, so show nothing.
             HomeUiState.Loading -> Unit
+
             is HomeUiState.Ready -> PathSummary(
                 state = uiState,
                 modifier = Modifier

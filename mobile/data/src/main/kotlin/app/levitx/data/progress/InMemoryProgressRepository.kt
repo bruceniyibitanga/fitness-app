@@ -2,13 +2,13 @@ package app.levitx.data.progress
 
 import app.levitx.core.skills.PathProgress
 import app.levitx.core.skills.SkillPath
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Keeps bests in memory. They are lost when the app closes.
