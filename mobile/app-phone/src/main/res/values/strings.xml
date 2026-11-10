@@ -2,10 +2,92 @@
 <resources>
     <string name="app_name" translatable="false">Levitx</string>
 
+    <!-- Shared -->
+    <string name="back">← Back</string>
+    <string name="decrease">−</string>
+    <string name="increase">+</string>
+    <string name="seconds_short">%1$d s</string>
+    <string name="minutes_short">%1$d min</string>
+    <string name="clock_format">%1$d:%2$02d</string>
+    <plurals name="reps">
+        <item quantity="one">%1$d rep</item>
+        <item quantity="other">%1$d reps</item>
+    </plurals>
+    <string name="input_reps_done">REPS DONE</string>
+    <string name="input_seconds_held">SECONDS HELD</string>
+
+    <!-- Goal picker -->
+    <string name="goal_label">YOUR GOAL</string>
+    <string name="goal_title">What are you working toward?</string>
+    <string name="goal_body">Pick one. A quick test finds where you start, and every session moves you one gate closer.</string>
+    <plurals name="goal_card_detail">
+        <item quantity="one">%1$d gate · starts with %2$s</item>
+        <item quantity="other">%1$d gates · starts with %2$s</item>
+    </plurals>
+    <string name="goal_more_coming">Front lever, planche and handstand paths are on the way.</string>
+
+    <!-- Starting test -->
+    <string name="test_label">QUICK TEST · GATE %1$d OF %2$d</string>
+    <string name="test_safety">Warm up first. Stop any test that hurts.</string>
+    <string name="test_instructions_reps">Do as many clean reps as you can in one set, then enter how many you got.</string>
+    <string name="test_instructions_hold">Hold for as long as you can with good form, then enter the seconds.</string>
+    <string name="test_save">Save and continue</string>
+    <string name="test_cant_do_it">I can\'t do this yet</string>
+    <string name="test_done_label">YOU START HERE</string>
+    <string name="test_done_body">Gate %1$d. You\'ll train toward %2$s, a little more each session.</string>
+    <string name="test_done_all_passed">You passed every gate.</string>
+    <string name="test_done_continue">See today\'s training</string>
+
     <!-- Home -->
     <string name="home_path_label">YOUR PATH</string>
     <string name="home_gate_label">GATE %1$d OF %2$d</string>
+    <string name="home_best">Best %1$s of %2$s</string>
+    <string name="home_today_label">TODAY</string>
+    <plurals name="home_today_work">
+        <item quantity="one">%1$d set of %2$s</item>
+        <item quantity="other">%1$d sets of %2$s</item>
+    </plurals>
+    <string name="home_today_best_effort">Then one best effort, aiming for %1$s</string>
+    <string name="home_today_rest">%1$s rest between sets</string>
+    <string name="home_start_session">Start session</string>
+    <string name="home_view_path">See the whole path</string>
     <string name="home_path_complete">Path complete. Time to pick your next goal.</string>
+    <string name="home_choose_next_goal">Choose your next goal</string>
+    <string name="home_choose_goal">Choose a goal</string>
+
+    <!-- Session -->
+    <string name="session_set_label">SET %1$d OF %2$d</string>
+    <plurals name="session_work_instructions">
+        <item quantity="one">Stop with about %1$d rep left in the tank. Clean reps only.</item>
+        <item quantity="other">Stop with about %1$d reps left in the tank. Clean reps only.</item>
+    </plurals>
+    <string name="session_best_effort_instructions">Best effort: as many as you can with good form. Stop when your form breaks, not after.</string>
+    <string name="session_reserve_label">REPS LEFT IN THE TANK</string>
+    <string name="session_reserve_max">%1$d+</string>
+    <string name="session_log_set">Log set</string>
+    <string name="session_rest_label">REST</string>
+    <string name="session_rest_next">Next: set %1$d of %2$d, %3$s</string>
+    <string name="session_skip_rest">Skip rest</string>
+    <string name="session_done_so_far">DONE SO FAR</string>
+    <string name="session_logged">Set %1$d: %2$s</string>
+    <string name="session_logged_with_reserve">Set %1$d: %2$s, reps left: %3$d</string>
+    <string name="session_end_early">End session and save</string>
+    <string name="session_summary_label">SESSION SAVED</string>
+    <string name="session_new_best">New best: %1$s</string>
+    <string name="session_best_today">Today\'s best: %1$s</string>
+    <string name="session_gate_passed">You passed %1$s. The next gate is ready.</string>
+    <string name="session_progress">That\'s progress toward %1$s.</string>
+    <string name="session_keep_going">Your best is still %1$s. Every session counts, even the flat ones.</string>
+    <string name="session_done">Done</string>
+    <string name="session_nothing">Nothing to train right now.</string>
+    <string name="session_back_home">Back to home</string>
+
+    <!-- Path -->
+    <string name="path_label">THE WHOLE PATH</string>
+    <string name="path_status_passed">PASSED</string>
+    <string name="path_status_current">WORKING ON IT</string>
+    <string name="path_status_locked">LATER</string>
+    <string name="path_best">Best %1$s</string>
 
     <!-- Errors -->
     <string name="data_unavailable">Your training data couldn\'t be unlocked on this device. Nothing was changed or deleted. Close the app and open it again to retry.</string>

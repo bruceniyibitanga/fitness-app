@@ -39,6 +39,9 @@ fun HomeScreen(uiState: HomeUiState) {
             if (uiState is HomeUiState.Unavailable) {
                 item { Text(stringResource(R.string.data_unavailable)) }
             }
+            if (uiState is HomeUiState.NoGoal) {
+                item { Text(stringResource(R.string.home_no_goal)) }
+            }
             if (uiState is HomeUiState.Ready) {
                 item { ListHeader { Text(uiState.skillName) } }
                 val gateTitle = uiState.gateTitle

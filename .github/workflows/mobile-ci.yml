@@ -156,3 +156,9 @@ jobs:
           disable-animations: true
           working-directory: mobile
           script: ./gradlew :data:connectedDebugAndroidTest
+
+      # Gradle only links to the HTML report. Print the failing test results.
+      - name: Print failed instrumented tests
+        if: failure()
+        # The result file names contain spaces, so each file is handled on its own.
+        run: find data/build/outputs/androidTest-results -name '*.xml' -exec sh -c 'grep -q "<failure" "$1" && cat "$1"' _ {} \;

@@ -93,6 +93,7 @@ wear-compose-navigation3 = { module = "androidx.wear.compose:compose-navigation3
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 sqlcipher-android = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipher" }
 
 junit = { module = "junit:junit", version.ref = "junit" }

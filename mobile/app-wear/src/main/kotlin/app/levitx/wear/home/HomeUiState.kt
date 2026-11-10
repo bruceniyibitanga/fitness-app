@@ -8,6 +8,9 @@ sealed interface HomeUiState {
     /** The person's data couldn't be unlocked on this device. Nothing was changed. */
     data object Unavailable : HomeUiState
 
+    /** No goal on the watch yet. */
+    data object NoGoal : HomeUiState
+
     /**
      * The next gate, short enough to read in a glance.
      *

@@ -2,9 +2,13 @@ package app.levitx.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import app.levitx.data.goal.GoalRepository
+import app.levitx.data.goal.RoomGoalRepository
 import app.levitx.data.progress.ProgressRepository
 import app.levitx.data.progress.RoomProgressRepository
 import app.levitx.data.security.DatabaseKeyStore
+import app.levitx.data.session.RoomSessionRepository
+import app.levitx.data.session.SessionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -25,6 +29,12 @@ private const val DATABASE_KEY_FILE_NAME = "database_key.bin"
 internal interface DataModule {
     @Binds
     fun bindProgressRepository(repository: RoomProgressRepository): ProgressRepository
+
+    @Binds
+    fun bindGoalRepository(repository: RoomGoalRepository): GoalRepository
+
+    @Binds
+    fun bindSessionRepository(repository: RoomSessionRepository): SessionRepository
 
     companion object {
         @Provides

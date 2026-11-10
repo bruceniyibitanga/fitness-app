@@ -18,7 +18,7 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 
 **Done when** CI is green and these docs are reviewed.
 
-## Phase 1: Design system and app skeleton (this phase)
+## Phase 1: Design system and app skeleton
 
 - `:design` module with the design tokens (colours, bundled Archivo and JetBrains Mono, brand text styles, spacing). Phone and watch themes are built from it. Done.
 - Shared Gradle settings in convention plugins in `build-logic/`. Done.
@@ -29,12 +29,13 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 
 **Done when** both apps open on an emulator with the real theme and read and write the encrypted database.
 
-## Phase 2: The core loop on the phone
+## Phase 2: The core loop on the phone (this phase)
 
-- Goal picker (muscle-up first) and the starting test.
-- Today's session, live set logging with reps in reserve, and rest timer.
-- Path screen with gates.
-- Load modifiers: vest, belt and band (with band calibration).
+- Goal picker: first pull-up and muscle-up paths. Done.
+- Starting test: gate by gate, stopping at the first gate not passed. Done.
+- Today's session: work sets at about 70% of the current best with 2 reps in reserve, then one best-effort set. Live logging with reps in reserve, and a rest timer that keeps time on the device's elapsed clock. Done.
+- Path screen with every gate and the person's best. Done.
+- Still to do: load modifiers (vest, belt and band, with band calibration) and bodyweight, so every set has a load in kilograms.
 
 **Done when** someone can pick a goal, take the test and finish a full session on the phone.
 
