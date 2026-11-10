@@ -1,6 +1,6 @@
-# LEVER website
+# Levitx website
 
-Landing page for LEVER, an adaptive calisthenics app for iPhone and Apple Watch.
+Landing page for Levitx, an adaptive calisthenics app for Android and Wear OS (iPhone and Apple Watch later).
 
 Next.js 16 (App Router), TypeScript, Tailwind CSS 4.
 

@@ -6,11 +6,11 @@ import type { PhotoKey } from "./photos";
  */
 
 export const site = {
-  name: "LEVER",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://lever.app",
-  title: "LEVER: Adaptive Calisthenics App for iPhone and Apple Watch",
+  name: "Levitx",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://levitx.app",
+  title: "Levitx: Adaptive Calisthenics App for Android and Wear OS",
   description:
-    "A calisthenics app that tests what you can do, maps the steps to your goal and adjusts every session. Muscle-up, front lever, planche and handstand, on iPhone and Apple Watch.",
+    "A calisthenics app that tests what you can do, maps the steps to your goal and adjusts every session. Muscle-up, front lever, planche and handstand, on Android phones and Wear OS watches.",
   city: "Brisbane",
 };
 
@@ -22,10 +22,10 @@ export const nav = [
 ];
 
 export const hero = {
-  eyebrow: "Adaptive calisthenics app · iPhone + Apple Watch",
+  eyebrow: "Adaptive calisthenics app · Android + Wear OS",
   lead: "From where you are to your first",
   goals: ["muscle-up", "front lever", "handstand", "pull-up"],
-  body: "LEVER tests what you can do, maps the steps to your goal, and adjusts every session to how you're actually performing.",
+  body: "Levitx tests what you can do, maps the steps to your goal, and adjusts every session to how you're actually performing.",
   card: {
     title: "Today · pull-ups",
     badge: "Adjusted",
@@ -110,7 +110,7 @@ export const calculator = {
   number: "04",
   label: "Push-up weight calculator",
   title: "How much does a push-up weigh?",
-  lede: "Between 41% and 74% of you, depending on the version. LEVER tracks it for every set.",
+  lede: "Between 41% and 74% of you, depending on the version. Levitx tracks it for every set.",
   source: "Estimate from force-plate studies (Ebben 2011, Suprak 2011). Vest counted at the same share.",
   sourceUrl: "https://ojs.ub.uni-konstanz.de/cpa/article/view/4457",
 };
@@ -120,7 +120,7 @@ export const watch = {
   number: "05",
   label: "Watch",
   title: "Phone stays in the bag.",
-  body: "Reps, holds and rest run on Apple Watch. It buzzes when you pass your best hold.",
+  body: "Reps, holds and rest run on your Wear OS watch. It buzzes when you pass your best hold.",
   photo: "mountain" as PhotoKey,
 };
 
@@ -149,10 +149,10 @@ export const faq = {
   label: "FAQ",
   title: "Short answers.",
   items: [
-    { q: "What equipment do I need?", a: "A bar you can hang from. Rings, bands and a weighted vest are optional, and LEVER counts them in your load when you use them." },
+    { q: "What equipment do I need?", a: "A bar you can hang from. Rings, bands and a weighted vest are optional, and Levitx counts them in your load when you use them." },
     { q: "Is it for beginners?", a: "Yes. If you can't do a pull-up yet, your path starts with moves you can do today. The detail is one tap deeper for people who want it." },
-    { q: "Does it work on Apple Watch?", a: "Apple Watch first, with full sessions that don't need your phone. Wear OS comes after." },
-    { q: "Is LEVER a medical app?", a: "No. Pain-aware mode adjusts how you load a move and can follow a plan from your physio. It doesn't diagnose or treat anything." },
+    { q: "Which phones and watches does it work on?", a: "Android phones and Wear OS watches first, with full sessions on the watch that don't need your phone. iPhone and Apple Watch come after." },
+    { q: "Is Levitx a medical app?", a: "No. Pain-aware mode adjusts how you load a move and can follow a plan from your physio. It doesn't diagnose or treat anything." },
   ],
 };
 
@@ -170,7 +170,7 @@ export const waitlistCopy = {
 
 export const footer = {
   disclaimer:
-    "LEVER is a training app, not a medical device. It doesn't diagnose or treat injuries. If pain isn't settling, see a doctor or physiotherapist.",
+    "Levitx is a training app, not a medical device. It doesn't diagnose or treat injuries. If pain isn't settling, see a doctor or physiotherapist.",
   links: [
     { href: "/#skills", label: "Guides" },
     { href: "/#calculator", label: "Calculators" },
