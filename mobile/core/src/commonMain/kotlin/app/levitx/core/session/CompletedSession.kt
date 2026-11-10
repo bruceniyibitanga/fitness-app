@@ -89,4 +89,5 @@ public data class CompletedSession(
         get() = sets.filter { it.countsTowardGate }.maxOfOrNull { it.value } ?: 0
 }
 
-private fun Double.isValidModifier(): Boolean = isFinite() && this in 0.0..LoadLimits.MAX_MODIFIER_KG
+/** True for a vest, belt or band figure the load rules accept. */
+internal fun Double.isValidModifier(): Boolean = isFinite() && this in 0.0..LoadLimits.MAX_MODIFIER_KG

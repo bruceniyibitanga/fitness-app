@@ -2,10 +2,11 @@
 <!--
   Watch app manifest.
 
-  No permissions are requested yet. Body sensors and exercise permissions are
-  added in Phase 3 with the workout screen that uses them.
+  No permissions are requested yet. Heart rate and exercise permissions are
+  added with the Health Services workout that uses them.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -20,12 +21,15 @@
         android:theme="@style/Theme.Levitx">
 
         <!--
-          The watch app works without the phone nearby: workouts are recorded
-          on the watch and synced when the phone is reachable.
+          Not standalone, in Google Play's sense: the goal is chosen in the
+          phone app and copied to the watch, so the watch app needs the phone
+          app installed. Once it has a goal, the watch runs whole sessions with
+          the phone out of reach and syncs them later. Flip this to true if
+          the watch ever gets its own goal picker.
         -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
-            android:value="true" />
+            android:value="false" />
 
         <!--
           An empty task affinity keeps the app's entry in the watch's recents
@@ -40,5 +44,28 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Receives the goal, bests and bands from the phone, and the phone's
+          confirmations that sessions arrived, over the Wearable Data Layer.
+          The paths must match SyncPaths in :sync.
+
+          It has to be exported for Google Play services to reach it. That is
+          safe: WearableListenerService only accepts calls from Google Play
+          services, and Play services only delivers data written by a copy of
+          this app with the same package name and signing key.
+        -->
+        <service
+            android:name=".sync.PhoneDataListenerService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/levitx/state" />
+                <data android:pathPrefix="/levitx/acks/" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

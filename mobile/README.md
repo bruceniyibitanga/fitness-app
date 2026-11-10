@@ -15,10 +15,14 @@ Start with these:
   - load per rep (`calculateEffectiveLoad`, `LoadCatalogue`), with vests, belts and bands
   - estimated one-rep max (`estimateOneRepMax`), the Epley formula with reps in reserve
   - pain guidance (`assessPain`), the pain-monitoring model with red flags
-  - skill paths (`SkillPath`, `SkillCatalogue.muscleUp`)
+  - skill paths (`SkillPath`, `SkillCatalogue`)
+  - session plans and the rules for moving through one (`SessionPlanner`, `SessionRun`)
 - **`design/`**: colours, fonts, brand text styles and spacing, shared by both apps.
-- **`data/`**: `ProgressRepository`, backed by an encrypted Room database whose key is protected by the Android Keystore.
-- **`app-phone/`** and **`app-wear/`**: the apps. Each opens to a home screen showing the next gate on the muscle-up path.
+- **`data/`**: the repositories both apps read and write through, backed by an encrypted Room database whose key is protected by the Android Keystore.
+- **`sync/`**: keeps the phone and watch in step over the Wearable Data Layer. The goal, bests and bands go to the watch; finished sessions come back.
+- **`testing/`**: in-memory fakes of the repositories, for unit tests.
+- **`app-phone/`**: the phone app. Goal picker, starting test, sessions, the path, and bodyweight and bands.
+- **`app-wear/`**: the watch app. Runs today's session from the wrist: rep counter, hold timer, rest timer.
 - **`build-logic/`**: Gradle convention plugins with the settings every Android module shares.
 
 ## Setting up
@@ -27,6 +31,18 @@ Start with these:
 2. Open the `mobile/` folder, not the repo root. Android Studio reads the Gradle build from there.
 3. Let the Gradle sync finish. The wrapper downloads the right Gradle version and checks its checksum.
 4. Pick `app-phone` or `app-wear` in the run menu, and a phone or Wear OS emulator.
+
+### Trying phone and watch sync
+
+Sync needs a phone and a watch that are paired with each other. On emulators:
+
+1. Create a phone emulator with the Play Store, and a Wear OS emulator.
+2. Pair them in Android Studio's Device Manager (the phone emulator's menu has "Pair Wearable").
+3. Install `app-phone` on the phone and `app-wear` on the watch. Both are debug builds from the same machine, so they share a signing key, which the Data Layer requires.
+4. Choose a goal and take the starting test on the phone. The goal should appear on the watch within a few seconds.
+5. Run a session on the watch. It should show up in the phone's progress, and "1 session waiting for your phone" on the watch should clear.
+
+To watch sync happen, filter Logcat by the `LevitxSync` tag on either device. It logs counts only, never data.
 
 To pair a phone emulator with a watch emulator, use Android Studio's **Device Manager > Pair Wearable**.
 

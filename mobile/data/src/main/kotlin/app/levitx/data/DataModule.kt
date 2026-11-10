@@ -9,7 +9,10 @@ import app.levitx.data.goal.RoomGoalRepository
 import app.levitx.data.progress.ProgressRepository
 import app.levitx.data.progress.RoomProgressRepository
 import app.levitx.data.security.DatabaseKeyStore
+import app.levitx.data.session.RoomSessionDraftRepository
 import app.levitx.data.session.RoomSessionRepository
+import app.levitx.data.session.SessionDraftRepository
+import app.levitx.data.session.SessionOutbox
 import app.levitx.data.session.SessionRepository
 import dagger.Binds
 import dagger.Module
@@ -20,7 +23,9 @@ import dagger.hilt.components.SingletonComponent
 import java.io.File
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /** Name of the encrypted database key file in `noBackupFilesDir`. */
 private const val DATABASE_KEY_FILE_NAME = "database_key.bin"
@@ -39,12 +44,24 @@ internal interface DataModule {
     fun bindSessionRepository(repository: RoomSessionRepository): SessionRepository
 
     @Binds
+    fun bindSessionOutbox(repository: RoomSessionRepository): SessionOutbox
+
+    @Binds
+    fun bindSessionDraftRepository(repository: RoomSessionDraftRepository): SessionDraftRepository
+
+    @Binds
     fun bindEquipmentRepository(repository: RoomEquipmentRepository): EquipmentRepository
 
     companion object {
         @Provides
         @IoDispatcher
         fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+        // A SupervisorJob so one failed job doesn't cancel the others sharing the scope.
+        @Provides
+        @Singleton
+        @ApplicationScope
+        fun provideApplicationScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
         @Provides
         @Singleton

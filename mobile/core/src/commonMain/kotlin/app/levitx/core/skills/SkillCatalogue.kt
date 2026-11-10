@@ -112,6 +112,11 @@ public object SkillCatalogue {
 
     private val pathsById: Map<String, SkillPath> = all.associateBy { it.id }
 
+    private val gatesById: Map<String, Gate> = all.flatMap { it.gates }.associateBy { it.id }
+
     /** Finds a path by its [SkillPath.id], or returns null. */
     public fun byId(id: String): SkillPath? = pathsById[id]
+
+    /** Finds a gate on any path by its [Gate.id], or returns null. */
+    public fun gateById(id: String): Gate? = gatesById[id]
 }

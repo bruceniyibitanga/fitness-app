@@ -25,6 +25,10 @@ class FakeEquipmentRepository(bodyweightKg: Double? = null, bands: List<Band> = 
         bandList.update { it + Band(id = "band-${nextId++}", name = name, assistanceKg = assistanceKg) }
     }
 
+    override suspend fun replaceBands(bands: List<Band>) {
+        bandList.value = bands
+    }
+
     override suspend fun deleteBand(id: String) {
         bandList.update { bands -> bands.filterNot { it.id == id } }
     }

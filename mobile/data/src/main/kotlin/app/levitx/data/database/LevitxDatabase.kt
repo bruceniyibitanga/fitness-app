@@ -18,14 +18,19 @@ import androidx.room.RoomDatabase
         LoggedSetEntity::class,
         BodyweightEntity::class,
         BandEntity::class,
+        SessionOutboxEntity::class,
+        SessionDraftEntity::class,
+        SessionDraftSetEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         // Version 2 only adds tables, which Room can migrate by itself.
         AutoMigration(from = 1, to = 2),
         // Version 3 adds tables and columns with defaults, which Room can also migrate by itself.
         AutoMigration(from = 2, to = 3),
+        // Version 4 only adds tables: the sync queue and the session in progress.
+        AutoMigration(from = 3, to = 4),
     ],
 )
 internal abstract class LevitxDatabase : RoomDatabase() {
@@ -40,4 +45,10 @@ internal abstract class LevitxDatabase : RoomDatabase() {
 
     /** Access to bodyweight and bands. */
     abstract fun equipmentDao(): EquipmentDao
+
+    /** Access to the queue of sessions waiting to reach the other device. */
+    abstract fun sessionOutboxDao(): SessionOutboxDao
+
+    /** Access to the session in progress. */
+    abstract fun sessionDraftDao(): SessionDraftDao
 }

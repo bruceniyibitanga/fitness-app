@@ -13,7 +13,15 @@ import kotlinx.serialization.Serializable
  * because saved state is written to disk).
  */
 sealed interface Destination : NavKey {
-    /** The watch home screen: the next gate at a glance. */
+    /** The watch home screen: the next gate and the button that starts today's session. */
     @Serializable
     data object Home : Destination
+
+    /** The session in progress: sets, rest and the summary. */
+    @Serializable
+    data object Session : Destination
+
+    /** Choosing a vest, belt or band for the next session. */
+    @Serializable
+    data object Load : Destination
 }

@@ -42,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.load.LoadLimits
+import app.levitx.core.load.formatKg
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.SessionPlanner
 import app.levitx.core.skills.GateMeasure
@@ -56,7 +57,6 @@ import app.levitx.phone.ui.NumberInput
 import app.levitx.phone.ui.PrimaryButton
 import app.levitx.phone.ui.SecondaryButton
 import app.levitx.phone.ui.SectionLabel
-import app.levitx.phone.ui.formatKg
 import app.levitx.phone.ui.measureText
 import kotlinx.coroutines.delay
 

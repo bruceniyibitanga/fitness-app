@@ -2,6 +2,7 @@ package app.levitx.data.database
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 /** Writes finished sessions and their sets. */
@@ -10,6 +11,14 @@ internal interface SessionDao {
     /** Saves a new session. Fails if the id already exists, which would be a bug. */
     @Insert
     suspend fun insertSession(session: TrainingSessionEntity)
+
+    /**
+     * Saves a session unless one with the same id is already stored.
+     *
+     * @return The new row id, or -1 when the session was already there.
+     */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertSessionIfNew(session: TrainingSessionEntity): Long
 
     /** Saves the sets of a session already inserted. */
     @Insert

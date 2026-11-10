@@ -28,6 +28,9 @@ android {
 dependencies {
     implementation(project(":design"))
     implementation(project(":data"))
+    implementation(project(":sync"))
+    // For WearableListenerService, which each app's sync listener extends.
+    implementation(libs.play.services.wearable)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

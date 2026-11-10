@@ -1,5 +1,6 @@
 package app.levitx.data.equipment
 
+import androidx.room.withTransaction
 import app.levitx.core.load.LoadLimits
 import app.levitx.data.database.BandEntity
 import app.levitx.data.database.BodyweightEntity
@@ -12,9 +13,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-
-/** Longest band name accepted. Names are labels like "Red", not notes. */
-internal const val MAX_BAND_NAME_LENGTH = 30
 
 /** Stores bodyweight and bands in the encrypted database. Bodyweight is health data. */
 @Singleton
@@ -41,12 +39,7 @@ internal class RoomEquipmentRepository @Inject constructor(private val databaseP
 
     override suspend fun addBand(name: String, assistanceKg: Double) {
         val trimmed = name.trim()
-        require(trimmed.isNotEmpty() && trimmed.length <= MAX_BAND_NAME_LENGTH) {
-            "band name must be 1 to $MAX_BAND_NAME_LENGTH characters"
-        }
-        require(assistanceKg.isFinite() && assistanceKg > 0.0 && assistanceKg <= LoadLimits.MAX_MODIFIER_KG) {
-            "band assistance out of range"
-        }
+        requireValidBand(trimmed, assistanceKg)
         databaseProvider.database().equipmentDao().insertBand(
             BandEntity(
                 id = UUID.randomUUID().toString(),
@@ -57,7 +50,32 @@ internal class RoomEquipmentRepository @Inject constructor(private val databaseP
         )
     }
 
+    override suspend fun replaceBands(bands: List<Band>) {
+        val now = System.currentTimeMillis()
+        val rows = bands.mapIndexed { index, band ->
+            val trimmed = band.name.trim()
+            requireValidBand(trimmed, band.assistanceKg)
+            require(band.id.isNotBlank()) { "band id must not be blank" }
+            // Bands are listed by creation time, so stepping it keeps the given order.
+            BandEntity(band.id, trimmed, band.assistanceKg, createdAtEpochMillis = now + index)
+        }
+        val database = databaseProvider.database()
+        database.withTransaction {
+            database.equipmentDao().deleteAllBands()
+            database.equipmentDao().insertBands(rows)
+        }
+    }
+
     override suspend fun deleteBand(id: String) {
         databaseProvider.database().equipmentDao().deleteBand(id)
+    }
+}
+
+private fun requireValidBand(trimmedName: String, assistanceKg: Double) {
+    require(trimmedName.isNotEmpty() && trimmedName.length <= MAX_BAND_NAME_LENGTH) {
+        "band name must be 1 to $MAX_BAND_NAME_LENGTH characters"
+    }
+    require(assistanceKg.isFinite() && assistanceKg > 0.0 && assistanceKg <= LoadLimits.MAX_MODIFIER_KG) {
+        "band assistance out of range"
     }
 }

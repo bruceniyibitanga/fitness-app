@@ -31,6 +31,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.load.LoadLimits
 import app.levitx.core.load.bandAssistanceFromScale
+import app.levitx.core.load.formatKg
 import app.levitx.data.equipment.Band
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxSpacing
@@ -41,7 +42,6 @@ import app.levitx.phone.ui.DecimalInput
 import app.levitx.phone.ui.PrimaryButton
 import app.levitx.phone.ui.SecondaryButton
 import app.levitx.phone.ui.SectionLabel
-import app.levitx.phone.ui.formatKg
 
 /** Starting value for the bodyweight field before anything is entered. */
 private const val DEFAULT_BODYWEIGHT_KG = 70.0

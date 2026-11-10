@@ -24,7 +24,7 @@ sealed interface SessionUiState {
      * @property setIndex 0-based index of the set to do next.
      * @property logged Sets done so far.
      * @property restEndsAtElapsedMillis When rest before the next set ends, on the
-     *   [TrainingClock.elapsedRealtimeMillis] clock; null when not resting.
+     *   device's elapsed (since boot) clock; null when not resting.
      * @property bodyweightKg Bodyweight for working out load, or null if not entered.
      * @property bands The person's bands, to choose from for assisted sets.
      */

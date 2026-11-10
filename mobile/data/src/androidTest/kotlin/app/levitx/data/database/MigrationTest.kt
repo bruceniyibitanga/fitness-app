@@ -56,4 +56,25 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun version3To4KeepsSessionsAndStartsWithNothingQueued() {
+        helper.createDatabase(name, 3).use { db ->
+            db.execSQL(
+                "INSERT INTO training_session (id, gateId, startedAtEpochMillis, finishedAtEpochMillis) " +
+                    "VALUES ('s1', 'g', 0, 1)",
+            )
+        }
+        helper.runMigrationsAndValidate(name, 4, true).use { db ->
+            db.query("SELECT COUNT(*) FROM training_session").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 1) { "session was lost in the migration" }
+            }
+            db.query("SELECT COUNT(*) FROM session_outbox").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 0) { "old sessions must not be queued for sync" }
+            }
+            db.query("SELECT COUNT(*) FROM session_draft").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 0) { "there should be no session in progress" }
+            }
+        }
+    }
 }
