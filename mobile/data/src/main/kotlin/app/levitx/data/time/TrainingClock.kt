@@ -1,4 +1,4 @@
-package app.levitx.phone.session
+package app.levitx.data.time
 
 import android.os.SystemClock
 import dagger.Binds
@@ -9,6 +9,8 @@ import javax.inject.Inject
 
 /**
  * The two clocks a session needs. An interface so tests can control time.
+ *
+ * It lives in the data layer because both apps time sessions the same way.
  */
 interface TrainingClock {
     /**

@@ -48,3 +48,6 @@ exceptions:
       - 'NumberFormatException'
       - 'ParseException'
       - 'DataUnavailableException'
+      # The watch link being unavailable is normal (no watch, out of range).
+      # Sync skips the pass and tries again later.
+      - 'DataLayerUnavailableException'

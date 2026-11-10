@@ -14,6 +14,7 @@ import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
 import app.levitx.data.session.SessionRepository
+import app.levitx.data.time.TrainingClock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -5,7 +5,8 @@
   No permissions are requested yet. Each one is added only when a feature
   needs it, with a comment saying which feature (see docs/app/SECURITY.md).
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:name=".LevitxPhoneApplication"
@@ -25,5 +26,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Receives finished sessions from the watch over the Wearable Data
+          Layer. The path must match SyncPaths in :sync.
+
+          It has to be exported for Google Play services to reach it. That is
+          safe: WearableListenerService only accepts calls from Google Play
+          services, and Play services only delivers data written by a copy of
+          this app with the same package name and signing key.
+        -->
+        <service
+            android:name=".sync.WatchDataListenerService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/levitx/sessions/" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

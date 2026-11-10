@@ -24,6 +24,14 @@ internal interface EquipmentDao {
     @Insert
     suspend fun insertBand(band: BandEntity)
 
+    /** Adds several bands. */
+    @Insert
+    suspend fun insertBands(bands: List<BandEntity>)
+
+    /** Removes every band. */
+    @Query("DELETE FROM band")
+    suspend fun deleteAllBands()
+
     /** Removes a band. Sets already logged with it keep their assistance value. */
     @Query("DELETE FROM band WHERE id = :id")
     suspend fun deleteBand(id: String)

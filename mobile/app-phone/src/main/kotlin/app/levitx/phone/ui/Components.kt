@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxSpacing
@@ -209,16 +210,6 @@ fun DecimalInput(
     }
 }
 
-/** "72.5" or "70": one decimal place at most, and none when it's a whole number. */
-fun formatKg(kg: Double): String {
-    val tenths = Math.round(kg * TENTHS_PER_UNIT)
-    return if (tenths % TENTHS_PER_UNIT == 0L) {
-        (tenths / TENTHS_PER_UNIT).toString()
-    } else {
-        "${tenths / TENTHS_PER_UNIT}.${tenths % TENTHS_PER_UNIT}"
-    }
-}
-
 /** Reads "72.5" or "72,5" (comma decimal locales). Null for anything that isn't a non-negative number. */
 fun parseKg(text: String): Double? = text.trim().replace(',', '.').toDoubleOrNull()
     ?.takeIf { it.isFinite() && it >= 0.0 }
@@ -244,4 +235,3 @@ private const val MAX_DIGITS = 3
 private const val SECONDS_PER_MINUTE = 60
 private const val DEFAULT_KG_STEP = 0.5
 private const val MAX_KG_CHARS = 6
-private const val TENTHS_PER_UNIT = 10L

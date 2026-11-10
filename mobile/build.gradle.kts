@@ -47,6 +47,7 @@ detekt {
             "core/src",
             "design/src",
             "data/src",
+            "sync/src",
             "testing/src",
             "app-phone/src",
             "app-wear/src",

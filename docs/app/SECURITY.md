@@ -18,6 +18,7 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | Bodyweight (a log of readings), progress photos | Health | Local database / app-private files | Encrypted |
 | Bands and the help they give | Personal | Local database | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
+| The watch's copy of the goal, bests and bands, and its own sessions | Personal | The watch's local database | Encrypted the same way, with the watch's own Keystore key |
 | Settings | Low | Local database | Encrypted |
 | Database key | Secret | `noBackupFilesDir`, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
 
@@ -37,10 +38,16 @@ The database key is 256 random bits made on the device the first time the app ru
 
 ## Phone and watch traffic
 
-- **Who can read it.** Android's docs say Data Layer traffic [may at some point use Google-owned servers](https://developer.android.com/training/wearables/data/overview), though no other app can read it.
-- **What goes over it.** We only send what the watch needs to run a session: the plan, and the sets that come back.
-- **What never goes over it.** Pain notes, physio documents and photos. They stay on the phone.
-- **How payloads are handled.** Every payload has a version number and is validated on arrival. Anything unexpected is dropped and logged without its contents.
+- **Who can read it.** Android's docs say Data Layer traffic [may at some point use Google-owned servers](https://developer.android.com/training/wearables/data/overview), though no other app can read it. Play services only delivers data between copies of this app with the same package name and signing key.
+- **What goes over it.** Only what the watch needs to run a session, and what comes back:
+  - phone to watch: which goal is active, the best per gate, and the bands (name and kilograms of help)
+  - watch to phone: finished sessions (the gate, start and finish times, and each set's reps or seconds and load)
+- **What never goes over it.** Bodyweight, pain notes, physio documents and photos. They stay on the phone. A test checks that bodyweight is not in a session's payload.
+- **How payloads are handled.** Nothing that arrives is trusted:
+  - Every payload has a version number and a size limit.
+  - Ids, counts and values are checked against fixed limits before anything reaches the database.
+  - Anything that fails is skipped whole, and the log gets a count, never the contents.
+- **The listener services are exported,** because Google Play services has to be able to start them. `WearableListenerService` only accepts calls from Play services, and each service's filter only matches our own paths.
 
 ## Photos and text recognition (Phase 5)
 
@@ -57,7 +64,7 @@ The database key is 256 random bits made on the device the first time the app ru
 - **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
 - **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
 - **Gradle wrapper.** The wrapper jar is checked against Gradle's published checksums in CI, and the distribution download is checked against its SHA-256.
-- **Permissions.** None yet. Each one is added only when a feature needs it, with a comment in the manifest saying which feature.
+- **Permissions.** None yet. Sync needs none. Each one is added only when a feature needs it, with a comment in the manifest saying which feature.
 - **CI.** Uses a read-only token and actions pinned to commit SHAs.
 - **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
 

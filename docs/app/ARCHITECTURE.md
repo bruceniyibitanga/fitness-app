@@ -14,14 +14,15 @@ mobile/
   core/                      Kotlin Multiplatform: training rules (no Android)
   design/                    design tokens: colours, fonts, type, spacing
   data/                      repositories, encrypted database, database key
+  sync/                      phone and watch sync over the Wearable Data Layer
   testing/                   in-memory fakes of the repositories, for unit tests only
   app-phone/                 Android phone app (Compose, Navigation 3)
   app-wear/                  Wear OS app (Compose for Wear OS, Navigation 3)
 ```
 
-Each app module is split by feature (`goal/`, `startingtest/`, `home/`, `session/`, `path/`), plus `navigation/`, `theme/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
+Each app module is split by feature (`goal/`, `startingtest/`, `home/`, `session/`, `path/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
 
-Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan; ViewModels only combine flows and map the result to UI state.
+Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan, and `SessionRun` holds the rules for moving through a session (log a set, rest, finish). ViewModels only combine flows and map the result to UI state.
 
 ## Layers
 
@@ -66,9 +67,18 @@ The main thread only draws. It never waits on I/O or heavy work.
 ## Phone and watch
 
 - **Who does what.** The watch can run a whole session on its own, which [Google recommends for Wear OS apps](https://developer.android.com/training/wearables/apps/standalone-apps). The phone is where planning, history and settings live.
-- **Link.** Phone and watch talk over the [Wearable Data Layer](https://developer.android.com/training/wearables/data/overview). See [ADR 0003](adr/0003-phone-watch-communication.md).
+- **Link.** Phone and watch talk over the [Wearable Data Layer](https://developer.android.com/training/wearables/data/overview), through the `:sync` module. See [ADR 0003](adr/0003-phone-watch-communication.md).
 - **Requirements.** Both apps use the application id `app.levitx` and must be signed with the same key.
-- **The plan goes to the watch as a data item; finished sets come back as messages** held in an outbox until acknowledged. Set IDs are unique, so retries are harmless.
+- **Phone to watch.** The goal, bests and bands go to the watch as one data item. The watch copies them into its own database.
+- **Watch to phone.** Each finished session is saved and queued on the watch in one transaction, sent as its own data item, and kept in the queue until the phone confirms it. Session ids are unique and stored once, so retries are harmless.
+- **`:sync` is in three layers.** `PhoneSync` and `WatchSync` are what the apps call. The engines behind them hold the rules and are plain Kotlin. `PlayServicesDataLayer` is the only class that touches Google's API.
+
+## A session on the watch
+
+- **`WorkoutController` owns the session,** not a screen. It lives as long as the app process, so swiping back to the watch face mid-rest and returning lands on the same set. This follows the [Wear OS workout guidance](https://developer.android.com/health-and-fitness/health-services/active-data), which keeps workout state out of the activity.
+- **Every change is saved as a draft** in the encrypted database, so a session survives the app being killed or crashing between sets.
+- **The session id is made at the start.** If the app dies between the last set and the save, the restart saves it once, not twice.
+- **Screens only watch and tap.** `SessionViewModel` maps the controller's state to UI state and passes actions on.
 
 ## Errors
 
@@ -98,8 +108,10 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 
 - `:core`: a unit test for every rule, including bad input.
 - ViewModels: unit tests with fake repositories and `kotlinx-coroutines-test`.
-- Repositories: fakes in `:testing` (`FakeGoalRepository`, `FakeProgressRepository`, `FakeSessionRepository`) keep state in memory, so ViewModel tests run on the JVM. Only `testImplementation` depends on them, so they never ship.
+- Repositories: fakes in `:testing` (`FakeGoalRepository`, `FakeProgressRepository`, `FakeSessionRepository` and others) keep state in memory, so ViewModel tests run on the JVM. Only `testImplementation` depends on them, so they never ship.
 - Process death: a test rebuilds the session ViewModel from the same `SavedStateHandle` to check a session in progress survives the app being killed.
 - Migrations: an emulator test upgrades a version 1 database to the latest and checks nothing was lost.
 - Encryption: on an emulator, a test checks the database file doesn't start with SQLite's plain-text header, and that a tampered key file refuses to unlock.
-- Health Services and the Data Layer: tested on emulators in Phase 3, using Health Services' synthetic data on the Wear OS emulator.
+- Sync: `:sync` unit tests run a pretend phone and a pretend watch against one in-memory Data Layer. They cover the full handshake, retries, the phone being out of reach, unreadable payloads and a second watch. Payload validation has its own tests with deliberately bad input.
+- The watch session: unit tests cover the controller, including restarts mid-session.
+- Not covered by automated tests: the real Data Layer between a real phone and watch, and Health Services on a real watch. Both need a manual check on devices before release.

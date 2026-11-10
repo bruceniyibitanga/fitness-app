@@ -2,10 +2,73 @@
 <resources>
     <string name="app_name" translatable="false">Levitx</string>
 
+    <!-- Shared -->
+    <string name="decrease">−</string>
+    <string name="increase">+</string>
+    <string name="decrease_description">One less</string>
+    <string name="increase_description">One more</string>
+    <string name="seconds_short">%1$d s</string>
+    <string name="clock_format">%1$d:%2$02d</string>
+    <string name="band_note">Band sets build strength but don\'t pass the gate.</string>
+    <plurals name="reps">
+        <item quantity="one">%1$d rep</item>
+        <item quantity="other">%1$d reps</item>
+    </plurals>
+
     <!-- Home -->
     <string name="home_gate_label">GATE %1$d OF %2$d</string>
     <string name="home_path_complete">Path complete.</string>
     <string name="home_no_goal">Choose a goal in the Levitx app on your phone.</string>
+    <plurals name="home_today">
+        <item quantity="one">%1$d set of %2$s, then a best effort</item>
+        <item quantity="other">%1$d sets of %2$s, then a best effort</item>
+    </plurals>
+    <string name="home_start_session">Start session</string>
+    <string name="home_resume_session">Resume session</string>
+    <string name="home_load_label">Load</string>
+    <plurals name="home_waiting_to_sync">
+        <item quantity="one">%1$d session waiting for your phone</item>
+        <item quantity="other">%1$d sessions waiting for your phone</item>
+    </plurals>
+
+    <!-- Load -->
+    <string name="load_title">Load</string>
+    <string name="load_bodyweight">Bodyweight only</string>
+    <string name="load_added">+%1$s kg</string>
+    <string name="load_band">%1$s band</string>
+    <string name="load_added_and_band">%1$s, %2$s</string>
+    <string name="load_added_label">VEST OR BELT, KG</string>
+    <string name="load_less_description">One kilogram less</string>
+    <string name="load_more_description">One kilogram more</string>
+    <string name="load_band_label">BAND</string>
+    <string name="load_band_none">No band</string>
+    <string name="load_band_help">%1$s kg of help</string>
+    <string name="load_no_bands">Add and calibrate bands in the Levitx app on your phone.</string>
+
+    <!-- Session -->
+    <string name="session_none">No session in progress.</string>
+    <string name="session_set_label">SET %1$d OF %2$d</string>
+    <plurals name="session_work_hint">
+        <item quantity="one">Stop with about %1$d rep left in the tank.</item>
+        <item quantity="other">Stop with about %1$d reps left in the tank.</item>
+    </plurals>
+    <string name="session_work_hint_hold">Stop a little before your limit.</string>
+    <string name="session_best_effort_hint">Best effort. Stop when your form breaks, not after.</string>
+    <string name="session_aim">Aim for %1$s</string>
+    <string name="session_log_set">Save set</string>
+    <string name="session_start_hold">Start hold</string>
+    <string name="session_stop_hold">Stop</string>
+    <string name="session_rest_label">REST</string>
+    <string name="session_rest_next">Next: set %1$d of %2$d, %3$s</string>
+    <string name="session_skip_rest">Skip rest</string>
+    <string name="session_end_early">End and save</string>
+    <string name="session_cancel">Cancel session</string>
+    <string name="session_summary_label">SESSION SAVED</string>
+    <string name="session_new_best">New best: %1$s</string>
+    <string name="session_best_today">Today\'s best: %1$s</string>
+    <string name="session_gate_passed">You passed %1$s.</string>
+    <string name="session_sync_note">It goes to your phone when it\'s in reach.</string>
+    <string name="session_done">Done</string>
 
     <!-- Errors -->
     <string name="data_unavailable">Couldn\'t unlock your data. Nothing was deleted. Reopen the app to retry.</string>
