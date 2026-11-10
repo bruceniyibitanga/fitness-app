@@ -45,6 +45,8 @@ class PhoneSync @Inject internal constructor(
      */
     suspend fun receiveSessions() {
         engine.receiveSessions().log("phone receive")
+        // A new session can raise a best, which the watch should hear about before this returns.
+        engine.publishCurrent().log("phone publish")
     }
 
     /**

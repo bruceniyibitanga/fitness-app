@@ -53,6 +53,20 @@ internal class PhoneSyncEngine @Inject constructor(
         SyncReport(SyncOutcome.DONE, stateChanged = true)
     }
 
+    /**
+     * Publishes the state as it is right now. Used after sessions arrive, so
+     * the watch gets the new bests even if the system stops the app before
+     * the change is noticed on its own. Publishing unchanged state does nothing.
+     */
+    suspend fun publishCurrent(): SyncReport {
+        val state = try {
+            watchState().first()
+        } catch (error: DataUnavailableException) {
+            return SyncReport(SyncOutcome.DATA_LOCKED)
+        }
+        return if (state == null) SyncReport(SyncOutcome.DONE) else publish(state)
+    }
+
     /** Stores and confirms every session waiting on the Data Layer, and tidies up old confirmations. */
     suspend fun receiveSessions(): SyncReport = guarded {
         val items = dataLayer.list(SyncPaths.SESSIONS_PREFIX)

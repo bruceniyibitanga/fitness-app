@@ -106,6 +106,32 @@ class SyncEnginesTest {
     }
 
     @Test
+    fun aBestRaisedOnThePhoneReachesTheWatch() = runTest {
+        publish()
+        watch.sync()
+        phoneProgress.recordBest(dips.id, 9)
+
+        assertTrue(phone.publishCurrent().stateChanged)
+        watch.sync()
+
+        assertEquals(9, watchProgress.current[dips.id])
+    }
+
+    @Test
+    fun withNoGoalThereIsNothingToPublish() = runTest {
+        val noGoalPhone = PhoneSyncEngine(
+            network.onDevice("phone"),
+            FakeGoalRepository(),
+            phoneProgress,
+            phoneEquipment,
+            phoneSessions,
+        )
+
+        assertEquals(SyncReport(SyncOutcome.DONE), noGoalPhone.publishCurrent())
+        assertTrue(network.paths.isEmpty())
+    }
+
+    @Test
     fun retriesNeverDoubleCount() = runTest {
         watchSessions.saveAndQueue(session(idA, best = 8))
         repeat(3) { watch.sync() }
