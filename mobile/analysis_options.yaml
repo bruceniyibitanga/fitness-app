@@ -1,0 +1,28 @@
+# Static analysis for every package in the workspace.
+# The analyzer walks up the folder tree, so packages inherit this file.
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    # Catch implicit dynamic and unsafe casts at compile time.
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # Missing docs on public APIs fail the build: everything shared must be explained.
+    public_member_api_docs: error
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - avoid_print
+    - cancel_subscriptions
+    - close_sinks
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_single_quotes
+    - public_member_api_docs
+    - unawaited_futures
+    - unnecessary_lambdas
+    - use_super_parameters

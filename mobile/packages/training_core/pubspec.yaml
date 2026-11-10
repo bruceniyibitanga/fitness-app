@@ -1,0 +1,13 @@
+name: training_core
+description: >-
+  Pure Dart training logic shared by the phone and watch apps: load per rep,
+  strength estimates, pain guidance and skill paths. No Flutter, no I/O.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ">=5.0.0 <8.0.0"
+  test: ^1.25.0

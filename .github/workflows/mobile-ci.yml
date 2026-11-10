@@ -1,0 +1,76 @@
+# Checks for the mobile workspace: formatting, static analysis and tests.
+#
+# Failures are written as GitHub annotations so they show up on the pull
+# request next to the line that caused them.
+name: Mobile CI
+
+on:
+  push:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+
+# Read-only token: this workflow never needs to write to the repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  training-core:
+    name: training_core (format, analyze, test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      # Actions are pinned to full commit SHAs so a moved tag can't change what runs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: 3.13.7
+
+      - name: Get dependencies
+        run: dart pub get
+
+      - name: Check formatting
+        id: format
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Annotate formatting changes
+        if: failure() && steps.format.outcome == 'failure'
+        run: |
+          dart format . > /dev/null
+          for file in $(git diff --name-only -- .); do
+            diff=$(git diff -U1 -- "$file" | head -c 6000 \
+              | sed -e 's/%/%25/g' -e 's/\r/%0D/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error file=$file::Needs dart format:%0A$diff"
+          done
+
+      - name: Analyze
+        id: analyze
+        run: |
+          set +e
+          dart analyze --fatal-infos --format=machine > analyze.txt 2>&1
+          status=$?
+          # Machine format: SEVERITY|TYPE|CODE|FILE|LINE|COLUMN|LENGTH|MESSAGE
+          while IFS='|' read -r severity type code file line col length message; do
+            [ -z "$file" ] && continue
+            rel=${file#"$GITHUB_WORKSPACE/"}
+            echo "::error file=$rel,line=$line,col=$col::$code: $message"
+          done < analyze.txt
+          exit $status
+
+      - name: Test
+        working-directory: mobile/packages/training_core
+        run: dart test --reporter github

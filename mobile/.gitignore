@@ -1,0 +1,16 @@
+# Dart and Flutter build output
+.dart_tool/
+build/
+coverage/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Local secrets and signing material. Never commit these.
+*.jks
+*.keystore
+key.properties
+local.properties
+.env*
