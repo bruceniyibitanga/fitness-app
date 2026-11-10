@@ -1,0 +1,64 @@
+name: Version probe (temporary)
+on:
+  push:
+    branches: [chore/version-probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Latest versions
+        run: |
+          g=https://dl.google.com/dl/android/maven2
+          c=https://repo1.maven.org/maven2
+          p=https://plugins.gradle.org/m2
+          show() { echo "== $2"; curl -fsS "$1/$(echo "$2" | tr . /)/maven-metadata.xml" | grep -oE '<(release|latest)>[^<]+' | head -2; curl -fsS "$1/$(echo "$2" | tr . /)/maven-metadata.xml" | grep -oE '<version>[^<]+' | tail -12 | tr '\n' ' '; echo; }
+          showp() { echo "== $2:$3"; curl -fsS "$1/$(echo "$2" | tr . /)/$3/maven-metadata.xml" | grep -oE '<version>[^<]+' | tail -14 | tr '\n' ' '; echo; }
+          showp $g com.android.tools.build gradle
+          showp $g com.android.kotlin.multiplatform.library com.android.kotlin.multiplatform.library.gradle.plugin
+          showp $g androidx.compose compose-bom
+          showp $g androidx.wear.compose compose-material3
+          showp $g androidx.wear.compose compose-foundation
+          showp $g androidx.wear.compose compose-navigation3
+          showp $g androidx.wear.compose compose-ui-tooling
+          showp $g androidx.activity activity-compose
+          showp $g androidx.lifecycle lifecycle-viewmodel-compose
+          showp $g androidx.lifecycle lifecycle-runtime-compose
+          showp $g androidx.navigation3 navigation3-ui
+          showp $g androidx.lifecycle lifecycle-viewmodel-navigation3
+          showp $g androidx.core core-ktx
+          showp $g androidx.core core-splashscreen
+          showp $g androidx.health health-services-client
+          showp $g androidx.health.connect connect-client
+          showp $g com.google.android.gms play-services-wearable
+          showp $g androidx.wear wear-tooling-preview
+          showp $g androidx.wear.tiles tiles
+          showp $g androidx.room room-runtime
+          showp $g androidx.room3 room3-runtime
+          showp $g androidx.sqlite sqlite-bundled
+          showp $g androidx.datastore datastore-preferences
+          showp $g androidx.compose.material3 material3
+          showp $g androidx.compose.ui ui-text-google-fonts
+          showp $c com.google.android.horologist horologist-datalayer
+          showp $c com.google.android.horologist horologist-tiles
+          showp $c com.google.android.horologist horologist-compose-layout
+          showp $c org.jetbrains.kotlin kotlin-gradle-plugin
+          showp $c org.jetbrains.kotlinx kotlinx-coroutines-core
+          showp $c org.jetbrains.kotlinx kotlinx-coroutines-test
+          showp $c org.jetbrains.kotlinx kotlinx-serialization-json
+          showp $c dev.detekt detekt-gradle-plugin
+          showp $c io.gitlab.arturbosch.detekt detekt-gradle-plugin
+          showp $c com.pinterest.ktlint ktlint-cli
+          showp $c com.diffplug.spotless spotless-plugin-gradle
+          showp $c net.zetetic sqlcipher-android
+          showp $c io.insert-koin koin-android
+          showp $c com.google.dagger hilt-android
+          showp $c com.google.devtools.ksp symbol-processing-gradle-plugin
+          showp $p dev.detekt dev.detekt.gradle.plugin
+          showp $p org.jetbrains.kotlinx.kover org.jetbrains.kotlinx.kover.gradle.plugin
+      - name: Gradle distribution checksum
+        run: |
+          for v in 9.9.0; do echo "$v $(curl -fsSL https://services.gradle.org/distributions/gradle-$v-bin.zip.sha256)"; done
+          curl -fsS https://services.gradle.org/versions/current | head -c 400; echo
+          curl -fsSL https://services.gradle.org/distributions/gradle-9.9.0-wrapper.jar.sha256; echo
