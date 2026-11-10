@@ -8,6 +8,7 @@ import app.levitx.data.equipment.Band
 import app.levitx.data.equipment.EquipmentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -35,16 +36,18 @@ sealed interface EquipmentUiState {
 /** Bodyweight and bands: what the app needs to work out the load of each rep. */
 @HiltViewModel
 class EquipmentViewModel @Inject constructor(private val equipment: EquipmentRepository) : ViewModel() {
+    // Typed as the sealed interface so the error case below can be emitted into it.
+    private val readyState: Flow<EquipmentUiState> =
+        combine(equipment.observeBodyweightKg(), equipment.observeBands()) { bodyweight, bands ->
+            EquipmentUiState.Ready(bodyweight, bands)
+        }
+
     /** The current screen state. */
-    val uiState: StateFlow<EquipmentUiState> =
-        combine<Double?, List<Band>, EquipmentUiState>(
-            equipment.observeBodyweightKg(),
-            equipment.observeBands(),
-        ) { bodyweight, bands -> EquipmentUiState.Ready(bodyweight, bands) }
-            .catch { error ->
-                if (error is DataUnavailableException) emit(EquipmentUiState.Unavailable) else throw error
-            }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), EquipmentUiState.Loading)
+    val uiState: StateFlow<EquipmentUiState> = readyState
+        .catch { error ->
+            if (error is DataUnavailableException) emit(EquipmentUiState.Unavailable) else throw error
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), EquipmentUiState.Loading)
 
     /** Saves a bodyweight reading. Ignores values outside 20 to 350 kg; the screen won't offer them. */
     fun saveBodyweight(kg: Double) {
