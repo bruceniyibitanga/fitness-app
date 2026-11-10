@@ -59,6 +59,7 @@ internal fun CountEntry(
             )
         }
         item { CenteredText(setHint(state)) }
+        if (state.heartRate != null) item { HeartRateText(state.heartRate) }
         item {
             Button(
                 onClick = { onLogSet(count) },
@@ -98,6 +99,7 @@ internal fun Hold(state: SessionUiState.Working, now: () -> Long, onLogSet: (Int
                 )
             }
             item { CenteredText(setHint(state)) }
+            if (state.heartRate != null) item { HeartRateText(state.heartRate) }
             item {
                 Button(
                     onClick = { startedAtMillis = now() },

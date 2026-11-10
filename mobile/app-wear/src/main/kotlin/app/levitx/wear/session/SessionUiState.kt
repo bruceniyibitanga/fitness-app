@@ -14,6 +14,12 @@ sealed interface SessionUiState {
     data object NoSession : SessionUiState
 
     /**
+     * A session is ready, and the person hasn't yet been asked whether the
+     * watch may read their heart rate. Asked once, at the moment it is needed.
+     */
+    data object AskTracking : SessionUiState
+
+    /**
      * A set to do now.
      *
      * @property setNumber 1-based number of this set.
@@ -23,6 +29,7 @@ sealed interface SessionUiState {
      * @property isBestEffort True for the last, all-out set.
      * @property repsInReserve Reps to leave in the tank on work sets.
      * @property canSaveEarly True once a set is logged, so ending now saves something.
+     * @property heartRate Heart rate in beats per minute, or null when it isn't being read.
      */
     data class Working(
         val setNumber: Int,
@@ -32,6 +39,7 @@ sealed interface SessionUiState {
         val isBestEffort: Boolean,
         val repsInReserve: Int,
         val canSaveEarly: Boolean,
+        val heartRate: Int? = null,
     ) : SessionUiState
 
     /**
@@ -43,6 +51,9 @@ sealed interface SessionUiState {
      * @property setCount Sets in the session.
      * @property measure Whether the next set counts reps or seconds.
      * @property nextTarget Reps or seconds to aim for next.
+     * @property heartRate Heart rate in beats per minute, or null when it isn't being read.
+     * @property buzzOnScreen True when the screen gives the end-of-rest buzz itself. False
+     *   while the workout service is running, because the service then gives it.
      */
     data class Resting(
         val restEndsAtElapsedMillis: Long,
@@ -51,6 +62,8 @@ sealed interface SessionUiState {
         val setCount: Int,
         val measure: GateMeasure,
         val nextTarget: Int,
+        val heartRate: Int? = null,
+        val buzzOnScreen: Boolean = true,
     ) : SessionUiState
 
     /**

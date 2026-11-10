@@ -45,7 +45,7 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 - Wear OS session screens: rep counter, hold timer, rest timer, and a load picker for vests, belts and bands. Done.
 - Phone and watch sync over the Wearable Data Layer: the goal, bests and bands go to the watch, finished sessions come back. Sync works offline and survives retries. Done.
 - A session on the watch survives leaving the screen and the app being killed. Done.
-- Health Services `ExerciseClient` for heart rate and an ongoing workout, in a `health` foreground service, with a rest alert that fires with the screen off.
+- Health Services `ExerciseClient` for heart rate and an ongoing workout, in a `health` foreground service, with a rest alert that fires with the screen off. Built; not yet run on a real watch.
 - A Tile showing the next session.
 - Still to do before calling the phase done: a full session on a real watch with the phone out of reach, then checking it arrives on the phone.
 

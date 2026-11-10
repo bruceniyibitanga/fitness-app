@@ -69,6 +69,20 @@
     <string name="session_gate_passed">You passed %1$s.</string>
     <string name="session_sync_note">It goes to your phone when it\'s in reach.</string>
     <string name="session_done">Done</string>
+    <string name="session_heart_rate">%1$d bpm</string>
+
+    <!-- Asking to read heart rate -->
+    <string name="tracking_label">HEART RATE</string>
+    <string name="tracking_body">Levitx can show your heart rate while you train, and keep the session running when you look away. It isn\'t saved or sent anywhere.</string>
+    <string name="tracking_allow">Allow</string>
+    <string name="tracking_skip">Not now</string>
+
+    <!-- The workout notification and watch-face indicator -->
+    <string name="workout_channel_name">Session in progress</string>
+    <string name="workout_notification_title">Levitx session</string>
+    <string name="workout_status_starting">Starting</string>
+    <string name="workout_status_rest">Rest</string>
+    <string name="workout_status_set">Set %1$d of %2$d</string>
 
     <!-- Errors -->
     <string name="data_unavailable">Couldn\'t unlock your data. Nothing was deleted. Reopen the app to retry.</string>

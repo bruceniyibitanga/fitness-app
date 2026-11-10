@@ -36,7 +36,7 @@ private const val SECONDS_PER_MINUTE = 60
 
 @Composable
 internal fun Rest(state: SessionUiState.Resting, now: () -> Long, onEndRest: () -> Unit, onFinishEarly: () -> Unit) {
-    val remainingMillis = remainingRestMillis(state.restEndsAtElapsedMillis, now, onEndRest)
+    val remainingMillis = remainingRestMillis(state.restEndsAtElapsedMillis, now, state.buzzOnScreen, onEndRest)
     val totalSeconds = ((remainingMillis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND).toInt()
     val totalMillis = (state.restSeconds * MILLIS_PER_SECOND).coerceAtLeast(1)
 
@@ -60,6 +60,7 @@ internal fun Rest(state: SessionUiState.Resting, now: () -> Long, onEndRest: () 
                 textAlign = TextAlign.Center,
             )
         }
+        if (state.heartRate != null) item { HeartRateText(state.heartRate) }
         item {
             CenteredText(
                 stringResource(
@@ -82,11 +83,12 @@ internal fun Rest(state: SessionUiState.Resting, now: () -> Long, onEndRest: () 
 }
 
 /**
- * Milliseconds of rest left, updated a few times a second. Buzzes and calls
- * [onFinished] when it reaches zero.
+ * Milliseconds of rest left, updated a few times a second. Calls [onFinished]
+ * when it reaches zero, with a buzz if [buzz] is true. (While the workout
+ * service is running it gives the buzz, so the wrist doesn't get two.)
  */
 @Composable
-private fun remainingRestMillis(endsAt: Long, now: () -> Long, onFinished: () -> Unit): Long {
+private fun remainingRestMillis(endsAt: Long, now: () -> Long, buzz: Boolean, onFinished: () -> Unit): Long {
     val haptics = LocalHapticFeedback.current
     var remainingMillis by remember(endsAt) { mutableLongStateOf((endsAt - now()).coerceAtLeast(0)) }
     // Counts against the device's elapsed clock, not by adding up ticks, so it
@@ -95,7 +97,7 @@ private fun remainingRestMillis(endsAt: Long, now: () -> Long, onFinished: () ->
         while (true) {
             remainingMillis = (endsAt - now()).coerceAtLeast(0)
             if (remainingMillis == 0L) {
-                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                if (buzz) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onFinished()
                 break
             }

@@ -45,6 +45,10 @@ androidx-navigation3 = "1.2.1"
 room = "2.8.5"
 compose-bom = "2026.09.00"
 wear-compose = "1.7.1"
+# Health Services: heart rate and the workout session on the watch.
+health-services = "1.1.0"
+# Shows a running workout on the watch face and in the launcher.
+wear-ongoing = "1.1.0"
 
 # Code quality
 # detekt 1.23.8 is built against Kotlin 2.0.21. Its Gradle task runs the
@@ -98,6 +102,9 @@ wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", v
 wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
 wear-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "wear-compose" }
 wear-compose-navigation3 = { module = "androidx.wear.compose:compose-navigation3", version.ref = "wear-compose" }
+
+health-services-client = { module = "androidx.health:health-services-client", version.ref = "health-services" }
+wear-ongoing = { module = "androidx.wear:wear-ongoing", version.ref = "wear-ongoing" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

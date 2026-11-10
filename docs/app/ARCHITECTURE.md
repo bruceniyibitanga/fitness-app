@@ -79,6 +79,7 @@ The main thread only draws. It never waits on I/O or heavy work.
 - **Every change is saved as a draft** in the encrypted database, so a session survives the app being killed or crashing between sets.
 - **The session id is made at the start.** If the app dies between the last set and the save, the restart saves it once, not twice.
 - **Screens only watch and tap.** `SessionViewModel` maps the controller's state to UI state and passes actions on.
+- **`WorkoutService` runs alongside,** a foreground service of type `health`. It reads heart rate through Health Services, shows the ongoing activity, and buzzes when rest ends. It watches the controller and stops when no session is running. The session doesn't depend on it. See [ADR 0006](adr/0006-watch-workout-service.md).
 
 ## Errors
 
@@ -114,4 +115,4 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 - Encryption: on an emulator, a test checks the database file doesn't start with SQLite's plain-text header, and that a tampered key file refuses to unlock.
 - Sync: `:sync` unit tests run a pretend phone and a pretend watch against one in-memory Data Layer. They cover the full handshake, retries, the phone being out of reach, unreadable payloads and a second watch. Payload validation has its own tests with deliberately bad input.
 - The watch session: unit tests cover the controller, including restarts mid-session.
-- Not covered by automated tests: the real Data Layer between a real phone and watch, and Health Services on a real watch. Both need a manual check on devices before release.
+- Not covered by automated tests: the real Data Layer between a real phone and watch, and the workout service (Health Services, the ongoing activity and the rest alert) on a real watch. Both need a manual check on devices before release.
