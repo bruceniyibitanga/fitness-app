@@ -4,7 +4,7 @@ The app ships in phases. Each phase has a clear finish line and doesn't start un
 
 Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose for Wear OS. iPhone and Apple Watch come after the Android release (see [ADR 0005](adr/0005-kotlin-compose-and-wear-compose.md)).
 
-## Phase 0: Foundation (this phase)
+## Phase 0: Foundation (done)
 
 - Gradle build in `mobile/` with a version catalog and a verified Gradle wrapper.
 - `:core`, a Kotlin Multiplatform module holding the training rules, with tests:
@@ -18,13 +18,14 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 
 **Done when** CI is green and these docs are reviewed.
 
-## Phase 1: Design system and app skeleton
+## Phase 1: Design system and app skeleton (this phase)
 
-- `:design` module with the design tokens (colours, Archivo and JetBrains Mono, square edges) for phone and watch.
-- Shared Gradle settings move into a convention plugin in `build-logic/`.
-- ViewModel and UI state pattern, navigation (Navigation 3 on the phone, Wear Compose navigation on the watch) and dependency injection.
-- Encrypted Room database with its passphrase protected by the Android Keystore.
-- CI builds release app bundles for both apps.
+- `:design` module with the design tokens (colours, bundled Archivo and JetBrains Mono, brand text styles, spacing). Phone and watch themes are built from it. Done.
+- Shared Gradle settings in convention plugins in `build-logic/`. Done.
+- Hilt, Navigation 3 on both apps, and the ViewModel and UI state pattern on a first home screen. Done.
+- Encrypted Room database (SQLCipher) with its key protected by the Android Keystore, failing closed when the key is missing. Done.
+- CI runs the encryption tests on an emulator. Done.
+- Still to do: release app bundles in CI, and trying both apps on a real phone and watch.
 
 **Done when** both apps open on an emulator with the real theme and read and write the encrypted database.
 

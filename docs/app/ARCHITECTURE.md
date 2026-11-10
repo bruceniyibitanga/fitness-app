@@ -6,16 +6,19 @@ How the mobile code is organised and the rules it follows. Keep this file up to 
 
 ```
 mobile/
-  settings.gradle.kts      module list and the only place repositories are declared
-  build.gradle.kts         plugin versions, Spotless and detekt for every module
+  settings.gradle.kts        module list and the only place repositories are declared
+  build.gradle.kts           plugin versions, Spotless and detekt for every module
   gradle/libs.versions.toml  every dependency version
-  config/detekt/           detekt rule changes
-  core/                    Kotlin Multiplatform: training rules (no Android)
-  app-phone/               Android phone app (Compose)
-  app-wear/                Wear OS app (Compose for Wear OS)
+  build-logic/               convention plugins: shared Android, Kotlin, lint, R8 and Hilt settings
+  config/detekt/             detekt rule changes
+  core/                      Kotlin Multiplatform: training rules (no Android)
+  design/                    design tokens: colours, fonts, type, spacing
+  data/                      repositories, encrypted database, database key
+  app-phone/                 Android phone app (Compose, Navigation 3)
+  app-wear/                  Wear OS app (Compose for Wear OS, Navigation 3)
 ```
 
-Phase 1 adds `design/` (shared design tokens) and `build-logic/` (shared Gradle settings).
+Each app module is split by feature (`home/`), plus `navigation/` and `theme/`. A feature folder holds its screen, ViewModel and UI state.
 
 ## Layers
 
@@ -24,7 +27,7 @@ We follow Android's [guide to app architecture](https://developer.android.com/to
 | Layer | Object | Job |
 |---|---|---|
 | UI | Composable screen | Draws the UI state and passes user actions to its ViewModel. No logic. |
-| UI | ViewModel | Turns repository data into one immutable UI state, exposed as a `StateFlow`. One per screen. |
+| UI | ViewModel | Turns repository data into one immutable UI state, exposed as a `StateFlow`. One per screen, injected with Hilt and scoped to its navigation entry. |
 | Domain | `:core` | The training rules. Pure Kotlin, no I/O, shared by both apps and later by iOS. |
 | Data | Repository | The source of truth for one kind of data. Caching, retries and error handling live here. |
 | Data | Data source | A thin wrapper around one outside thing: the database, the Keystore, the Data Layer, Health Services. |
@@ -67,7 +70,8 @@ The main thread only draws. It never waits on I/O or heavy work.
 ## Errors
 
 - `:core` throws `IllegalArgumentException` for impossible input. The UI validates first, so a throw there is a bug, and tests cover it. Messages name the input but never its value, because values are often health data.
-- Repositories return a result type instead of throwing for expected failures (no connection, permission denied). The UI shows a plain message and logs a code, never the data.
+- Data that can't be unlocked raises `DataUnavailableException`. ViewModels turn that one exception into an error state with a plain message; any other exception is a bug and is allowed to crash, so it gets noticed and fixed rather than hidden.
+- Messages and logs never contain the data itself.
 
 ## Documentation and comments
 
@@ -83,11 +87,14 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 - **Static analysis:** detekt, with documentation rules turned on.
 - **Android Lint:** warnings are errors.
 - **Compiler warnings** are errors.
-- **Tests:** `:core` unit tests, and from Phase 1 ViewModel tests.
+- **Tests:** unit tests for `:core`, `:data` and every ViewModel.
+- **Instrumented tests:** the Keystore and SQLCipher tests run on an Android emulator in CI.
+- **Room schema:** each database version's schema must be committed.
 
 ## Testing
 
 - `:core`: a unit test for every rule, including bad input.
 - ViewModels: unit tests with fake repositories and `kotlinx-coroutines-test`.
-- Repositories: tests against fake data sources.
+- Repositories: `InMemoryProgressRepository` is the fake that ViewModel tests use.
+- Encryption: on an emulator, a test checks the database file doesn't start with SQLite's plain-text header, and that a tampered key file refuses to unlock.
 - Health Services and the Data Layer: tested on emulators in Phase 3, using Health Services' synthetic data on the Wear OS emulator.

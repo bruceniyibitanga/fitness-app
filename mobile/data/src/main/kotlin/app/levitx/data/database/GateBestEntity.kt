@@ -11,8 +11,4 @@ import androidx.room.PrimaryKey
  * @property achievedAtEpochMillis When the best was set, in UTC milliseconds.
  */
 @Entity(tableName = "gate_best")
-internal data class GateBestEntity(
-    @PrimaryKey val gateId: String,
-    val best: Int,
-    val achievedAtEpochMillis: Long,
-)
+internal data class GateBestEntity(@PrimaryKey val gateId: String, val best: Int, val achievedAtEpochMillis: Long)

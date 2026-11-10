@@ -3,13 +3,13 @@ package app.levitx.data.progress
 import app.levitx.core.skills.PathProgress
 import app.levitx.core.skills.SkillPath
 import app.levitx.data.database.LevitxDatabaseProvider
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Stores bests in the encrypted database.
@@ -19,9 +19,8 @@ import javax.inject.Singleton
  * new best is recorded.
  */
 @Singleton
-internal class RoomProgressRepository @Inject constructor(
-    private val databaseProvider: LevitxDatabaseProvider,
-) : ProgressRepository {
+internal class RoomProgressRepository @Inject constructor(private val databaseProvider: LevitxDatabaseProvider) :
+    ProgressRepository {
     override fun observeProgress(path: SkillPath): Flow<PathProgress> = flow {
         emitAll(databaseProvider.database().gateBestDao().observeAll())
     }

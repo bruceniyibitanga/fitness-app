@@ -3,7 +3,10 @@ package app.levitx.data.security
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.levitx.data.DataUnavailableException
+import java.io.File
+import java.security.KeyStore
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
@@ -12,8 +15,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.security.KeyStore
 
 /** Runs on a device or emulator, because the Android Keystore only exists there. */
 @RunWith(AndroidJUnit4::class)
@@ -22,7 +23,7 @@ class DatabaseKeyStoreTest {
     private val alias = "test.database_key_wrapping"
     private val keyFile = File(context.cacheDir, "test_database_key.bin")
 
-    private fun store(dispatcher: StandardTestDispatcher) =
+    private fun store(dispatcher: TestDispatcher) =
         DatabaseKeyStore(keyFile, dispatcher, useStrongBox = false, keystoreAlias = alias)
 
     @After

@@ -8,7 +8,7 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 2. **Collect less.** If a feature works without a piece of data, we don't ask for it.
 3. **No third-party tracking.** No analytics, ad or crash SDKs that send data off the device. If we add crash reporting later, it gets its own ADR and is opt-in.
 4. **Ask at the moment of need.** Permissions are requested when a feature needs them, with a sentence on why. Never all at once at launch.
-5. **Fail closed.** If the database key can't be read, the app shows an error. It never falls back to an unencrypted database.
+5. **Fail closed.** If the database key can't be read, the app shows an error. It never falls back to an unencrypted or empty database.
 
 ## What we store and how
 
@@ -18,9 +18,15 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | Bodyweight, progress photos | Health | Local database / app-private files | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
 | Settings | Low | Local database | Encrypted |
-| Database passphrase | Secret | App-private file, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
+| Database key | Secret | `noBackupFilesDir`, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
 
-The database passphrase is 256 random bits made on the device the first time the app runs. The Keystore key that protects it never leaves the device's secure hardware.
+The database key is 256 random bits made on the device the first time the app runs (`DatabaseKeyStore` in `:data`):
+
+- It is encrypted with AES-256-GCM using a Keystore key that can't be exported, held in StrongBox on devices that have it and in the Trusted Execution Environment otherwise.
+- The encrypted key lives in `noBackupFilesDir`, which no backup ever includes. GCM authenticates it, so a changed file fails to unlock instead of producing a wrong key.
+- SQLCipher gets it as a raw key, so there is no password stretching to slow down app start (the key is random, not a password).
+- **Fail closed.** If the key is missing, tampered with, or its Keystore key is gone, or if the database exists without a key, the app shows an error. It never creates a fresh key over existing data, and never falls back to an unencrypted database.
+- These behaviours are tested on an emulator in CI.
 
 ## Backups
 
@@ -44,7 +50,8 @@ The database passphrase is 256 random bits made on the device the first time the
 ## Code and build
 
 - **Logs.** No personal data in logs. Log codes and counts, never values.
-- **Release builds.** R8 shrinking, optimisation and obfuscation are on, and CI builds the release variant on every push.
+- **Release builds.** R8 shrinking, optimisation and obfuscation are on, and CI builds the release variant on every push. SQLCipher's classes are kept from renaming in `:data`'s consumer rules, because its native code looks them up by name.
+- **Fonts and other assets** are bundled, so the apps make no network requests to show text.
 - **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Use Play App Signing.
 - **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
 - **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.

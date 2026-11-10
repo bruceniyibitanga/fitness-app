@@ -9,14 +9,17 @@ Start with these:
 - [Security](../docs/app/SECURITY.md): how health data is protected
 - [Decisions](../docs/app/adr/README.md): why things are the way they are
 
-## What's here now (Phase 0)
+## What's here
 
-- **`core/`** holds the training rules, in plain Kotlin with tests:
+- **`core/`**: the training rules, in plain Kotlin with tests:
   - load per rep (`calculateEffectiveLoad`, `LoadCatalogue`), with vests, belts and bands
   - estimated one-rep max (`estimateOneRepMax`), the Epley formula with reps in reserve
   - pain guidance (`assessPain`), the pain-monitoring model with red flags
   - skill paths (`SkillPath`, `SkillCatalogue.muscleUp`)
-- **`app-phone/`** and **`app-wear/`** are the app shells. They open to a placeholder screen. Real screens start in Phase 1.
+- **`design/`**: colours, fonts, brand text styles and spacing, shared by both apps.
+- **`data/`**: `ProgressRepository`, backed by an encrypted Room database whose key is protected by the Android Keystore.
+- **`app-phone/`** and **`app-wear/`**: the apps. Each opens to a home screen showing the next gate on the muscle-up path.
+- **`build-logic/`**: Gradle convention plugins with the settings every Android module shares.
 
 ## Setting up
 
@@ -40,6 +43,14 @@ cd mobile
 ```
 
 `./gradlew :core:jvmTest` runs just the training-rule tests, which takes a few seconds.
+
+The encryption tests need a running emulator or a connected device:
+
+```bash
+./gradlew :data:connectedDebugAndroidTest
+```
+
+When you change the database, bump its version in `LevitxDatabase`, add a migration, build once, and commit the new schema file Room writes to `data/schemas/`. CI fails if you forget.
 
 ## Adding a dependency
 

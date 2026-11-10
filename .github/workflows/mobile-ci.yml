@@ -61,6 +61,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
+          # The MIT-licensed cache. The default ("enhanced") is a proprietary
+          # component whose terms allow future charges for private repos.
+          cache-provider: basic
           # Only builds on main write the shared cache, so a branch can't
           # poison what other branches restore.
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
@@ -133,6 +136,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
+          cache-provider: basic
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       # Hardware acceleration for the emulator, as the emulator runner's README describes.

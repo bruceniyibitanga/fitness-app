@@ -4,8 +4,6 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.AtomicFile
 import app.levitx.data.DataUnavailableException
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.nio.BufferUnderflowException
@@ -17,6 +15,8 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 
 /** Name of the Android Keystore provider. */
 private const val ANDROID_KEYSTORE = "AndroidKeyStore"

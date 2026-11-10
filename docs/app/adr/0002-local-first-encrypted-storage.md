@@ -10,8 +10,8 @@ That left one open question: backups. Android Auto Backup can copy app data to t
 
 ## Decision
 
-- **Database.** All data lives in a local SQLite database through [Room](https://developer.android.com/training/data-storage/room), Google's recommended database library, encrypted at rest with SQLCipher. We confirm the exact integration against the current Room and SQLCipher docs when we build it in Phase 1.
-- **Key.** The database passphrase is 256 random bits made on the device the first time the app runs. It is stored only after being encrypted with an AES-GCM key that lives in the Android Keystore.
+- **Database.** All data lives in a local SQLite database through [Room](https://developer.android.com/training/data-storage/room) 2.8, Google's recommended database library, encrypted at rest with Zetetic's `sqlcipher-android` through its `SupportOpenHelperFactory`. Room 3 exists but is new; we can move once SQLCipher's Room 3 support has had time to settle.
+- **Key.** The database key is 256 random bits made on the device the first time the app runs. It is stored only after being encrypted with an AES-GCM key that lives in the Android Keystore (StrongBox where available), and passed to SQLCipher as a raw key.
 - **No automatic backup or device transfer.** Both apps set `allowBackup="false"` and ship data extraction rules that exclude every domain from cloud backup and device-to-device transfer. `allowBackup` alone doesn't stop device transfer on Android 12 and later, which is why the rules are needed too.
 - **Password-protected export instead.** People move their data to a new phone with an export file encrypted with a password they choose. The maintainer approved this in November 2026. It is built in Phase 4.
 

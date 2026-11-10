@@ -6,13 +6,13 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.IoDispatcher
 import app.levitx.data.security.DatabaseKeyStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** File name of the database inside the app's private databases folder. */
 internal const val DATABASE_NAME = "levitx.db"
