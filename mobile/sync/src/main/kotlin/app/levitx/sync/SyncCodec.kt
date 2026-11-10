@@ -174,7 +174,9 @@ internal object SyncCodec {
             val version = element.jsonObject["v"]?.jsonPrimitive?.intOrNull
             when {
                 version == null || version < 1 -> Decoded.Invalid
+
                 version > WIRE_VERSION -> Decoded.NewerVersion
+
                 else -> validate(json.decodeFromJsonElement(serializer, element))?.let { Decoded.Ok(it) }
                     ?: Decoded.Invalid
             }

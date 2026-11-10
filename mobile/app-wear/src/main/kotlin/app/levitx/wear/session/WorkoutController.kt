@@ -110,8 +110,10 @@ class WorkoutController @Inject constructor(
             val draft = draftRepository.load()
             when {
                 draft == null -> mutableState.value = WorkoutState.Idle(nextLoad)
+
                 // Every set was logged but the app died before the session was saved.
                 draft.isComplete -> finish(draft)
+
                 else -> save(draft.withSaneRest(clock.elapsedRealtimeMillis()))
             }
         }
