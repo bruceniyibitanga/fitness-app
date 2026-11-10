@@ -37,6 +37,27 @@ internal fun Lint.applyLevitxRules() {
     disable += setOf("GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable")
 }
 
+/**
+ * Keeps every module on the catalog's lifecycle version, even when it only
+ * gets lifecycle through another library (Compose UI pulls in an older one).
+ *
+ * Two reasons: all modules then run the same lifecycle code, and the older
+ * lifecycle's bundled lint checks don't load in AGP 9.5's lint, which fails
+ * the build (ObsoleteLintCustomCheck). A constraint only sets the version; it
+ * adds nothing to modules that don't already use lifecycle.
+ */
+internal fun Project.alignLifecycleVersion() {
+    val lifecycle = libs.findLibrary("androidx-lifecycle-runtime").get().get()
+    val notation = "${lifecycle.module}:${lifecycle.versionConstraint.requiredVersion}"
+    dependencies {
+        constraints {
+            add("implementation", notation) {
+                because("lifecycle lint checks older than this don't load in AGP 9.5")
+            }
+        }
+    }
+}
+
 /** Kotlin compiler warnings are errors, and bytecode matches [useJava17]. */
 internal fun Project.configureKotlin() {
     tasks.withType<KotlinJvmCompile>().configureEach {

@@ -7,6 +7,9 @@ sealed interface HomeUiState {
     /** Progress hasn't loaded yet. */
     data object Loading : HomeUiState
 
+    /** The person's data couldn't be unlocked on this device. Nothing was changed. */
+    data object Unavailable : HomeUiState
+
     /**
      * The person's place on their path.
      *

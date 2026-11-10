@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.update
 /**
  * Keeps bests in memory. They are lost when the app closes.
  *
- * This is the app's repository until the encrypted database lands later in
- * Phase 1; after that it stays as the fake used in tests.
+ * The apps use [RoomProgressRepository]; this is the fake for tests, so
+ * ViewModel tests run on the JVM without a device or database.
  */
 @Singleton
 class InMemoryProgressRepository @Inject constructor() : ProgressRepository {

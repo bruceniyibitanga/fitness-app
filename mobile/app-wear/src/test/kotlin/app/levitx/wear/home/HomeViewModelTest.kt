@@ -1,9 +1,15 @@
 package app.levitx.wear.home
 
+import app.levitx.core.skills.PathProgress
 import app.levitx.core.skills.SkillCatalogue
+import app.levitx.core.skills.SkillPath
+import app.levitx.data.DataUnavailableException
 import app.levitx.data.progress.InMemoryProgressRepository
+import app.levitx.data.progress.ProgressRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -56,9 +62,24 @@ class HomeViewModelTest {
         assertEquals(path.gates.size, state.gateNumber)
     }
 
-    /** Subscribes like a screen would, then returns the latest ready state. */
-    private fun TestScope.readyState(viewModel: HomeViewModel): HomeUiState.Ready {
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
-        return viewModel.uiState.value as HomeUiState.Ready
+    @Test
+    fun lockedDataShowsUnavailableInsteadOfCrashing() = runTest {
+        val locked = object : ProgressRepository {
+            override fun observeProgress(path: SkillPath): Flow<PathProgress> = flow {
+                throw DataUnavailableException("locked")
+            }
+
+            override suspend fun recordBest(gateId: String, best: Int) = Unit
+        }
+        assertEquals(HomeUiState.Unavailable, currentState(HomeViewModel(locked)))
     }
+
+    /** Subscribes like a screen would, then returns the latest state. */
+    private fun TestScope.currentState(viewModel: HomeViewModel): HomeUiState {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+        return viewModel.uiState.value
+    }
+
+    private fun TestScope.readyState(viewModel: HomeViewModel): HomeUiState.Ready =
+        currentState(viewModel) as HomeUiState.Ready
 }

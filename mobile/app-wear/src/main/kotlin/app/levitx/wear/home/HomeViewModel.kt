@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import app.levitx.core.skills.PathProgress
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.core.skills.SkillPath
+import app.levitx.data.DataUnavailableException
 import app.levitx.data.progress.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -31,7 +33,10 @@ class HomeViewModel @Inject constructor(progressRepository: ProgressRepository) 
 
     /** The current screen state. Starts as [HomeUiState.Loading]. */
     val uiState: StateFlow<HomeUiState> = progressRepository.observeProgress(path)
-        .map { progress -> progress.toUiState(path) }
+        .map<PathProgress, HomeUiState> { progress -> progress.toUiState(path) }
+        // Only the expected failure becomes a screen state. Anything else is
+        // a bug and should crash loudly rather than hide behind an error message.
+        .catch { error -> if (error is DataUnavailableException) emit(HomeUiState.Unavailable) else throw error }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),

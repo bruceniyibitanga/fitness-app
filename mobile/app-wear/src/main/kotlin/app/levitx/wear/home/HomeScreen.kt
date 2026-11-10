@@ -36,6 +36,9 @@ fun HomeScreen(uiState: HomeUiState) {
     val listState = rememberTransformingLazyColumnState()
     ScreenScaffold(scrollState = listState) { contentPadding ->
         TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
+            if (uiState is HomeUiState.Unavailable) {
+                item { Text(stringResource(R.string.data_unavailable)) }
+            }
             if (uiState is HomeUiState.Ready) {
                 item { ListHeader { Text(uiState.skillName) } }
                 val gateTitle = uiState.gateTitle

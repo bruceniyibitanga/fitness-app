@@ -33,6 +33,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
 
             configureKotlin()
+            alignLifecycleVersion()
             addComposeDependencies()
         }
     }

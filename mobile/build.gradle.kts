@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.room) apply false
     // Declaring the Kotlin plugins here puts this Kotlin version on the build
     // classpath for every module, including the AGP built-in Kotlin compiler.
     alias(libs.plugins.kotlin.multiplatform) apply false

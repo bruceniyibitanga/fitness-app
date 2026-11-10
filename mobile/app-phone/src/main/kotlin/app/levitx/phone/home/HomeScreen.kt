@@ -54,6 +54,14 @@ fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier) {
             // spinner for that long would only flicker, so show nothing.
             HomeUiState.Loading -> Unit
 
+            HomeUiState.Unavailable -> Text(
+                text = stringResource(R.string.data_unavailable),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(LevitxSpacing.Medium),
+            )
+
             is HomeUiState.Ready -> PathSummary(
                 state = uiState,
                 modifier = Modifier
