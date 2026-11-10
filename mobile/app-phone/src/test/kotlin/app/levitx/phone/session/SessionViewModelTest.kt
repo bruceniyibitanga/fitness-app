@@ -3,8 +3,8 @@ package app.levitx.phone.session
 import androidx.lifecycle.SavedStateHandle
 import app.levitx.core.session.SessionPlanner
 import app.levitx.core.skills.SkillCatalogue
-import app.levitx.phone.MainDispatcherRule
 import app.levitx.data.equipment.Band
+import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeGoalRepository
 import app.levitx.testing.FakeProgressRepository

@@ -53,12 +53,8 @@ sealed interface SessionUiState {
      * @property sessionBest Best set in this session that counts toward the gate.
      * @property usedBand True if any set was band-assisted. Those sets don't count toward the gate.
      */
-    data class Finished(
-        val gate: Gate,
-        val previousBest: Int,
-        val sessionBest: Int,
-        val usedBand: Boolean = false,
-    ) : SessionUiState {
+    data class Finished(val gate: Gate, val previousBest: Int, val sessionBest: Int, val usedBand: Boolean = false) :
+        SessionUiState {
         /** True when this session set a new best. */
         val isNewBest: Boolean
             get() = sessionBest > previousBest

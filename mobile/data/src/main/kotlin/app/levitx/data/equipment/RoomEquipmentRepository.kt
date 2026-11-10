@@ -4,23 +4,22 @@ import app.levitx.core.load.LoadLimits
 import app.levitx.data.database.BandEntity
 import app.levitx.data.database.BodyweightEntity
 import app.levitx.data.database.LevitxDatabaseProvider
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** Longest band name accepted. Names are labels like "Red", not notes. */
 internal const val MAX_BAND_NAME_LENGTH = 30
 
 /** Stores bodyweight and bands in the encrypted database. Bodyweight is health data. */
 @Singleton
-internal class RoomEquipmentRepository @Inject constructor(
-    private val databaseProvider: LevitxDatabaseProvider,
-) : EquipmentRepository {
+internal class RoomEquipmentRepository @Inject constructor(private val databaseProvider: LevitxDatabaseProvider) :
+    EquipmentRepository {
     override fun observeBodyweightKg(): Flow<Double?> = flow {
         emitAll(databaseProvider.database().equipmentDao().observeLatestBodyweight())
     }.distinctUntilChanged()

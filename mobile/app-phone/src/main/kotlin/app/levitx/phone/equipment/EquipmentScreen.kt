@@ -83,7 +83,9 @@ fun EquipmentScreen(
             TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
             when (uiState) {
                 EquipmentUiState.Loading -> Unit
+
                 EquipmentUiState.Unavailable -> Text(stringResource(R.string.data_unavailable))
+
                 is EquipmentUiState.Ready -> {
                     SectionLabel(stringResource(R.string.equipment_label))
                     Text(stringResource(R.string.equipment_title), style = LevitxType.Display)

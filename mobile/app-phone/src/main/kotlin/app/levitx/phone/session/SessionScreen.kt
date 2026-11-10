@@ -1,7 +1,7 @@
 package app.levitx.phone.session
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -140,26 +140,11 @@ private fun NextSet(
     val previous = state.logged.lastOrNull()
     var addedKg by rememberSaveable(state.setIndex) { mutableDoubleStateOf(previous?.addedKg ?: 0.0) }
     var bandId by rememberSaveable(state.setIndex) {
-        mutableStateOf(previous?.let { set -> state.bands.firstOrNull { it.assistanceKg == set.assistanceKg }?.id })
+        mutableStateOf(previous?.let { last -> state.bands.firstOrNull { it.assistanceKg == last.assistanceKg }?.id })
     }
     val assistanceKg = state.bands.firstOrNull { it.id == bandId }?.assistanceKg ?: 0.0
 
-    SectionLabel(stringResource(R.string.session_set_label, state.setIndex + 1, state.plan.sets.size))
-    Text(text = measureText(measure, set.target), style = LevitxType.Display)
-    Text(text = state.plan.gate.title, style = MaterialTheme.typography.titleMedium)
-    Text(
-        text = if (set.isBestEffort) {
-            stringResource(R.string.session_best_effort_instructions)
-        } else {
-            pluralStringResource(
-                R.plurals.session_work_instructions,
-                state.plan.repsInReserve,
-                state.plan.repsInReserve,
-            )
-        },
-        style = MaterialTheme.typography.bodyLarge,
-        color = LevitxColors.TextSoft,
-    )
+    SetHeader(state)
 
     NumberInput(
         value = value,
@@ -199,6 +184,28 @@ private fun NextSet(
     if (state.logged.isNotEmpty()) {
         TextButton(onClick = onFinish) { Text(stringResource(R.string.session_end_early)) }
     }
+}
+
+/** Which set this is, its target, and how hard to push. */
+@Composable
+private fun SetHeader(state: SessionUiState.Active) {
+    val set = state.nextSet
+    SectionLabel(stringResource(R.string.session_set_label, state.setIndex + 1, state.plan.sets.size))
+    Text(text = measureText(state.plan.gate.measure, set.target), style = LevitxType.Display)
+    Text(text = state.plan.gate.title, style = MaterialTheme.typography.titleMedium)
+    Text(
+        text = if (set.isBestEffort) {
+            stringResource(R.string.session_best_effort_instructions)
+        } else {
+            pluralStringResource(
+                R.plurals.session_work_instructions,
+                state.plan.repsInReserve,
+                state.plan.repsInReserve,
+            )
+        },
+        style = MaterialTheme.typography.bodyLarge,
+        color = LevitxColors.TextSoft,
+    )
 }
 
 /** "Reps left in the tank" as one tap: 0, 1, 2, 3 or 4+. */
@@ -278,8 +285,10 @@ private fun LoadChooser(
     Text(
         text = when {
             load == null -> stringResource(R.string.session_load_needs_bodyweight)
+
             load.isEstimate || assistanceKg > 0.0 ->
                 stringResource(R.string.session_load_estimate, formatKg(load.totalKg))
+
             else -> stringResource(R.string.session_load, formatKg(load.totalKg))
         },
         style = MaterialTheme.typography.titleMedium,

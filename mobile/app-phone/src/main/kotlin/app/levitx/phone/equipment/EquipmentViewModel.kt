@@ -7,13 +7,13 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.equipment.Band
 import app.levitx.data.equipment.EquipmentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /** What the equipment screen shows. */
 sealed interface EquipmentUiState {
@@ -37,9 +37,10 @@ sealed interface EquipmentUiState {
 class EquipmentViewModel @Inject constructor(private val equipment: EquipmentRepository) : ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<EquipmentUiState> =
-        combine(equipment.observeBodyweightKg(), equipment.observeBands()) { bodyweight, bands ->
-            EquipmentUiState.Ready(bodyweight, bands)
-        }
+        combine<Double?, List<Band>, EquipmentUiState>(
+            equipment.observeBodyweightKg(),
+            equipment.observeBands(),
+        ) { bodyweight, bands -> EquipmentUiState.Ready(bodyweight, bands) }
             .catch { error ->
                 if (error is DataUnavailableException) emit(EquipmentUiState.Unavailable) else throw error
             }
