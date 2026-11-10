@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import app.levitx.core.session.SessionPlanner
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.MainDispatcherRule
+import app.levitx.data.equipment.Band
+import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeGoalRepository
 import app.levitx.testing.FakeProgressRepository
 import app.levitx.testing.FakeSessionRepository
@@ -24,9 +26,10 @@ class SessionViewModelTest {
     private val clock = FakeClock()
     private val progress = FakeProgressRepository(mapOf(path.gates[0].id to 30, dips.id to 6))
     private val sessions = FakeSessionRepository(progress)
+    private val equipment = FakeEquipmentRepository(bodyweightKg = 74.0, bands = listOf(Band("red", "Red", 20.0)))
 
     private fun viewModel(savedState: SavedStateHandle = SavedStateHandle()) =
-        SessionViewModel(FakeGoalRepository(path), progress, sessions, clock, savedState)
+        SessionViewModel(FakeGoalRepository(path), progress, sessions, equipment, clock, savedState)
 
     @Test
     fun startsAtTheFirstSetOfTodaysPlan() = runTest {
@@ -100,6 +103,39 @@ class SessionViewModelTest {
     fun completedPathHasNothingToTrain() = runTest {
         path.gates.forEach { progress.recordBest(it.id, it.target) }
         assertEquals(SessionUiState.NothingToTrain, viewModel().uiState.value)
+    }
+
+    @Test
+    fun bandAssistedBestDoesNotRaiseTheGate() = runTest {
+        val viewModel = viewModel()
+        repeat(SessionPlanner.WORK_SETS) {
+            viewModel.logSet(4, 2)
+            viewModel.endRest()
+        }
+        viewModel.logSet(12, 0, assistanceKg = 20.0)
+
+        val finished = viewModel.uiState.value as SessionUiState.Finished
+        assertEquals(4, finished.sessionBest)
+        assertTrue(finished.usedBand)
+        assertEquals(6, progress.current[dips.id])
+    }
+
+    @Test
+    fun loadAndBodyweightAreSavedWithTheSession() = runTest {
+        val viewModel = viewModel()
+        viewModel.logSet(5, 2, addedKg = 10.0)
+        viewModel.finish()
+        val saved = sessions.sessions.single()
+        assertEquals(74.0, saved.bodyweightKg)
+        assertEquals(10.0, saved.sets.single().addedKg, 0.0)
+    }
+
+    @Test
+    fun activeStateCarriesBodyweightAndBands() = runTest {
+        val state = viewModel().uiState.value as SessionUiState.Active
+        assertEquals(74.0, state.bodyweightKg)
+        assertEquals(listOf("red"), state.bands.map { it.id })
+        assertTrue(state.tracksLoad)
     }
 
     private class FakeClock : TrainingClock {

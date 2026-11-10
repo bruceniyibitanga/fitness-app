@@ -29,13 +29,14 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 
 **Done when** both apps open on an emulator with the real theme and read and write the encrypted database.
 
-## Phase 2: The core loop on the phone (this phase)
+## Phase 2: The core loop on the phone (done, pending a try on a real phone)
 
 - Goal picker: first pull-up and muscle-up paths. Done.
 - Starting test: gate by gate, stopping at the first gate not passed. Done.
 - Today's session: work sets at about 70% of the current best with 2 reps in reserve, then one best-effort set. Live logging with reps in reserve, and a rest timer that keeps time on the device's elapsed clock. Done.
 - Path screen with every gate and the person's best. Done.
-- Still to do: load modifiers (vest, belt and band, with band calibration) and bodyweight, so every set has a load in kilograms.
+- Load modifiers: added weight (vest or belt) and bands per set, with live kilograms per rep. Bands are calibrated on a bathroom scale in the app. Band-assisted sets build toward a gate but don't pass it. Done.
+- Bodyweight entry, kept as a log so Phase 4 can chart it. Done.
 
 **Done when** someone can pick a goal, take the test and finish a full session on the phone.
 

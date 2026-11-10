@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.core.session.trainingDay
 import app.levitx.data.DataUnavailableException
+import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,14 +21,18 @@ import kotlinx.coroutines.flow.stateIn
  */
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
-/** Combines the active goal and the person's bests into [HomeUiState]. */
+/** Combines the active goal, the person's bests and whether bodyweight is known into [HomeUiState]. */
 @HiltViewModel
 class HomeViewModel @Inject constructor(goalRepository: GoalRepository, progressRepository: ProgressRepository) :
     ViewModel() {
     /** The current screen state. Starts as [HomeUiState.Loading]. */
     val uiState: StateFlow<HomeUiState> =
-        combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->
-            if (path == null) HomeUiState.NoGoal else HomeUiState.Ready(path.trainingDay(bests))
+        combine(
+            goalRepository.observeActiveGoal(),
+            progressRepository.observeBests(),
+            equipmentRepository.observeBodyweightKg(),
+        ) { path, bests, bodyweight ->
+            if (path == null) HomeUiState.NoGoal else HomeUiState.Ready(path.trainingDay(bests), bodyweight != null)
         }
             // Only the expected failure becomes a screen state. Anything else is
             // a bug and should crash loudly rather than hide behind an error message.

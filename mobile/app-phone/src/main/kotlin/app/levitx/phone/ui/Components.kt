@@ -17,6 +17,11 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -149,6 +154,75 @@ fun NumberInput(
     }
 }
 
+/**
+ * Kilogram entry that accepts decimals, with − and + buttons that step by
+ * [step]. Reports only valid numbers between 0 and [max]; while the field
+ * holds something unfinished (like "7." or ""), the last valid value stands.
+ */
+@Composable
+fun DecimalInput(
+    value: Double,
+    onValueChange: (Double) -> Unit,
+    label: String,
+    max: Double,
+    modifier: Modifier = Modifier,
+    step: Double = DEFAULT_KG_STEP,
+) {
+    var text by rememberSaveable { mutableStateOf(formatKg(value)) }
+    // Follow changes made elsewhere (the buttons, or a new default) without
+    // fighting the person while they type.
+    LaunchedEffect(value) {
+        if (parseKg(text) != value) text = formatKg(value)
+    }
+    Column(modifier = modifier) {
+        SectionLabel(text = label)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = LevitxSpacing.Small),
+        ) {
+            OutlinedButton(
+                onClick = { onValueChange((value - step).coerceIn(0.0, max)) },
+                modifier = Modifier
+                    .width(StepperButtonWidth)
+                    .heightIn(min = PrimaryButtonHeight),
+            ) { Text(stringResource(R.string.decrease), style = MaterialTheme.typography.titleLarge) }
+            OutlinedTextField(
+                value = text,
+                onValueChange = { typed ->
+                    text = typed.take(MAX_KG_CHARS)
+                    parseKg(text)?.takeIf { it <= max }?.let(onValueChange)
+                },
+                textStyle = LevitxType.Numeral.copy(textAlign = TextAlign.Center),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier
+                    .padding(horizontal = LevitxSpacing.Small)
+                    .width(NumberFieldWidth),
+            )
+            OutlinedButton(
+                onClick = { onValueChange((value + step).coerceIn(0.0, max)) },
+                modifier = Modifier
+                    .width(StepperButtonWidth)
+                    .heightIn(min = PrimaryButtonHeight),
+            ) { Text(stringResource(R.string.increase), style = MaterialTheme.typography.titleLarge) }
+        }
+    }
+}
+
+/** "72.5" or "70": one decimal place at most, and none when it's a whole number. */
+fun formatKg(kg: Double): String {
+    val tenths = Math.round(kg * TENTHS_PER_UNIT)
+    return if (tenths % TENTHS_PER_UNIT == 0L) {
+        (tenths / TENTHS_PER_UNIT).toString()
+    } else {
+        "${tenths / TENTHS_PER_UNIT}.${tenths % TENTHS_PER_UNIT}"
+    }
+}
+
+/** Reads "72.5" or "72,5" (comma decimal locales). Null for anything that isn't a non-negative number. */
+fun parseKg(text: String): Double? = text.trim().replace(',', '.').toDoubleOrNull()
+    ?.takeIf { it.isFinite() && it >= 0.0 }
+
 /** "8 reps" or "30 s", depending on what the gate measures. */
 @Composable
 fun measureText(measure: GateMeasure, value: Int): String = when (measure) {
@@ -168,3 +242,6 @@ fun durationText(seconds: Int): String = if (seconds % SECONDS_PER_MINUTE == 0) 
 private const val MAX_ENTRY = 999
 private const val MAX_DIGITS = 3
 private const val SECONDS_PER_MINUTE = 60
+private const val DEFAULT_KG_STEP = 0.5
+private const val MAX_KG_CHARS = 6
+private const val TENTHS_PER_UNIT = 10L

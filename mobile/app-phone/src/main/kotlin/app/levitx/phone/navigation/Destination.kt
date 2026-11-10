@@ -32,4 +32,8 @@ sealed interface Destination : NavKey {
     /** Every gate on the path, with bests. */
     @Serializable
     data object Path : Destination
+
+    /** Bodyweight and bands. */
+    @Serializable
+    data object Equipment : Destination
 }

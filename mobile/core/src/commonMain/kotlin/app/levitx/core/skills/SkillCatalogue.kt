@@ -1,5 +1,7 @@
 package app.levitx.core.skills
 
+import app.levitx.core.load.LoadCatalogue
+
 /**
  * Built-in skill paths.
  *
@@ -25,6 +27,7 @@ public object SkillCatalogue {
                 measure = GateMeasure.REPS,
                 target = 10,
                 trains = "Pressing strength for the top half of the muscle-up.",
+                loadProfile = LoadCatalogue.dip,
             ),
             Gate(
                 id = "muscle_up.pull_ups",
@@ -32,6 +35,7 @@ public object SkillCatalogue {
                 measure = GateMeasure.REPS,
                 target = 10,
                 trains = "Pulling strength for the bottom half.",
+                loadProfile = LoadCatalogue.pullUp,
             ),
             Gate(
                 id = "muscle_up.chest_to_bar",
@@ -39,6 +43,7 @@ public object SkillCatalogue {
                 measure = GateMeasure.REPS,
                 target = 5,
                 trains = "Pulling high enough to get over the bar.",
+                loadProfile = LoadCatalogue.pullUp,
             ),
             Gate(
                 id = "muscle_up.false_grip_hang",
@@ -89,6 +94,7 @@ public object SkillCatalogue {
                 measure = GateMeasure.REPS,
                 target = 5,
                 trains = "Lowering under control for 3 to 5 seconds builds the pulling strength.",
+                loadProfile = LoadCatalogue.pullUp,
             ),
             Gate(
                 id = "first_pull_up.pull_up",
@@ -96,6 +102,7 @@ public object SkillCatalogue {
                 measure = GateMeasure.REPS,
                 target = 1,
                 trains = "The goal.",
+                loadProfile = LoadCatalogue.pullUp,
             ),
         ),
     )

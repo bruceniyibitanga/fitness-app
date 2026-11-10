@@ -54,6 +54,9 @@
     <string name="home_path_complete">Path complete. Time to pick your next goal.</string>
     <string name="home_choose_next_goal">Choose your next goal</string>
     <string name="home_choose_goal">Choose a goal</string>
+    <string name="home_equipment">Bodyweight and bands</string>
+    <string name="home_bodyweight_label">ADD YOUR BODYWEIGHT</string>
+    <string name="home_bodyweight_prompt">So every set shows how many kilograms each rep moves, including vests and bands.</string>
 
     <!-- Session -->
     <string name="session_set_label">SET %1$d OF %2$d</string>
@@ -79,6 +82,16 @@
     <string name="session_progress">That\'s progress toward %1$s.</string>
     <string name="session_keep_going">Your best is still %1$s. Every session counts, even the flat ones.</string>
     <string name="session_done">Done</string>
+    <string name="session_added_weight_label">ADDED WEIGHT (VEST OR BELT), KG</string>
+    <string name="session_band_label">BAND</string>
+    <string name="session_band_none">None</string>
+    <string name="session_band_choice">%1$s · %2$s kg</string>
+    <string name="session_load">%1$s kg per rep</string>
+    <string name="session_load_estimate">About %1$s kg per rep (estimate)</string>
+    <string name="session_load_needs_bodyweight">Add your bodyweight to see kilograms per rep.</string>
+    <string name="session_band_note">Band-assisted sets build toward the gate but don\'t pass it.</string>
+    <string name="session_logged_load">%1$s · %2$s kg</string>
+    <string name="session_summary_band_note">Band-assisted sets don\'t count toward the gate, but they still build the strength for it.</string>
     <string name="session_nothing">Nothing to train right now.</string>
     <string name="session_back_home">Back to home</string>
 
@@ -88,6 +101,27 @@
     <string name="path_status_current">WORKING ON IT</string>
     <string name="path_status_locked">LATER</string>
     <string name="path_best">Best %1$s</string>
+
+    <!-- Equipment -->
+    <string name="equipment_label">EQUIPMENT</string>
+    <string name="equipment_title">Bodyweight and bands</string>
+    <string name="equipment_body">Used to work out how many kilograms each rep moves. Stored only on this phone, encrypted.</string>
+    <string name="equipment_bodyweight_label">BODYWEIGHT, KG</string>
+    <string name="equipment_bodyweight_current">Saved: %1$s kg</string>
+    <string name="equipment_bodyweight_save">Save bodyweight</string>
+    <string name="equipment_bands_label">BANDS</string>
+    <string name="equipment_no_bands">No bands yet. Add one to use it for assisted sets.</string>
+    <string name="equipment_band_help">Helps by about %1$s kg</string>
+    <string name="equipment_band_remove">Remove</string>
+    <string name="equipment_band_needs_bodyweight">Save your bodyweight first. Calibrating a band needs it.</string>
+    <string name="equipment_band_add">Add a band</string>
+    <string name="equipment_calibrate_label">CALIBRATE WITH A BATHROOM SCALE</string>
+    <string name="equipment_calibrate_steps">1. Loop the band over the bar.\n2. Stand on a bathroom scale under it and put one foot in the band.\n3. Bend your knees until your chin is about where it would be halfway up a pull-up.\n4. Keep your hands off the bar and read the scale.</string>
+    <string name="equipment_band_name">Name, like its colour</string>
+    <string name="equipment_scale_reading">SCALE READING, KG</string>
+    <string name="equipment_band_result">This band helps by about %1$s kg</string>
+    <string name="equipment_band_result_invalid">The reading should be lower than your bodyweight.</string>
+    <string name="equipment_band_save">Save band</string>
 
     <!-- Errors -->
     <string name="data_unavailable">Your training data couldn\'t be unlocked on this device. Nothing was changed or deleted. Close the app and open it again to retry.</string>

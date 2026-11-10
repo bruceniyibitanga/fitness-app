@@ -34,4 +34,26 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun version2To3KeepsSetsAndDefaultsTheirLoad() {
+        helper.createDatabase(name, 2).use { db ->
+            db.execSQL(
+                "INSERT INTO training_session (id, gateId, startedAtEpochMillis, finishedAtEpochMillis) " +
+                    "VALUES ('s1', 'g', 0, 1)",
+            )
+            db.execSQL(
+                "INSERT INTO logged_set (sessionId, position, value, repsInReserve, isBestEffort) " +
+                    "VALUES ('s1', 0, 5, 2, 0)",
+            )
+        }
+        helper.runMigrationsAndValidate(name, 3, true).use { db ->
+            db.query("SELECT value, addedKg, assistanceKg FROM logged_set WHERE sessionId = 's1'").use { cursor ->
+                check(cursor.moveToFirst()) { "set was lost in the migration" }
+                check(cursor.getInt(0) == 5 && cursor.getDouble(1) == 0.0 && cursor.getDouble(2) == 0.0) {
+                    "migrated set has the wrong values"
+                }
+            }
+        }
+    }
 }

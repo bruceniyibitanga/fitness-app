@@ -11,6 +11,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import app.levitx.phone.equipment.EquipmentRoute
 import app.levitx.phone.goal.GoalPickerRoute
 import app.levitx.phone.home.HomeRoute
 import app.levitx.phone.launch.LaunchViewModel
@@ -58,6 +59,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                     onStartSession = { backStack.add(Destination.Session) },
                     onViewPath = { backStack.add(Destination.Path) },
                     onChooseGoal = { backStack.add(Destination.GoalPicker) },
+                    onOpenEquipment = { backStack.add(Destination.Equipment) },
                 )
             }
             entry<Destination.Session> {
@@ -65,6 +67,9 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
             }
             entry<Destination.Path> {
                 PathRoute(onBack = { backStack.removeLastOrNull() })
+            }
+            entry<Destination.Equipment> {
+                EquipmentRoute(onBack = { backStack.removeLastOrNull() })
             }
         },
     )

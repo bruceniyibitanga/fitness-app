@@ -1,5 +1,7 @@
 package app.levitx.core.skills
 
+import app.levitx.core.load.LoadProfile
+
 /** What a gate measures. */
 public enum class GateMeasure {
     /** Clean reps in one set. */
@@ -17,6 +19,8 @@ public enum class GateMeasure {
  * @property measure Whether [target] counts reps or seconds.
  * @property target Reps or seconds needed to pass. At least 1.
  * @property trains One line on what the gate builds, shown when the person taps it.
+ * @property loadProfile How much of the body this exercise moves, for working out the load of
+ *   each rep. Null for holds and moves without a measured or reasoned share.
  * @throws IllegalArgumentException if [target] is below 1.
  */
 public data class Gate(
@@ -25,6 +29,7 @@ public data class Gate(
     val measure: GateMeasure,
     val target: Int,
     val trains: String,
+    val loadProfile: LoadProfile? = null,
 ) {
     init {
         require(target >= 1) { "target must be at least 1" }

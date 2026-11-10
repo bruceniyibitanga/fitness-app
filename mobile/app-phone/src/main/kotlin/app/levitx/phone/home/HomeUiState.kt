@@ -17,6 +17,7 @@ sealed interface HomeUiState {
      * The person's place on their path and today's session.
      *
      * @property day Path, progress and today's plan, worked out by `:core`.
+     * @property hasBodyweight False until a bodyweight is entered; the screen then asks for one.
      */
-    data class Ready(val day: TrainingDay) : HomeUiState
+    data class Ready(val day: TrainingDay, val hasBodyweight: Boolean = true) : HomeUiState
 }

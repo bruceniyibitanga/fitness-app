@@ -1,5 +1,6 @@
 package app.levitx.data.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -12,6 +13,7 @@ import androidx.room.PrimaryKey
  * @property gateId The gate trained, a `Gate.id` from `:core`.
  * @property startedAtEpochMillis When it started, in UTC milliseconds.
  * @property finishedAtEpochMillis When it finished, in UTC milliseconds.
+ * @property bodyweightKg Bodyweight at the time, if known (added in version 3).
  */
 @Entity(tableName = "training_session")
 internal data class TrainingSessionEntity(
@@ -19,6 +21,7 @@ internal data class TrainingSessionEntity(
     val gateId: String,
     val startedAtEpochMillis: Long,
     val finishedAtEpochMillis: Long,
+    val bodyweightKg: Double? = null,
 )
 
 /**
@@ -29,6 +32,8 @@ internal data class TrainingSessionEntity(
  * @property value Reps or seconds done.
  * @property repsInReserve Reps the person felt they had left, or null.
  * @property isBestEffort True for the session's best-effort set.
+ * @property addedKg Vest or belt weight (added in version 3; 0 for older rows).
+ * @property assistanceKg Band assistance (added in version 3; 0 for older rows).
  */
 @Entity(
     tableName = "logged_set",
@@ -49,4 +54,6 @@ internal data class LoggedSetEntity(
     val value: Int,
     val repsInReserve: Int?,
     val isBestEffort: Boolean,
+    @ColumnInfo(defaultValue = "0") val addedKg: Double = 0.0,
+    @ColumnInfo(defaultValue = "0") val assistanceKg: Double = 0.0,
 )
