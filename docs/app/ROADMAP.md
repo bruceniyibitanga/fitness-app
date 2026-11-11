@@ -25,6 +25,7 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 - Hilt, Navigation 3 on both apps, and the ViewModel and UI state pattern on a first home screen. Done.
 - Encrypted Room database (SQLCipher) with its key protected by the Android Keystore, failing closed when the key is missing. Done.
 - CI runs the encryption tests on an emulator. Done.
+- Test APKs of both apps built in CI on every push to `main`, signed with a shared test key, for installing without Android Studio. Done.
 - Still to do: release app bundles in CI, and trying both apps on a real phone and watch.
 
 **Done when** both apps open on an emulator with the real theme and read and write the encrypted database.

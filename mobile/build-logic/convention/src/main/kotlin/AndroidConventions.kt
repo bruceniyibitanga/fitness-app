@@ -3,6 +3,7 @@
  * concern, so a plugin reads as a list of the concerns it applies.
  */
 
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CompileOptions
 import com.android.build.api.dsl.Lint
 import org.gradle.api.JavaVersion
@@ -77,4 +78,45 @@ internal fun Project.addComposeDependencies() {
         add("implementation", libs.findLibrary("compose-ui-tooling-preview").get())
         add("debugImplementation", libs.findLibrary("compose-ui-tooling").get())
     }
+}
+
+/** Path to the shared test signing key. Set by the test-build workflow only. */
+private const val TEST_KEYSTORE_ENV = "LEVITX_TEST_KEYSTORE"
+
+/** Password for that key. Set by the test-build workflow only, from a GitHub secret. */
+private const val TEST_KEYSTORE_PASSWORD_ENV = "LEVITX_TEST_KEYSTORE_PASSWORD"
+
+/** A label such as "test.42", added to the version name so a test build can be told apart. */
+private const val TEST_BUILD_LABEL_ENV = "LEVITX_TEST_BUILD_LABEL"
+
+/** The key's alias inside the keystore. Not secret. */
+private const val TEST_KEY_ALIAS = "levitx-test"
+
+/**
+ * Signs debug builds with the shared test key when CI provides it.
+ *
+ * The phone and watch apps only talk over the Data Layer when both are signed
+ * with the same key. Locally, Android Studio's debug key does that. In CI each
+ * run would otherwise make a new throwaway key, so a new test build couldn't
+ * be installed over the last one without wiping its data. This key is for
+ * test builds only; release builds are signed through Play App Signing.
+ *
+ * With the variables unset (every local build, and CI without the secret),
+ * nothing changes.
+ */
+internal fun ApplicationExtension.useTestSigningWhenProvided(project: Project) {
+    val keystore = project.providers.environmentVariable(TEST_KEYSTORE_ENV).orNull
+    val password = project.providers.environmentVariable(TEST_KEYSTORE_PASSWORD_ENV).orNull
+    val label = project.providers.environmentVariable(TEST_BUILD_LABEL_ENV).orNull
+    val debug = buildTypes.getByName("debug")
+    if (!keystore.isNullOrBlank() && !password.isNullOrBlank()) {
+        val testSigning = signingConfigs.create("levitxTest")
+        testSigning.storeFile = project.file(keystore)
+        testSigning.storePassword = password
+        testSigning.keyAlias = TEST_KEY_ALIAS
+        // PKCS12 keystores use one password for the store and the key.
+        testSigning.keyPassword = password
+        debug.signingConfig = testSigning
+    }
+    if (!label.isNullOrBlank()) debug.versionNameSuffix = "-$label"
 }
