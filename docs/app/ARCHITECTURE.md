@@ -64,6 +64,19 @@ The phone has three destinations on its Navigation 3 back stack: setup, the tabs
 - **Skills** shows where the person is on every ladder, read straight from the coach's model through `currentExercise` and `currentGatePattern`, so it can't disagree with what Today plans.
 - **Train** lists the skill programs and one workout per focus. A program can be made the plan, which changes only the goal. A workout opens a detail screen and starts through `WorkoutStarter`, the same path Today uses, so a workout in progress is never replaced.
 - **Exercise detail** opens from Today, a workout or Skills: form cues and set-up notes from `ExerciseGuides` in `:core`, the person's target, best and load per rep, and the exercise's ladder with their place on it.
+- **Plan** shows the goal's gates on a rail, with how many are left and what each one trains.
+- **Body** shows the bodyweight trend from `bodyweightTrend` in `:core` (the same figure the coach plans with), the load per rep it gives each exercise trained now, the kit the plan can use, and the bands. Kit changes go through `CoachRepository.updateProfile`, so Today plans with the new kit straight away.
+
+#### The design kit
+
+Every screen is built to its artboard in the "Levitx App Design" canvas, from one small kit in `app-phone/ui/`:
+
+- `Bars.kt`: the square orange `AccentBar` for the main action (label left, arrow right), and the quieter `QuietBar` and `OutlineBar`. There are no rounded buttons anywhere.
+- `Type.kt` and `Headers.kt`: mono captions, the tab header with the orange mark, the step header for setup, and `PhotoHeader` for detail screens.
+- `Blocks.kt`, `Chips.kt`, `ChoiceStyle.kt`, `KitPicker.kt`, `GateRow.kt`, `SessionList.kt`: the stat strip, photo tiles, numbered rows, chips, choice bars, the kit picker and the gate rail, each shared by every screen that needs it.
+- `Photos.kt`: which bundled photo goes with which program, workout focus and movement, so the same thing always has the same picture. The photos are listed with their sources in `docs/app/PHOTO-CREDITS.md`.
+
+Colours, fonts and type sizes come from `:design` (`LevitxColors`, `LevitxFonts`, `LevitxType`), which match the artboards' values.
 
 A new safety rule is one object added to `HardRules.all`, and a new scoring term is one object added to `ScoringTerms.all`. Neither means changing the code that uses them. The rules and terms are `internal`, so the apps can't reach around `Coach`.
 
@@ -157,6 +170,7 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 - **Tests:** unit tests for `:core`, `:data` and every ViewModel.
 - **Instrumented tests:** the Keystore and SQLCipher tests run on an Android emulator in CI.
 - **Room schema:** each database version's schema must be committed.
+- **Screen previews:** the `screenshots` job renders every preview in `app-phone/src/screenshotTest` to an image at the artboards' 390 × 844 size, using Compose Preview Screenshot Testing, and uploads them as the `phone-screens` artifact. It doesn't compare against stored images yet; it exists so each screen can be checked against its artboard on every push.
 
 ## Testing
 

@@ -80,6 +80,12 @@ When the person opens Today, the coach builds the next session in three steps.
 2. **Hard rules.** Each candidate is made safe. A rule that objects says what would fix it, and the fix is applied: the exercise goes light, or comes out. What is left is the nearest safe version of that candidate. If nothing is left, it's dropped.
 3. **Scoring.** The safe candidates are scored and the best one is the session.
 
+One rule sits above the scoring: when the goal's skill work can be done safely today, the session has it. Candidates without it are only scored when none with it survived step 2. Without this rule a person whose goal was a pull-up could get a session with no pulling in it at all, because a session without the skill work sometimes scored a little higher on balance.
+
+### Kit
+
+Nobody is assumed to own anything. A person with no kit trains on what every home has: the floor, a wall and a chair. Each exercise lists the kit it needs (a pull-up bar, a low bar, dip bars, rings, a band, or a box or step of a set height), and the ladders skip any rung the person can't do with what they have, up and down. If the goal itself needs kit they haven't added, Today says what is missing and where to add it ("Pull-up work needs a pull-up bar. Add it under Body to start it.") and the plan trains everything else in the meantime.
+
 Making candidates safe, instead of only throwing unsafe ones away, means a sore elbow gives "legs as normal, upper body light" and not a random other session.
 
 ### The hard rules
@@ -178,10 +184,11 @@ Bodyweight matters to the coach in two ways: it sets the kg per rep for every bo
 Every session comes with one plain sentence saying why. The coach picks it in this order:
 
 1. A safety rule changed the session ("Working around your elbow today.").
-2. Something changed since last time. The biggest change wins: a new exercise is explained ahead of one more rep.
-3. The coach is still finding the person's level (their first two sessions).
-4. Targets are being held for weight.
-5. Whatever set this session apart from the runner-up: the scoring term where it led by most.
+2. The goal needs kit the person hasn't added.
+3. Something changed since last time. The biggest change wins: a new exercise is explained ahead of one more rep.
+4. The coach is still finding the person's level (their first two sessions).
+5. Targets are being held for weight.
+6. Whatever set this session apart from the runner-up: the scoring term where it led by most.
 
 Examples:
 
@@ -270,7 +277,7 @@ The datasets were useful for names and kit, and not much else. Their difficulty 
 | Vertical pull | dead hang, scapular pull-up, negative or band-assisted pull-up, pull-up or chin-up, chest-to-bar or wide pull-up | RR pull-up progression: scapular pulls, arch hangs, negatives, pull-ups. Chest-to-bar is the RR wiki's prerequisite for a muscle-up. |
 | Horizontal pull | rows with knees bent, rows with straight body, rows with feet raised | RR row progression goes from steep to flat body angle. A steeper body is easier. |
 | Vertical push | pike push-up with hands raised, pike push-up, feet-raised pike or negative dip, wall handstand push-up negative or dip | RR dip progression: support hold, negative dips, dips. Pike to handstand push-up is common coaching practice; we found no study ranking it. |
-| Horizontal push | hands on 61 cm box, knees, hands on 30 cm box, floor, feet on 30 cm box, feet on 61 cm box | Force-plate loads of 41, 49, 55, 64, 70 and 74% of bodyweight (Ebben et al. 2011). Our order matches the measured order exactly. |
+| Horizontal push | wall, hands on 61 cm box, knees, hands on 30 cm box, floor, feet on 30 cm box, feet on 61 cm box | Force-plate loads of 41, 49, 55, 64, 70 and 74% of bodyweight for the six box and floor positions (Ebben et al. 2011). Our order matches the measured order exactly. The wall push-up is a gentler start below all of them, so someone with no kit has a first rung. |
 | Squat | squat to a chair, squat, split squat or reverse lunge, Bulgarian split squat or high step-up, pistol to a chair, pistol | RR squat progression: assisted squat, squat, Bulgarian split squat, then shrimp squats. Our split squat rung is a smaller step between squat and Bulgarian, and we use pistols at the top instead of shrimps. |
 | Hinge | glute bridge, single-leg bridge or hip thrust, single-leg deadlift, sliding leg curl, Nordic curl negative | RR hinge progression: Romanian deadlift, single-leg deadlift, then Nordic curl work, with floor slides as its alternative bridge between the two. Bridges are an easier start we added in place of the Romanian deadlift. |
 | Core | plank or dead bug, hollow hold or lying leg raise, hanging knee raise or tuck L-sit, hanging leg raise | RR core work (anti-extension), and free-exercise-db's ranking of lying leg raises below hanging ones. |
@@ -296,7 +303,8 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 | Slow negative dip | - | - | RR dip level 2. New in this check. |
 | Dip | Parallel_Bar_Dip | Dips | |
 | Wall handstand push-up negative | Handstand_Push-Ups | Handstand Push Up | The negative half of the listed exercise. |
-| Push-ups, hands raised (2 heights) | Incline_Push-Up | Incline Push up | Load measured by Ebben et al. |
+| Wall push-up | - | - | The no-kit start of the push-up ladder. Not measured, so the app shows no load per rep for it. |
+| Push-ups, hands raised (2 heights) | Incline_Push-Up | Incline Push up | Load measured by Ebben et al. Needs a box or step. |
 | Knee push-up | - | knee push-ups | Load measured by Ebben et al. |
 | Push-up | Pushups | Push-Up | Load measured by Ebben et al. |
 | Close-grip push-up | Push-Ups_-_Close_Triceps_Position | Diamond push ups | Kept on the push-up rung; see open points. |
@@ -306,7 +314,7 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 | Split squat | - | - | Bodyweight version of both datasets' dumbbell split squat |
 | Reverse lunge | - | Reverse lunges | |
 | Bulgarian split squat | - | Bulgarian split squats left | RR squat level |
-| High step-up | - | Step-ups | |
+| High step-up | - | Step-ups | Needs a box or step. |
 | Pistol squat to a chair | Single-Leg_High_Box_Squat | - | |
 | Pistol squat | - | Pistol Squat | |
 | Glute bridge | Butt_Lift_Bridge | Glute Bridge | |
