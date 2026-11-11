@@ -19,10 +19,12 @@ import app.levitx.core.skills.GateMeasure
 /**
  * The exercises the coach plans with, as one ladder per movement pattern.
  *
- * The ladders follow common calisthenics progressions. Like the skill gates,
- * they are a starting point and must be reviewed by a qualified coach before
- * release. Only exercises with a measured or reasoned bodyweight share carry a
- * load profile; the rest show no kilograms rather than a made-up figure.
+ * The ladders follow published calisthenics progressions, mainly the
+ * r/bodyweightfitness Recommended Routine. docs/app/COACH-ENGINE.md lists the
+ * source each exercise and rung was checked against. Like the skill gates,
+ * they still need review by a qualified coach before release. Only exercises
+ * with a measured or reasoned bodyweight share carry a load profile; the rest
+ * show no kilograms rather than a made-up figure.
  */
 public object ExerciseCatalogue {
     private val bar = setOf(PULL_UP_BAR)
@@ -83,15 +85,23 @@ public object ExerciseCatalogue {
         listOf(
             Rung(listOf(reps("vertical_push.pike_hands_raised", "Pike push-up, hands raised", VERTICAL_PUSH, 5..10))),
             Rung(listOf(reps("vertical_push.pike", "Pike push-up", VERTICAL_PUSH, 5..10))),
+            // Slow negatives come before full dips, as in the r/bodyweightfitness
+            // dip progression, so nobody meets a full dip before they can lower through one.
             Rung(
                 listOf(
                     reps("vertical_push.pike_feet_raised", "Pike push-up, feet raised", VERTICAL_PUSH, 5..10),
+                    reps("vertical_push.negative_dip", "Slow negative dip", VERTICAL_PUSH, 3..5, setOf(DIP_BARS))
+                        .alsoTraining(HORIZONTAL_PUSH),
+                ),
+            ),
+            Rung(
+                listOf(
+                    reps("vertical_push.wall_negative", "Wall handstand push-up negative", VERTICAL_PUSH, 3..5),
                     reps("vertical_push.dip", "Dip", VERTICAL_PUSH, 5..10, setOf(DIP_BARS))
                         .alsoTraining(HORIZONTAL_PUSH)
                         .moving(LoadCatalogue.dip),
                 ),
             ),
-            Rung(listOf(reps("vertical_push.wall_negative", "Wall handstand push-up negative", VERTICAL_PUSH, 3..5))),
         ),
     )
 

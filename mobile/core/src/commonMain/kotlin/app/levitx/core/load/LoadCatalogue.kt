@@ -5,10 +5,19 @@ private const val EBBEN_2011 =
         "J Strength Cond Res 25(10):2891-2894"
 
 /**
+ * Share of bodyweight moved when the hands and forearms stay put, as on a bar
+ * or dip bars. Forearm and hand together are about 2.2% of body mass per arm
+ * in men and 1.9% in women (de Leva 1996, J Biomech 29(9):1223-1230), so
+ * about 4 to 4.5% for both arms. Rounded down to 95%.
+ */
+private const val BODY_WITHOUT_FOREARMS = 0.95
+
+/**
  * The load profiles the apps know about.
  *
- * Push-up figures are force-plate measurements. Pull-ups and dips count the
- * whole body as moved, which is an estimate until we find a measured figure.
+ * Push-up figures are force-plate measurements. Pull-ups and dips count
+ * everything but the forearms and hands as moved, worked out from published
+ * segment masses. That is an estimate until someone measures it.
  * Add new profiles here rather than hard-coding shares elsewhere.
  */
 public object LoadCatalogue {
@@ -54,20 +63,22 @@ public object LoadCatalogue {
         share = 0.74,
     )
 
-    /** Pull-up. Counts the whole body as moved (estimate). */
+    /** Pull-up. Counts everything but the forearms and hands as moved (estimate). */
     public val pullUp: LoadProfile = LoadProfile(
         id = "pull_up",
         name = "Pull-up",
-        bodyweightShare = 1.0,
+        bodyweightShare = BODY_WITHOUT_FOREARMS,
         evidence = LoadEvidence.ESTIMATED,
+        addedWeightShare = 1.0,
     )
 
-    /** Parallel bar dip. Counts the whole body as moved (estimate). */
+    /** Parallel bar dip. Counts everything but the forearms and hands as moved (estimate). */
     public val dip: LoadProfile = LoadProfile(
         id = "dip",
         name = "Dip",
-        bodyweightShare = 1.0,
+        bodyweightShare = BODY_WITHOUT_FOREARMS,
         evidence = LoadEvidence.ESTIMATED,
+        addedWeightShare = 1.0,
     )
 
     /** Push-up variations from easiest to hardest. */

@@ -44,10 +44,10 @@ public data class EffectiveLoad(
 /**
  * Works out how many kilograms one rep of an exercise moves.
  *
- * Added weight is counted at the same [LoadProfile.bodyweightShare] as the
- * body. That is a fair estimate for a vest worn on the torso, and exact for
- * hanging exercises like pull-ups where the share is 1. Band assistance is
- * subtracted in full because it is calibrated as kilograms of help.
+ * Added weight is counted at [LoadProfile.addedWeightShare]: the body's share
+ * on the floor, which is a fair estimate for a vest worn on the torso, and all
+ * of it when hanging or supported on bars. Band assistance is subtracted in
+ * full because it is calibrated as kilograms of help.
  *
  * @throws IllegalArgumentException if [bodyweightKg] or any modifier is
  *   outside [LoadLimits]. The UI validates first, so a throw here is a bug.
@@ -69,10 +69,9 @@ public fun calculateEffectiveLoad(
         }
     }
 
-    val share = profile.bodyweightShare
     return EffectiveLoad(
-        fromBodyweightKg = bodyweightKg * share,
-        fromAddedWeightKg = addedKg * share,
+        fromBodyweightKg = bodyweightKg * profile.bodyweightShare,
+        fromAddedWeightKg = addedKg * profile.addedWeightShare,
         removedByAssistanceKg = assistanceKg,
         isEstimate = profile.evidence == LoadEvidence.ESTIMATED,
     )

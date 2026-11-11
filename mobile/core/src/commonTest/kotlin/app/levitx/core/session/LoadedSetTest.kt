@@ -39,7 +39,8 @@ class LoadedSetTest {
     @Test
     fun loadPerRepUsesTheGatesProfileAndModifiers() {
         val load = assertNotNull(LoggedSet(5, 2, false, addedKg = 10.0).loadPerRep(pullUps, bodyweightKg = 74.0))
-        assertEquals(84.0, load.totalKg, absoluteTolerance = 0.001)
+        // 95% of 74 kg, plus all 10 kg of the belt.
+        assertEquals(80.3, load.totalKg, absoluteTolerance = 0.001)
         assertTrue(load.isEstimate)
     }
 
