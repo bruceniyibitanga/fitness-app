@@ -61,7 +61,8 @@ The database key is 256 random bits made on the device the first time the app ru
 - **Logs.** No personal data in logs. Log codes and counts, never values.
 - **Release builds.** R8 shrinking, optimisation and obfuscation are on, and CI builds the release variant on every push. SQLCipher's classes are kept from renaming in `:data`'s consumer rules, because its native code looks them up by name.
 - **Fonts and other assets** are bundled, so the apps make no network requests to show text.
-- **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Use Play App Signing.
+- **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Release builds will use Play App Signing.
+- **The test signing key** signs the APKs CI builds for device testing, so the phone and watch builds match. It lives only in two repository secrets, is written to the runner's temp folder for the build, and is only used by the `Mobile test build` workflow, which runs on `main` and on demand, never on pull requests. It is not the release key. If it leaks, the worst case is someone making an APK that can install over a test build, so it gets replaced rather than worked around.
 - **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
 - **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
 - **Gradle wrapper.** The wrapper jar is checked against Gradle's published checksums in CI, and the distribution download is checked against its SHA-256.

@@ -32,6 +32,10 @@ Start with these:
 3. Let the Gradle sync finish. The wrapper downloads the right Gradle version and checks its checksum.
 4. Pick `app-phone` or `app-wear` in the run menu, and a phone or Wear OS emulator.
 
+### Testing on real devices without Android Studio
+
+Every push to `main` builds installable test APKs of both apps in GitHub Actions. [Testing on a real phone and watch](../docs/app/TESTING-ON-DEVICES.md) explains how to get them onto your devices.
+
 ### Trying phone and watch sync
 
 Sync needs a phone and a watch that are paired with each other. On emulators:

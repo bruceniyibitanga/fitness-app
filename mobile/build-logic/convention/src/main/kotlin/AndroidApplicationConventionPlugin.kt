@@ -30,6 +30,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     isShrinkResources = true
                     proguardFiles(optimizeRules, "proguard-rules.pro")
                 }
+                useTestSigningWhenProvided(target)
             }
 
             configureKotlin()
