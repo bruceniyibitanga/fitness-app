@@ -35,7 +35,7 @@ class WorkoutViewModelTest {
 
     @Test
     fun aLoggedSetIsSavedAndStartsRest() {
-        viewModel.logSet(active.nextSet.target, Effort.RIGHT)
+        viewModel.logSet(active.nextSet.target, Effort.RIGHT.repsInReserve)
         val saved = checkNotNull(drafts.current)
         assertEquals(1, saved.logged.sumOf { it.size })
         assertTrue(active.run.isResting)
@@ -44,8 +44,8 @@ class WorkoutViewModelTest {
 
     @Test
     fun noSetCanBeLoggedDuringRest() {
-        viewModel.logSet(active.nextSet.target, Effort.RIGHT)
-        viewModel.logSet(active.nextSet.target, Effort.RIGHT)
+        viewModel.logSet(active.nextSet.target, Effort.RIGHT.repsInReserve)
+        viewModel.logSet(active.nextSet.target, Effort.RIGHT.repsInReserve)
         assertEquals(1, active.run.logged.sumOf { it.size })
         viewModel.endRest()
         assertNull(active.run.restEndsAtElapsedMillis)
@@ -53,7 +53,7 @@ class WorkoutViewModelTest {
 
     @Test
     fun finishingHandsTheWorkoutToTheCoachAndClearsTheDraft() {
-        viewModel.logSet(active.nextSet.target, Effort.RIGHT)
+        viewModel.logSet(active.nextSet.target, Effort.RIGHT.repsInReserve)
         viewModel.finish()
         assertEquals(WorkoutUiState.Finished::class, viewModel.uiState.value::class)
         assertEquals(1, (viewModel.uiState.value as WorkoutUiState.Finished).sets)
@@ -78,7 +78,7 @@ class WorkoutViewModelTest {
 
     @Test
     fun impossibleLoadsAreClampedBeforeTheyReachTheRun() {
-        viewModel.logSet(active.nextSet.target, Effort.RIGHT, addedKg = Double.NaN, assistanceKg = -5.0)
+        viewModel.logSet(active.nextSet.target, Effort.RIGHT.repsInReserve, addedKg = Double.NaN, assistanceKg = -5.0)
         val set = checkNotNull(drafts.current).logged.flatten().single()
         assertEquals(0.0, set.addedKg, 0.0)
         assertEquals(0.0, set.assistanceKg, 0.0)
