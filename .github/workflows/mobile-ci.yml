@@ -199,10 +199,11 @@ jobs:
       - name: Render
         run: |
           cat > "$RUNNER_TEMP/names.gradle.kts" <<'KTS'
+          // Runs for the included build-logic build too, which has no app.
           gradle.projectsEvaluated {
-              rootProject.project(":app-phone").tasks.names
-                  .filter { it.contains("Screenshot", ignoreCase = true) }
-                  .forEach { println("SUITE_TASK $it") }
+              rootProject.findProject(":app-phone")?.tasks?.names
+                  ?.filter { it.contains("Screenshot", ignoreCase = true) }
+                  ?.forEach { println("SUITE_TASK $it") }
           }
           KTS
           ./gradlew -q --no-configuration-cache -I "$RUNNER_TEMP/names.gradle.kts" :app-phone:help | tee names.txt

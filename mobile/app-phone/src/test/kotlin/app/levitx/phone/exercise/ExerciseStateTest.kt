@@ -11,11 +11,12 @@ import org.junit.Test
 class ExerciseStateTest {
     @Test
     fun aLadderExerciseShowsItsLadderWithThePersonsPlace() {
-        val model = newcomer().copy(rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to 3))
+        // Floor push-ups are the fifth rung: wall, 61 cm box, knees, 30 cm box, floor.
+        val model = newcomer().copy(rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to 4))
         val state = exerciseState(model, "horizontal_push.push_up", nowEpochMillis = 0L) as ExerciseUiState.Ready
         val ladder = checkNotNull(state.ladder)
-        assertEquals(RungStatus.CURRENT, ladder[3].status)
-        assertTrue(ladder[3].holdsShown)
+        assertEquals(RungStatus.CURRENT, ladder[4].status)
+        assertTrue(ladder[4].holdsShown)
         assertEquals(RungStatus.DONE, ladder[0].status)
         assertEquals(RungStatus.LATER, ladder.last().status)
         assertNotNull(state.guide)

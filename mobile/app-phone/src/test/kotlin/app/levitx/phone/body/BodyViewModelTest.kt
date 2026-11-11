@@ -1,6 +1,7 @@
 package app.levitx.phone.body
 
 import app.levitx.core.coach.Equipment
+import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.WeighIn
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
@@ -19,6 +20,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+/** Floor push-ups: wall, 61 cm box, knees, 30 cm box, then the floor. */
+private const val FLOOR_PUSH_UP_RUNG = 4
+
 // UnconfinedTestDispatcher is still marked experimental in kotlinx-coroutines-test.
 @OptIn(ExperimentalCoroutinesApi::class)
 class BodyViewModelTest {
@@ -33,7 +37,13 @@ class BodyViewModelTest {
     private val weighIns = listOf(76.0, 75.8, 75.7, 75.5, 75.4).mapIndexed { i, kg ->
         WeighIn(clock.now - (12 - i * 3) * day, kg)
     }
-    private val coach = FakeCoachRepository(coachState(newcomer().copy(weighIns = weighIns)))
+
+    // On floor push-ups, which have a measured load, so there is something on the bar.
+    private val coach = FakeCoachRepository(
+        coachState(
+            newcomer().copy(weighIns = weighIns, rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to FLOOR_PUSH_UP_RUNG)),
+        ),
+    )
 
     // Lazy, so it is built after the rule has swapped in the test main dispatcher.
     private val viewModel by lazy { BodyViewModel(equipment, coach, clock) }
@@ -47,7 +57,7 @@ class BodyViewModelTest {
 
         val trend = checkNotNull(ready.trend)
         assertTrue("losing weight", checkNotNull(trend.weeklyChange) < 0)
-        assertTrue("something to show on the bar", ready.onTheBar.isNotEmpty())
+        assertEquals(listOf("horizontal_push.push_up"), ready.onTheBar.map { it.exerciseId })
         ready.onTheBar.forEach { load ->
             assertEquals(trend.currentKg * load.bodyweightShare, load.kgPerRep, 0.01)
             assertTrue("${load.name} gets lighter as weight drops", checkNotNull(load.kgPerWeek) < 0)
