@@ -147,7 +147,7 @@ The choice feeds back:
 - **Taking the easier day answers the signals that led to it.** They don't ask again until a fresh result is still down. Without this, someone who took the lighter session would be offered it forever, because light work doesn't produce new results.
 - **Someone who keeps choosing Keep and then hits their targets, three times running, is asked less often.** It then takes three kinds of signal, not two.
 
-Going the other way, hitting targets at Easy twice running moves the target up twice as fast, and the reason says so.
+Going the other way, hitting targets at Easy twice running moves the target up twice as fast.
 
 ## 6. Bodyweight
 
