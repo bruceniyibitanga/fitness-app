@@ -62,7 +62,7 @@ enum class RungStatus {
 data class LadderRung(val names: List<String>, val status: RungStatus, val holdsShown: Boolean)
 
 /** The screen for [exerciseId] given [model] at [nowEpochMillis]. */
-internal fun exerciseState(model: AthleteModel, exerciseId: String, nowEpochMillis: Long): ExerciseUiState {
+fun exerciseState(model: AthleteModel, exerciseId: String, nowEpochMillis: Long): ExerciseUiState {
     val exercise = ExerciseLookup.byId(exerciseId) ?: return ExerciseUiState.NotFound
     val isGate = SkillCatalogue.gateById(exerciseId) != null
     val state = model.exercises[exerciseId]

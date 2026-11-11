@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.design.LevitxColors
@@ -107,8 +108,13 @@ fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
  * the bottom so the title can sit over its edge, with back in the corner.
  */
 @Composable
-fun PhotoHeader(@DrawableRes photo: Int, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxWidth().height(PhotoHeaderHeight)) {
+fun PhotoHeader(
+    @DrawableRes photo: Int,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    height: Dp = PhotoHeaderHeight,
+) {
+    Box(modifier = modifier.fillMaxWidth().height(height)) {
         Image(
             painter = painterResource(photo),
             contentDescription = null,

@@ -1,6 +1,7 @@
 package app.levitx.phone.ui
 
 import androidx.annotation.DrawableRes
+import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.phone.R
 
@@ -28,4 +29,13 @@ fun focusPhoto(focus: WorkoutFocus): Int = when (focus) {
     WorkoutFocus.PUSH -> R.drawable.photo_focus_push
     WorkoutFocus.LEGS -> R.drawable.photo_focus_legs
     WorkoutFocus.CORE_ONLY -> R.drawable.photo_focus_core
+}
+
+/** The photo for an exercise, by the movement it trains. */
+@DrawableRes
+fun patternPhoto(pattern: MovementPattern): Int = when (pattern) {
+    MovementPattern.VERTICAL_PULL, MovementPattern.HORIZONTAL_PULL -> R.drawable.photo_goal_first_pull_up
+    MovementPattern.HORIZONTAL_PUSH, MovementPattern.VERTICAL_PUSH -> R.drawable.photo_focus_push
+    MovementPattern.SQUAT, MovementPattern.HINGE -> R.drawable.photo_focus_legs
+    MovementPattern.CORE -> R.drawable.photo_focus_core
 }

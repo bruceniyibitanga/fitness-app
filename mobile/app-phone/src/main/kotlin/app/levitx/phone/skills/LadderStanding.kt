@@ -33,7 +33,7 @@ data class LadderStanding(
 )
 
 /** Where [model] stands on every ladder in the catalogue. */
-internal fun standings(model: AthleteModel): List<LadderStanding> {
+fun standings(model: AthleteModel): List<LadderStanding> {
     val gatePattern = model.currentGatePattern()
     return ExerciseCatalogue.ladders.map { ladder -> model.standingOn(ladder, gatePattern) }
 }

@@ -17,16 +17,28 @@ import app.levitx.phone.body.BarLoad
 import app.levitx.phone.body.BodyActions
 import app.levitx.phone.body.BodyScreen
 import app.levitx.phone.body.BodyUiState
+import app.levitx.phone.exercise.ExerciseScreen
+import app.levitx.phone.exercise.exerciseState
 import app.levitx.phone.main.MainScreen
 import app.levitx.phone.main.MainTab
 import app.levitx.phone.onboarding.OnboardingActions
 import app.levitx.phone.onboarding.OnboardingScreen
 import app.levitx.phone.onboarding.OnboardingStep
 import app.levitx.phone.onboarding.OnboardingUiState
+import app.levitx.phone.path.PathScreen
+import app.levitx.phone.path.PathUiState
+import app.levitx.phone.program.ProgramScreen
+import app.levitx.phone.program.ProgramUiState
+import app.levitx.phone.skills.SkillsScreen
+import app.levitx.phone.skills.SkillsUiState
+import app.levitx.phone.skills.standings
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.today.TodayActions
 import app.levitx.phone.today.TodayScreen
 import app.levitx.phone.today.TodayUiState
+import app.levitx.phone.train.FocusWorkoutNavigation
+import app.levitx.phone.train.FocusWorkoutScreen
+import app.levitx.phone.train.FocusWorkoutUiState
 import app.levitx.phone.train.ProgramSummary
 import app.levitx.phone.train.TrainScreen
 import app.levitx.phone.train.TrainUiState
@@ -220,5 +232,70 @@ fun BodyScreenshot() {
                 actions = BodyActions({}, {}, { _, _ -> }, {}),
             )
         }
+    }
+}
+
+@PreviewTest
+@Preview(name = "12 Plan", widthDp = 390, heightDp = 844)
+@Composable
+fun PlanScreenshot() {
+    val path = SkillCatalogue.muscleUp
+    val bests = mapOf(path.gates[0].id to 45, path.gates[1].id to 10, path.gates[2].id to 7)
+    LevitxTheme {
+        MainScreen(selected = MainTab.PLAN, onSelect = {}) {
+            PathScreen(PathUiState.Ready(path, currentIndex = 2, bestByGateId = bests), onTrain = {}, onChangeGoal = {})
+        }
+    }
+}
+
+@PreviewTest
+@Preview(name = "13 Skills", widthDp = 390, heightDp = 844)
+@Composable
+fun SkillsScreenshot() {
+    LevitxTheme {
+        MainScreen(selected = MainTab.SKILLS, onSelect = {}) {
+            SkillsScreen(SkillsUiState.Ready(standings(muscleUp())), onOpenExercise = {})
+        }
+    }
+}
+
+@PreviewTest
+@Preview(name = "14 Program", widthDp = 390, heightDp = 844)
+@Composable
+fun ProgramScreenshot() {
+    val path = SkillCatalogue.firstPullUp
+    LevitxTheme {
+        ProgramScreen(
+            uiState = ProgramUiState.Ready(path, mapOf(path.gates[0].id to 30), currentIndex = 1, isPlan = false),
+            onMakePlan = {},
+            onBack = {},
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "15 Workout detail", widthDp = 390, heightDp = 844)
+@Composable
+fun WorkoutDetailScreenshot() {
+    LevitxTheme {
+        FocusWorkoutScreen(
+            uiState = FocusWorkoutUiState.Ready(
+                focus = WorkoutFocus.UPPER,
+                session = Coach().workout(muscleUp(), WorkoutFocus.UPPER, 0),
+                bodyweightKg = 75.6,
+                hasWorkoutInProgress = false,
+            ),
+            onStart = {},
+            navigation = FocusWorkoutNavigation(onBack = {}, onOpenWorkout = {}, onOpenExercise = {}),
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "16 Exercise", widthDp = 390, heightDp = 844)
+@Composable
+fun ExerciseScreenshot() {
+    LevitxTheme {
+        ExerciseScreen(uiState = exerciseState(muscleUp(), "horizontal_push.push_up", nowEpochMillis = 0), onBack = {})
     }
 }

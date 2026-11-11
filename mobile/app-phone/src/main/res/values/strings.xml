@@ -262,24 +262,23 @@
     <string name="focus_core">Core</string>
 
     <!-- A single workout -->
-    <string name="focus_workout_label">SINGLE WORKOUT</string>
     <string name="focus_workout_note">A one-off workout. It counts toward this week\'s training, and your targets move up when you hit them, but your next planned session is still waiting on Today.</string>
+    <string name="focus_workout_nothing">None of this can be trained safely today. It was worked too recently, needs kit you haven\'t added, or would load an area that hurt. Try another, or come back tomorrow.</string>
     <string name="focus_workout_start">Start workout</string>
-    <string name="focus_workout_resume">Resume the workout in progress</string>
+    <string name="focus_workout_resume">Resume workout</string>
     <string name="focus_workout_not_found">This workout isn\'t in the app any more.</string>
     <string name="focus_workout_in_progress">You already have a workout in progress. Finish or end it first.</string>
-    <string name="open_exercise">Open %1$s</string>
 
     <!-- Exercise -->
     <string name="exercise_kg_per_rep">KG / REP</string>
-    <string name="exercise_share_measured">%1$s%% BW · MEASURED</string>
-    <string name="exercise_share_estimate">~%1$s%% BW · ESTIMATE</string>
-    <string name="exercise_target">YOUR TARGET</string>
-    <string name="exercise_best">YOUR BEST</string>
-    <string name="exercise_cues">HOW TO DO IT</string>
+    <string name="exercise_share_measured">BW · MEASURED</string>
+    <string name="exercise_share_estimate">BW · ESTIMATE</string>
+    <string name="exercise_target">TARGET</string>
+    <string name="exercise_best">BEST</string>
+    <string name="exercise_cues">CUES</string>
     <string name="exercise_ladder">THE LADDER</string>
-    <string name="exercise_rung_done">BELOW YOU</string>
-    <string name="exercise_rung_current">YOU ARE HERE</string>
+    <string name="exercise_rung_done">DONE</string>
+    <string name="exercise_rung_current">TRAINING NOW</string>
     <string name="exercise_rung_later">LATER</string>
     <string name="exercise_or">%1$s or %2$s</string>
     <string name="exercise_skill">Part of a skill path. It\'s passed by a strict set at the gate\'s target.</string>
