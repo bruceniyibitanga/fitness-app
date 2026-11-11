@@ -30,16 +30,16 @@ export function WatchSection() {
 function WatchFace() {
   return (
     <div
-      className="reveal flex h-[248px] w-[208px] flex-col justify-center rounded-[52px] border-2 border-tick bg-black p-[26px] shadow-[0_30px_80px_rgb(0_0_0/0.6)]"
+      className="reveal flex size-[240px] flex-col items-center justify-center rounded-full border-2 border-tick bg-black p-[34px] text-center shadow-[0_30px_80px_rgb(0_0_0/0.6)]"
       role="img"
-      aria-label={`Apple Watch showing an L-sit hold at ${HELD} of ${HOLD_SECONDS} seconds`}
+      aria-label={`Wear OS watch showing an L-sit hold at ${HELD} of ${HOLD_SECONDS} seconds`}
     >
       <p className="mono text-[10px] text-ice">L-sit hold</p>
       <p className="display mt-1.5 text-[64px] leading-none [font-stretch:78%]">
         {String(HELD).padStart(2, "0")}
         <span className="text-faint">/{HOLD_SECONDS}</span>
       </p>
-      <div className="mt-3 flex gap-0.5">
+      <div className="mt-3 flex w-full gap-0.5">
         {Array.from({ length: HOLD_SECONDS }, (_, i) => (
           <span key={i} className={`h-[5px] flex-1 ${i < HELD ? "bg-ice" : "bg-line"}`} />
         ))}

@@ -21,7 +21,7 @@ const structuredData = {
       "@type": "SoftwareApplication",
       name: site.name,
       applicationCategory: "HealthApplication",
-      operatingSystem: "iOS, watchOS",
+      operatingSystem: "Android, Wear OS",
       description: site.description,
       url: site.url,
     },

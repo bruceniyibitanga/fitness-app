@@ -13,7 +13,7 @@ export type Photo = {
   credit: { name: string; profile: string; source: PhotoSource };
 };
 
-const UTM = "?utm_source=lever&utm_medium=referral";
+const UTM = "?utm_source=levitx&utm_medium=referral";
 
 export const SOURCE_URLS: Record<PhotoSource, string> = {
   Unsplash: `https://unsplash.com/${UTM}`,
