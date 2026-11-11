@@ -26,7 +26,9 @@ class TodayViewModelTest {
     private val drafts = FakeWorkoutDraftRepository()
     private val coachRepository = FakeCoachRepository(coachState(), drafts)
     private val clock = FakeTrainingClock()
-    private val viewModel = TodayViewModel(coachRepository, drafts, Coach(), clock)
+
+    // Lazy, so it is built after the rule has swapped in the test main dispatcher.
+    private val viewModel by lazy { TodayViewModel(coachRepository, drafts, Coach(), clock) }
 
     private val ready: TodayUiState.Ready
         get() = viewModel.uiState.value as TodayUiState.Ready

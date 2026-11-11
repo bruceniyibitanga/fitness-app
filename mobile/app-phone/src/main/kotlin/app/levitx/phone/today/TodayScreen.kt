@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -54,7 +55,6 @@ import app.levitx.phone.ui.measureText
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlinx.coroutines.launch
 
 private val ReasonMarkSize = 6.dp
@@ -147,10 +147,12 @@ private fun Ready(
 
 @Composable
 private fun Header(nowEpochMillis: Long) {
-    val date = remember(nowEpochMillis) {
-        DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault())
+    // Read through the configuration so the date follows a language change.
+    val locale = LocalConfiguration.current.locales[0]
+    val date = remember(nowEpochMillis, locale) {
+        DateTimeFormatter.ofPattern("EEE d MMM", locale)
             .format(Instant.ofEpochMilli(nowEpochMillis).atZone(ZoneId.systemDefault()))
-            .uppercase(Locale.getDefault())
+            .uppercase(locale)
     }
     Row(modifier = Modifier.fillMaxWidth()) {
         SectionLabel(stringResource(R.string.wordmark), color = LevitxColors.Text, modifier = Modifier.weight(1f))
@@ -162,16 +164,8 @@ private fun Header(nowEpochMillis: Long) {
 /** The first exercise, big: what the person does first. */
 @Composable
 private fun Lead(plan: ExercisePlan) {
-    SectionLabel(
-        text = if (plan.gateId !=
-            null
-        ) {
-            stringResource(R.string.today_skill)
-        } else {
-            stringResource(R.string.today_session_label)
-        },
-        color = LevitxColors.Accent,
-    )
+    val label = if (plan.gateId == null) R.string.today_session_label else R.string.today_skill
+    SectionLabel(text = stringResource(label), color = LevitxColors.Accent)
     Text(
         text = stringResource(R.string.today_sets, plan.sets.size, measureText(plan.exercise.measure, plan.workTarget)),
         style = LevitxType.Display,

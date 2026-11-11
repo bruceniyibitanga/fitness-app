@@ -128,7 +128,7 @@
     <string name="today_start_lighter">Start lighter session</string>
     <string name="today_take_rest">Rest today</string>
     <string name="today_weight_label">ABOUT YOUR WEIGHT</string>
-    <string name="today_weight_body">Your weight has been falling faster than about 1% a week. That makes it harder to keep strength, so your targets will hold steady until it settles. If you aren\'t trying to lose weight, it\'s worth talking to a GP.</string>
+    <string name="today_weight_body" formatted="false">Your weight has been falling faster than about 1% a week. That makes it harder to keep strength, so your targets will hold steady until it settles. If you aren\'t trying to lose weight, it\'s worth talking to a GP.</string>
     <string name="today_weight_ok">Got it</string>
     <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see kilograms per rep.</string>
 

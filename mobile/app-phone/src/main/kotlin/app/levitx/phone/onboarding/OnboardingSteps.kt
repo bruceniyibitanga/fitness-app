@@ -12,6 +12,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,7 +33,6 @@ import app.levitx.phone.ui.kitName
 import app.levitx.phone.ui.measureText
 import java.time.DayOfWeek
 import java.time.format.TextStyle
-import java.util.Locale
 
 /*
  * The steps of setup, one composable each. The screen around them, with the
@@ -133,10 +133,12 @@ internal fun WeekStep(state: OnboardingUiState, actions: OnboardingActions) {
             color = LevitxColors.Accent,
         )
     }
+    // Read through the configuration so the day letters follow a language change.
+    val locale = LocalConfiguration.current.locales[0]
     Row(horizontalArrangement = Arrangement.spacedBy(LevitxSpacing.XSmall), modifier = Modifier.fillMaxWidth()) {
         DayOfWeek.entries.forEach { day ->
             ToggleChip(
-                text = day.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                text = day.getDisplayName(TextStyle.NARROW, locale),
                 checked = day in state.days,
                 onCheckedChange = { actions.onToggleDay(day) },
                 modifier = Modifier.weight(1f),
@@ -178,12 +180,9 @@ internal fun ReadyStep(state: OnboardingUiState) {
         Figure(state.days.size.toString(), stringResource(R.string.ready_per_week))
         Figure(state.minutes.toString(), stringResource(R.string.ready_minutes))
         if (state.goalPathId != null) {
-            val style = if (state.style ==
-                PlanStyle.FOCUSED
-            ) {
-                R.string.ready_style_focused
-            } else {
-                R.string.ready_style_all_round
+            val style = when (state.style) {
+                PlanStyle.FOCUSED -> R.string.ready_style_focused
+                PlanStyle.ALL_ROUND -> R.string.ready_style_all_round
             }
             Figure("", stringResource(style))
         }

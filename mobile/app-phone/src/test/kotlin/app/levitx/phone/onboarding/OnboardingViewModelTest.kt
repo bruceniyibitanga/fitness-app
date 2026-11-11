@@ -23,7 +23,9 @@ class OnboardingViewModelTest {
 
     private val coachRepository = FakeCoachRepository()
     private val equipment = FakeEquipmentRepository()
-    private val viewModel = OnboardingViewModel(coachRepository, equipment, Coach(), FakeTrainingClock())
+
+    // Lazy, so it is built after the rule has swapped in the test main dispatcher.
+    private val viewModel by lazy { OnboardingViewModel(coachRepository, equipment, Coach(), FakeTrainingClock()) }
 
     private val step: OnboardingStep
         get() = viewModel.uiState.value.step
