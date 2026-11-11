@@ -17,8 +17,11 @@ import app.levitx.core.skills.GateMeasure
  * @property loadProfile Share of bodyweight moved per rep, where we have a measured
  *   or reasoned figure. Null means the apps show no kilograms for it.
  * @property isPerSide True when each set is done once on each side.
- * @throws IllegalArgumentException if [range] is empty or starts below 1, or
- *   [alsoTrains] repeats [pattern].
+ * @property lowerSeconds How long each rep's lowering should take, for slow
+ *   negatives, which are only the lowering half of a movement. Null for
+ *   everything else. The apps time each lowering against it.
+ * @throws IllegalArgumentException if [range] is empty or starts below 1,
+ *   [alsoTrains] repeats [pattern], or [lowerSeconds] is set on a hold or isn't positive.
  */
 public data class Exercise(
     val id: String,
@@ -30,10 +33,14 @@ public data class Exercise(
     val alsoTrains: Set<MovementPattern> = emptySet(),
     val loadProfile: LoadProfile? = null,
     val isPerSide: Boolean = false,
+    val lowerSeconds: Int? = null,
 ) {
     init {
         require(range.first >= 1 && range.last >= range.first) { "range must start at 1 or more and not be empty" }
         require(pattern !in alsoTrains) { "alsoTrains must not repeat the main pattern" }
+        require(lowerSeconds == null || (lowerSeconds > 0 && measure == GateMeasure.REPS)) {
+            "lowerSeconds must be positive and only on rep exercises"
+        }
     }
 
     /** How much a target moves at a time: one rep, or [CoachTuning.HOLD_STEP_SECONDS] for holds. */
