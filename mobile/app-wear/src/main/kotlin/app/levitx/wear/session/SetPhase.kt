@@ -43,7 +43,7 @@ private const val MAX_ENTRY = 999
  * @property onSkipExercise Moves on to the next exercise.
  * @property onFinishEarly Ends the workout.
  */
-internal data class SetActions(val onSkipExercise: () -> Unit, val onFinishEarly: () -> Unit)
+data class SetActions(val onSkipExercise: () -> Unit, val onFinishEarly: () -> Unit)
 
 /** The counter: starts at [initial], adjusted with minus and plus, then saved. */
 @Composable

@@ -70,14 +70,17 @@ class CoachStorageTest {
     }
 
     @Test
-    fun theWatchKeepsOneNextSessionThatCanBeCleared() = runTest {
+    fun theWatchKeepsOneNextSessionAndWhatItWaitsFor() = runTest {
         val dao = database.watchWorkoutDao()
         assertNull(dao.observeNext().first())
         dao.replaceNext(NextSessionEntity(json = "a"))
         dao.replaceNext(NextSessionEntity(json = "b"))
         assertEquals("b", dao.observeNext().first()?.json)
-        dao.clearNext()
-        assertNull(dao.observeNext().first())
+        // After a workout: no plan, waiting for the phone to record it.
+        dao.replaceNext(NextSessionEntity(json = null, awaitingWorkoutId = "w1"))
+        val waiting = dao.observeNext().first()
+        assertNull(waiting?.json)
+        assertEquals("w1", waiting?.awaitingWorkoutId)
     }
 
     @Test
