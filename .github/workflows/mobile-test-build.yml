@@ -13,7 +13,7 @@ name: Mobile test build
 
 on:
   push:
-    branches: [main, ci/test-builds]
+    branches: [main]
     paths:
       - "mobile/**"
       - ".github/workflows/mobile-test-build.yml"
