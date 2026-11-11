@@ -89,13 +89,19 @@ jobs:
       - name: Check both apps share a signing key
         run: |
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)/apksigner"
+          # The first signer's certificate digest. apksigner's wording varies
+          # between versions, so match on the part every version prints.
           fingerprint() {
-            "$apksigner" verify --print-certs "$1" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p'
+            "$apksigner" verify --print-certs "$1" | grep -m 1 'certificate SHA-256 digest:' | awk '{print $NF}'
           }
           phone=$(fingerprint "$RUNNER_TEMP"/apks/levitx-phone-test-*.apk)
           watch=$(fingerprint "$RUNNER_TEMP"/apks/levitx-watch-test-*.apk)
+          echo "Phone: ${phone:-none}"
+          echo "Watch: ${watch:-none}"
           if [ -z "$phone" ] || [ "$phone" != "$watch" ]; then
             echo "::error::The phone and watch APKs are not signed with the same key."
+            # Certificates are public, so the full output is safe to show.
+            "$apksigner" verify --print-certs "$RUNNER_TEMP"/apks/levitx-phone-test-*.apk || true
             exit 1
           fi
           {
