@@ -156,5 +156,6 @@ fun kitName(equipment: Equipment): String = stringResource(
         Equipment.DIP_BARS -> R.string.kit_dip_bars
         Equipment.RINGS -> R.string.kit_rings
         Equipment.BAND -> R.string.kit_band
+        Equipment.BOX -> R.string.kit_box
     },
 )

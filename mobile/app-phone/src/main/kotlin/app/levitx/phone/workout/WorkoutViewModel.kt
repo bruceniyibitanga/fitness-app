@@ -2,7 +2,6 @@ package app.levitx.phone.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.levitx.core.coach.Effort
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.coach.bodyweightTrend
@@ -72,15 +71,15 @@ class WorkoutViewModel @Inject constructor(
      * Records the set just done. Starts rest, or saves the workout if it was the last set.
      *
      * @param value Reps or seconds done.
-     * @param effort How it felt, or null for holds.
+     * @param repsInReserve Reps they felt they had left, or null for holds.
      * @param addedKg Vest or belt weight, 0 for none.
      * @param assistanceKg Band help, 0 for none.
      */
-    fun logSet(value: Int, effort: Effort?, addedKg: Double = 0.0, assistanceKg: Double = 0.0) {
+    fun logSet(value: Int, repsInReserve: Int?, addedKg: Double = 0.0, assistanceKg: Double = 0.0) {
         val active = state.value as? WorkoutUiState.Active ?: return
         val next = active.run
             .withLoad(SetLoad(addedKg = addedKg.asModifierKg(), assistanceKg = assistanceKg.asModifierKg()))
-            .logSet(value, effort?.repsInReserve, nowElapsedMillis = clock.elapsedRealtimeMillis())
+            .logSet(value, repsInReserve, nowElapsedMillis = clock.elapsedRealtimeMillis())
         // A run that didn't change means the set wasn't accepted (during rest, say).
         if (next.logged == active.run.logged) return
         advance(active, next)
@@ -140,13 +139,9 @@ class WorkoutViewModel @Inject constructor(
         }
     }
 
-    /** The biggest step past a gate's previous best in [result], if there was one. */
-    private fun newBest(result: SessionResult): NewBest? = result.results
-        .mapNotNull { exercise ->
-            val gate = exercise.plan.gateId?.let(SkillCatalogue::gateById) ?: return@mapNotNull null
-            val best = exercise.sets.filter { it.countsTowardGate }.maxOfOrNull { it.value } ?: 0
-            NewBest(gate.title, gate.measure, best).takeIf { best > (gateBestsBefore[gate.id] ?: 0) }
-        }
+    /** The biggest new best on a skill gate in [result], if there was one. */
+    private fun newBest(result: SessionResult): NewBest? = result.newGateBests(gateBestsBefore)
+        .mapNotNull { (gateId, best) -> SkillCatalogue.gateById(gateId)?.let { NewBest(it.title, it.measure, best) } }
         .maxByOrNull { it.value }
 }
 

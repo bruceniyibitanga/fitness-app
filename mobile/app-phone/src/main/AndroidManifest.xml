@@ -28,8 +28,9 @@
         </activity>
 
         <!--
-          Receives finished sessions from the watch over the Wearable Data
-          Layer. The path must match SyncPaths in :sync.
+          Receives finished workouts from the watch over the Wearable Data
+          Layer. The paths must match SyncPaths in :sync. The sessions path
+          is for watches still on an older version of the app.
 
           It has to be exported for Google Play services to reach it. That is
           safe: WearableListenerService only accepts calls from Google Play
@@ -44,6 +45,7 @@
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data android:scheme="wear" />
                 <data android:host="*" />
+                <data android:pathPrefix="/levitx/workouts/" />
                 <data android:pathPrefix="/levitx/sessions/" />
             </intent-filter>
         </service>

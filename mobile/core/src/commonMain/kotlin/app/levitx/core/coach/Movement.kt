@@ -75,4 +75,10 @@ public enum class Equipment {
 
     /** A resistance band. */
     BAND,
+
+    /**
+     * A sturdy box, step or bench of a set height, to raise the hands or feet.
+     * A chair or a wall isn't kit: everyone has one.
+     */
+    BOX,
 }

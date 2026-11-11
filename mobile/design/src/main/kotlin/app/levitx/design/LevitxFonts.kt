@@ -17,7 +17,21 @@ object LevitxFonts {
 
     /** JetBrains Mono: numbers, labels and anything that should line up. */
     val JetBrainsMono: FontFamily = variableFamily(R.font.jetbrains_mono, MonoWeights)
+
+    /** Archivo at 72% width: poster headlines and the big numbers. */
+    val ArchivoCompressed: FontFamily = variableFamily(R.font.archivo, ArchivoWeights, width = COMPRESSED)
+
+    /** Archivo at 78% width: screen titles. */
+    val ArchivoCondensed: FontFamily = variableFamily(R.font.archivo, ArchivoWeights, width = CONDENSED)
+
+    /** Archivo at 90% width: figures in stat strips and lists. */
+    val ArchivoSemiCondensed: FontFamily = variableFamily(R.font.archivo, ArchivoWeights, width = SEMI_CONDENSED)
 }
+
+// Widths from the design artboards (CSS font-stretch), on Archivo's wdth axis (62 to 125).
+private const val COMPRESSED = 72f
+private const val CONDENSED = 78f
+private const val SEMI_CONDENSED = 90f
 
 private val ArchivoWeights = listOf(
     FontWeight.Normal,
@@ -33,12 +47,13 @@ private val MonoWeights = listOf(
     FontWeight.Bold,
 )
 
-private fun variableFamily(resId: Int, weights: List<FontWeight>): FontFamily = FontFamily(
+private fun variableFamily(resId: Int, weights: List<FontWeight>, width: Float? = null): FontFamily = FontFamily(
     weights.map { weight ->
-        Font(
-            resId = resId,
-            weight = weight,
-            variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
-        )
+        val settings = if (width == null) {
+            FontVariation.Settings(FontVariation.weight(weight.weight))
+        } else {
+            FontVariation.Settings(FontVariation.weight(weight.weight), FontVariation.width(width))
+        }
+        Font(resId = resId, weight = weight, variationSettings = settings)
     },
 )

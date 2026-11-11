@@ -111,6 +111,15 @@ public object ExerciseGuides {
         ),
     )
 
+    private val wallPushUp = ExerciseGuide(
+        cues = listOf(
+            "Hands on the wall at shoulder height, a little wider than your shoulders.",
+            "Step your feet back until you lean in a straight line from heels to head.",
+            "Bend your elbows until your nose nearly touches the wall, then press back.",
+        ),
+        note = "Step further from the wall to make it harder.",
+    )
+
     private val kneePushUp = ExerciseGuide(
         cues = listOf(
             "Knees down, but keep a straight line from knees to head.",
@@ -366,6 +375,7 @@ public object ExerciseGuides {
         "vertical_push.negative_dip" to negativeDip,
         "vertical_push.dip" to dip,
         "vertical_push.wall_negative" to wallNegative,
+        "horizontal_push.wall" to wallPushUp,
         "horizontal_push.hands_61cm" to pushUp,
         "horizontal_push.knees" to kneePushUp,
         "horizontal_push.hands_30cm" to pushUp,

@@ -82,6 +82,15 @@ public sealed interface CoachReason {
     public data object Variety : Choice
 
     /**
+     * The goal's skill work isn't in the session because it needs kit the
+     * person hasn't said they have.
+     *
+     * @property skillName The goal skill.
+     * @property equipment The kit it needs.
+     */
+    public data class NeedsKit(val skillName: String, val equipment: Set<Equipment>) : Choice
+
+    /**
      * A pattern is light or left out because it was trained hard too recently.
      *
      * @property pattern The pattern.
@@ -118,10 +127,17 @@ internal object ReasonPicker {
      */
     fun pick(best: ScoredSession, runnerUp: ScoredSession?, relaxed: Blocked?, context: CoachContext): CoachReason =
         relaxed?.let(::fromRule)
+            ?: needsKit(context)
             ?: fromNote(best.session, context)
             ?: CoachReason.StillLearning.takeIf { context.model.history.size < CoachTuning.CALIBRATION_SESSIONS }
             ?: CoachReason.HoldingSteady.takeIf { context.holdProgress }
             ?: fromTerm(decidingTerm(best, runnerUp), best.session, context)
+
+    private fun needsKit(context: CoachContext): CoachReason? {
+        val missing = context.model.kitMissingForGoal()
+        val skill = context.path?.name
+        return if (missing.isEmpty() || skill == null) null else CoachReason.NeedsKit(skill, missing)
+    }
 
     private fun fromRule(blocked: Blocked): CoachReason? = when (blocked) {
         is Blocked.Pain -> CoachReason.WorkingAround(blocked.area)

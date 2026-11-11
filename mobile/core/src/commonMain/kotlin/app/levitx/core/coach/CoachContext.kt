@@ -16,8 +16,8 @@ internal class CoachContext(val model: AthleteModel, val nowEpochMillis: Long) {
     /** The gate being worked on, or null with no goal or once the path is done. */
     val currentGate: Gate? = model.currentGate()
 
-    /** The pattern the current gate trains, or null with no gate to work on. */
-    val currentGatePattern: MovementPattern? = currentGate?.let(SkillTraining::exerciseFor)?.pattern
+    /** The pattern the current gate trains, or null with no gate the person has the kit to work on. */
+    val currentGatePattern: MovementPattern? = model.currentGatePattern()
 
     /** The patterns the goal's gates train. */
     val goalPatterns: Set<MovementPattern> = model.goalPatterns()
@@ -100,7 +100,16 @@ public fun AthleteModel.currentGate(): Gate? =
  * null with no gate to work on. Sessions train this pattern with the gate's
  * own exercise until the gate is passed.
  */
-public fun AthleteModel.currentGatePattern(): MovementPattern? = currentGate()?.let(SkillTraining::exerciseFor)?.pattern
+public fun AthleteModel.currentGatePattern(): MovementPattern? =
+    currentGate()?.let(SkillTraining::exerciseFor)?.takeIf { it.fits(profile.equipment) }?.pattern
+
+/**
+ * Kit the current gate needs that the person hasn't said they have. Empty
+ * with no gate, or with the kit. Without it the gate can't be trained, so the
+ * apps say what's missing instead of quietly leaving the goal out.
+ */
+public fun AthleteModel.kitMissingForGoal(): Set<Equipment> =
+    currentGate()?.let(SkillTraining::exerciseFor)?.equipment?.minus(profile.equipment).orEmpty()
 
 /** The patterns the goal's gates train, which get the most weekly volume. Empty with no goal. */
 internal fun AthleteModel.goalPatterns(): Set<MovementPattern> =

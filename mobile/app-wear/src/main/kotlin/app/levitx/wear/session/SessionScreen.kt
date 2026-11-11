@@ -59,7 +59,7 @@ fun SessionRoute(onClose: () -> Unit, viewModel: SessionViewModel = hiltViewMode
         nowElapsedMillis = viewModel::elapsedRealtimeMillis,
         onLogSet = viewModel::logSet,
         onEndRest = viewModel::endRest,
-        onFinishEarly = viewModel::finishEarly,
+        actions = SetActions(onSkipExercise = viewModel::skipExercise, onFinishEarly = viewModel::finishEarly),
         onDone = viewModel::dismissSummary,
         onAllowTracking = { permissionLauncher.launch(WorkoutPermissions.toRequest) },
         onSkipTracking = viewModel::onTrackingAnswered,
@@ -67,10 +67,10 @@ fun SessionRoute(onClose: () -> Unit, viewModel: SessionViewModel = hiltViewMode
 }
 
 /**
- * One session on the watch: a counter for reps, a stopwatch for holds, a
- * countdown for rest, then a short summary.
+ * One workout on the watch, exercise by exercise: a counter for reps, a
+ * stopwatch for holds, a countdown for rest, then a short summary.
  *
- * The screen is kept on for the session, so a timer is never hidden behind
+ * The screen is kept on for the workout, so a timer is never hidden behind
  * the watch face mid-set.
  *
  * @param nowElapsedMillis The clock the timers run against. Passed in so
@@ -82,7 +82,7 @@ fun SessionScreen(
     nowElapsedMillis: () -> Long,
     onLogSet: (Int) -> Unit,
     onEndRest: () -> Unit,
-    onFinishEarly: () -> Unit,
+    actions: SetActions,
     onDone: () -> Unit,
     onAllowTracking: () -> Unit,
     onSkipTracking: () -> Unit,
@@ -101,11 +101,11 @@ fun SessionScreen(
             SessionUiState.AskTracking -> TrackingPrompt(onAllowTracking, onSkipTracking)
 
             is SessionUiState.Working -> when (uiState.measure) {
-                GateMeasure.REPS -> CountEntry(uiState, uiState.target, onLogSet, onFinishEarly)
-                GateMeasure.HOLD_SECONDS -> Hold(uiState, nowElapsedMillis, onLogSet, onFinishEarly)
+                GateMeasure.REPS -> CountEntry(uiState, uiState.target, onLogSet, actions)
+                GateMeasure.HOLD_SECONDS -> Hold(uiState, nowElapsedMillis, onLogSet, actions)
             }
 
-            is SessionUiState.Resting -> Rest(uiState, nowElapsedMillis, onEndRest, onFinishEarly)
+            is SessionUiState.Resting -> Rest(uiState, nowElapsedMillis, onEndRest, actions.onFinishEarly)
 
             is SessionUiState.Finished -> Finished(uiState, onDone)
         }
@@ -126,7 +126,7 @@ internal fun SessionList(content: TransformingLazyColumnScope.() -> Unit) {
     }
 }
 
-/** Ends the session. With nothing logged yet there is nothing to save, so it says "cancel" instead. */
+/** Ends the workout. With nothing logged yet there is nothing to save, so it says "cancel" instead. */
 @Composable
 internal fun EndButton(canSaveEarly: Boolean, onFinishEarly: () -> Unit) {
     FilledTonalButton(
@@ -152,10 +152,14 @@ private fun SessionScreenPreview() {
     LevitxWearTheme {
         SessionScreen(
             uiState = SessionUiState.Working(
+                exerciseName = "Negative pull-up",
+                exerciseNumber = 1,
+                exerciseCount = 4,
                 setNumber = 2,
-                setCount = 4,
+                setCount = 3,
                 measure = GateMeasure.REPS,
                 target = 4,
+                isPerSide = false,
                 isBestEffort = false,
                 repsInReserve = 2,
                 canSaveEarly = true,
@@ -163,7 +167,7 @@ private fun SessionScreenPreview() {
             nowElapsedMillis = { 0L },
             onLogSet = {},
             onEndRest = {},
-            onFinishEarly = {},
+            actions = SetActions(onSkipExercise = {}, onFinishEarly = {}),
             onDone = {},
             onAllowTracking = {},
             onSkipTracking = {},

@@ -46,6 +46,9 @@ public object CoachPhrases {
         CoachReason.YourKindOfSession -> "Built from the exercises you stick with."
 
         CoachReason.Variety -> "A different mix from last time, same goal."
+
+        is CoachReason.NeedsKit ->
+            "${reason.skillName} work needs ${kitList(reason.equipment)}. Add it under Body to start it."
     }
 
     private fun safety(reason: CoachReason.Safety): String = when (reason) {
@@ -99,6 +102,16 @@ public object CoachPhrases {
         BodyArea.ANKLE -> "ankle"
     }
 
+    /** What to call [equipment] mid-sentence. */
+    public fun noun(equipment: Equipment): String = when (equipment) {
+        Equipment.PULL_UP_BAR -> "a pull-up bar"
+        Equipment.LOW_BAR -> "a low bar"
+        Equipment.DIP_BARS -> "dip bars"
+        Equipment.RINGS -> "rings"
+        Equipment.BAND -> "a resistance band"
+        Equipment.BOX -> "a box or step"
+    }
+
     private fun sets(count: Int): String = if (count == 1) "1 set" else "$count sets"
 
     /** A weekly change as a percentage with one decimal, without its sign. */
@@ -106,4 +119,9 @@ public object CoachPhrases {
         val tenths = (abs(fraction) * PERCENT * TENTHS).roundToInt()
         return "${tenths / TENTHS}.${tenths % TENTHS}"
     }
+}
+
+/** "a pull-up bar", or "a pull-up bar and rings". */
+private fun kitList(equipment: Set<Equipment>): String = equipment.sorted().map(CoachPhrases::noun).let { names ->
+    if (names.size <= 1) names.joinToString() else names.dropLast(1).joinToString() + " and " + names.last()
 }

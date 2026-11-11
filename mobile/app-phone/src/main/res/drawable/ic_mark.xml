@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Levitx mark: an L, as in the top-left of every artboard. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="18"
+    android:viewportHeight="18">
+    <path
+        android:pathData="M3.5,2v12.5H17"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFF6A2B"
+        android:strokeLineCap="square" />
+</vector>

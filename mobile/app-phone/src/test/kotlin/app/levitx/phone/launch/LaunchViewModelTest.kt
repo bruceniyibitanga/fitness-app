@@ -4,9 +4,9 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.CoachState
 import app.levitx.phone.MainDispatcherRule
-import app.levitx.phone.coachState
 import app.levitx.phone.navigation.Destination
 import app.levitx.testing.FakeCoachRepository
+import app.levitx.testing.coachState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.junit.Assert.assertEquals

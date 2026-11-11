@@ -131,6 +131,20 @@ public data class WorkoutRun(
     public fun endRest(): WorkoutRun = copy(restEndsAtElapsedMillis = null)
 
     /**
+     * This run with any impossible rest ended. Rest is timed on the clock that
+     * counts from boot, which starts again after a restart, so a saved rest
+     * could look hours long. No rest is longer than the longest in the plan,
+     * so anything longer is ended. Call it on a run read back from storage.
+     *
+     * @param nowElapsedMillis The elapsed clock now.
+     */
+    public fun withSaneRest(nowElapsedMillis: Long): WorkoutRun {
+        val endsAt = restEndsAtElapsedMillis ?: return this
+        val longest = session.plans.maxOf { it.restSeconds } * MILLIS_PER_SECOND
+        return if (endsAt > nowElapsedMillis + longest) endRest() else this
+    }
+
+    /**
      * The workout as it stands, ready to give to [Coach.record], or null when
      * no set was done. Exercises not reached are left out: stopping early isn't
      * the same as not liking them.

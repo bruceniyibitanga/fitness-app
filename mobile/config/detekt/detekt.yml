@@ -5,13 +5,13 @@ comments:
   # Every public class, function and property must say what it is for.
   UndocumentedPublicClass:
     active: true
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
   UndocumentedPublicFunction:
     active: true
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
   UndocumentedPublicProperty:
     active: true
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
 
 complexity:
   LongParameterList:
@@ -19,6 +19,19 @@ complexity:
     # is how Compose wants state hoisted. Grouping lambdas into objects only to
     # please this rule would make screens harder to read.
     ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # A screenshot file is a catalogue of screens, one function each, so the
+    # count says nothing about its design. The rest are detekt's defaults.
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/screenshotTest/**'
 
 naming:
   FunctionNaming:
@@ -32,7 +45,7 @@ style:
     # are written that way.
     ignorePropertyDeclaration: true
     # Tests are full of literal expected values; that is the point of them.
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
     ignoreAnnotated: ['Preview', 'WearPreviewDevices']
   UnusedPrivateMember:
     # Previews are private and only called by Android Studio.

@@ -27,6 +27,9 @@ import kotlinx.coroutines.launch
  */
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
+/** Seven days, for "sessions in the last week". */
+private const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1_000
+
 /**
  * Today: asks the coach for the next session and starts it.
  *
@@ -53,6 +56,8 @@ class TodayViewModel @Inject constructor(
                     recommendation = coach.recommend(state.model, now),
                     bodyweightKg = bodyweightTrend(state.model.weighIns, now)?.currentKg,
                     hasWorkoutInProgress = draft != null,
+                    sessionsLastWeek = state.model.history.count { it.finishedAtEpochMillis > now - WEEK_MILLIS },
+                    sessionsPerWeek = state.model.profile.sessionsPerWeek,
                 )
             }
         }

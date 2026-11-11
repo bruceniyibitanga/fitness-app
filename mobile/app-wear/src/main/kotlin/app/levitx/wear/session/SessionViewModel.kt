@@ -2,7 +2,7 @@ package app.levitx.wear.session
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.levitx.core.session.SessionRun
+import app.levitx.core.coach.WorkoutRun
 import app.levitx.data.time.TrainingClock
 import app.levitx.wear.workout.WorkoutMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.stateIn
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 /**
- * Shows the session the [WorkoutController] is running and passes taps to it.
+ * Shows the workout the [WorkoutController] is running and passes taps to it.
  *
- * The session itself isn't kept here. It belongs to the controller, so it
+ * The workout itself isn't kept here. It belongs to the controller, so it
  * carries on when this screen is swiped away and is still there on return.
  * Heart rate and the off-screen rest alert come from the [WorkoutMonitor].
  */
@@ -36,7 +36,7 @@ class SessionViewModel @Inject constructor(
                 isTracked,
                 hasAsked,
             ->
-            // Asked once per app start, when a session is about to run and the
+            // Asked once per app start, when a workout is about to run and the
             // answer isn't already yes. Permission can only change through the
             // prompt, which ends in markAsked(), so this is re-checked then.
             val shouldAsk = workout is WorkoutState.Running && !hasAsked && !monitor.canTrack()
@@ -56,7 +56,10 @@ class SessionViewModel @Inject constructor(
     /** Ends rest early, or after it runs out. */
     fun endRest() = controller.endRest()
 
-    /** Ends the session now, saving any sets done. */
+    /** Moves on to the next exercise. */
+    fun skipExercise() = controller.skipExercise()
+
+    /** Ends the workout now, saving any sets done. */
     fun finishEarly() = controller.finishEarly()
 
     /** Leaves the summary. */
@@ -64,12 +67,12 @@ class SessionViewModel @Inject constructor(
 
     /**
      * Makes sure the workout service is running, if the person allowed it.
-     * The screen calls this whenever a session is on screen, which is the
+     * The screen calls this whenever a workout is on screen, which is the
      * only time Android lets a workout start.
      */
     fun ensureTracking() = monitor.ensureStarted()
 
-    /** The person answered the heart rate prompt, either way. The session carries on. */
+    /** The person answered the heart rate prompt, either way. The workout carries on. */
     fun onTrackingAnswered() {
         monitor.markAsked()
         monitor.ensureStarted()
@@ -78,47 +81,47 @@ class SessionViewModel @Inject constructor(
 
 private fun WorkoutState.toUiState(heartRate: Int?, isTracked: Boolean): SessionUiState = when (this) {
     WorkoutState.Loading, WorkoutState.Starting -> SessionUiState.Loading
-
     WorkoutState.Unavailable -> SessionUiState.Unavailable
-
     is WorkoutState.Idle -> SessionUiState.NoSession
-
     is WorkoutState.Running -> run.toUiState(heartRate, isTracked)
-
-    is WorkoutState.Finished -> SessionUiState.Finished(
-        gateTitle = gate.title,
-        measure = gate.measure,
-        sessionBest = sessionBest,
-        isNewBest = isNewBest,
-        passedGate = passedGate,
-        usedBand = usedBand,
-    )
+    is WorkoutState.Finished -> SessionUiState.Finished(sets = sets, newBest = newBest, usedBand = usedBand)
 }
 
-private fun SessionRun.toUiState(heartRate: Int?, isTracked: Boolean): SessionUiState {
+private fun WorkoutRun.toUiState(heartRate: Int?, isTracked: Boolean): SessionUiState {
+    val plan = current
+    val next = nextSet
+    // No next set means every set is logged and the workout is being saved.
+    if (plan == null || next == null) return SessionUiState.Loading
     val restEndsAt = restEndsAtElapsedMillis
-    // No next set means every set is logged and the session is being saved.
-    val next = nextSet ?: return SessionUiState.Loading
     return if (restEndsAt != null) {
+        // A first set up next means the rest followed the last set of the exercise before.
+        val isNewExercise = nextSetIndex == 0 && exerciseIndex > 0
+        val restedAfter = if (isNewExercise) session.plans[exerciseIndex - 1] else plan
         SessionUiState.Resting(
             restEndsAtElapsedMillis = restEndsAt,
-            restSeconds = plan.restSeconds,
+            restSeconds = restedAfter.restSeconds,
+            nextExerciseName = plan.exercise.name,
+            isNewExercise = isNewExercise,
             nextSetNumber = nextSetIndex + 1,
             setCount = plan.sets.size,
-            measure = plan.gate.measure,
+            measure = plan.exercise.measure,
             nextTarget = next.target,
             heartRate = heartRate,
             buzzOnScreen = !isTracked,
         )
     } else {
         SessionUiState.Working(
+            exerciseName = plan.exercise.name,
+            exerciseNumber = exerciseIndex + 1,
+            exerciseCount = session.plans.size,
             setNumber = nextSetIndex + 1,
             setCount = plan.sets.size,
-            measure = plan.gate.measure,
+            measure = plan.exercise.measure,
             target = next.target,
+            isPerSide = plan.exercise.isPerSide,
             isBestEffort = next.isBestEffort,
             repsInReserve = plan.repsInReserve,
-            canSaveEarly = logged.isNotEmpty(),
+            canSaveEarly = hasStarted,
             heartRate = heartRate,
         )
     }

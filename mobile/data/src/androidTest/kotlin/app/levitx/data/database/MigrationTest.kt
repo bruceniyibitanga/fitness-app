@@ -95,4 +95,22 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun version5To6KeepsTheCoachAndStartsTheWatchTablesEmpty() {
+        helper.createDatabase(name, 5).use { db ->
+            db.execSQL("INSERT INTO coach_state (id, json, updatedAtEpochMillis) VALUES (0, '{}', 1)")
+        }
+        helper.runMigrationsAndValidate(name, 6, true).use { db ->
+            db.query("SELECT COUNT(*) FROM coach_state").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 1) { "the coach should be kept" }
+            }
+            db.query("SELECT COUNT(*) FROM next_session").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 0) { "there should be no next session yet" }
+            }
+            db.query("SELECT COUNT(*) FROM workout_outbox").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 0) { "nothing should be queued yet" }
+            }
+        }
+    }
 }

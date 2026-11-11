@@ -56,7 +56,11 @@ public class Coach internal constructor(
         val safe = builder.candidates(context)
             .mapNotNull { HardRules.repair(it, context, rules) }
             .distinctBy { it.session }
-        val ranked = safe.map { scorer.score(it.session, context) }.sortedByDescending { it.total }
+        // When the goal's skill work can be done safely today, it is done: a
+        // session without it would leave the goal, and its movement, untrained.
+        val withGoal = safe.filter { repaired -> repaired.session.plans.any { it.gateId != null } }
+        val ranked = withGoal.ifEmpty { safe }.map { scorer.score(it.session, context) }
+            .sortedByDescending { it.total }
         val best = ranked.firstOrNull()
         return if (best == null) {
             Recommendation(session = null, reason = CoachReason.RestDay)

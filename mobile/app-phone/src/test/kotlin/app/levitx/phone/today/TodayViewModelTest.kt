@@ -2,11 +2,11 @@ package app.levitx.phone.today
 
 import app.levitx.core.coach.Coach
 import app.levitx.phone.MainDispatcherRule
-import app.levitx.phone.coachState
 import app.levitx.phone.workout.WorkoutStarter
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
+import app.levitx.testing.coachState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

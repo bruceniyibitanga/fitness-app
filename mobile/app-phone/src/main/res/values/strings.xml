@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Levitx</string>
-    <string name="wordmark" translatable="false">LEVITX</string>
 
     <!-- Shared -->
     <string name="back">← Back</string>
@@ -14,9 +13,15 @@
         <item quantity="one">%1$d rep</item>
         <item quantity="other">%1$d reps</item>
     </plurals>
-    <string name="input_reps_done">REPS DONE</string>
-    <string name="input_seconds_held">SECONDS HELD</string>
     <string name="kg_per_rep">%1$s kg</string>
+    <string name="percent">%1$d%%</string>
+    <string name="step_of">%1$d / %2$d</string>
+    <string name="figure_kg_per_rep">KG PER REP</string>
+    <string name="figure_of_bodyweight">OF BODYWEIGHT</string>
+    <string name="figure_hold">HOLD</string>
+    <string name="plan_detail_tagged">%1$s · %2$s</string>
+    <string name="plan_tag_skill">skill work</string>
+    <string name="plan_tag_light">light</string>
     <string name="continue_button">Continue</string>
 
     <!-- Movement patterns -->
@@ -29,11 +34,14 @@
     <string name="pattern_core">Core</string>
 
     <!-- Kit -->
-    <string name="kit_pull_up_bar">Pull-up bar</string>
+    <string name="kit_pull_up_bar">Pull-up bar or a park</string>
     <string name="kit_low_bar">Low bar or sturdy table</string>
     <string name="kit_dip_bars">Dip bars</string>
     <string name="kit_rings">Rings</string>
     <string name="kit_band">Bands</string>
+    <string name="kit_box">Box or step</string>
+    <string name="kit_none">Nothing yet</string>
+    <string name="kg">KG</string>
 
     <!-- Tabs -->
     <string name="tab_today">TODAY</string>
@@ -43,14 +51,21 @@
     <string name="tab_body">BODY</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_step">%1$d / %2$d</string>
     <string name="welcome_kicker">CALISTHENICS, MEASURED</string>
     <string name="welcome_title">Earn the skill.\nSee every step.</string>
     <string name="welcome_body">A coach that plans every session for you. Every rep shows its load in kg, and every skill has a gate you can see and pass.</string>
     <string name="welcome_start">Build my plan</string>
+    <string name="welcome_minutes">2 MIN</string>
+    <string name="welcome_photo_description">Someone hanging from an outdoor pull-up bar</string>
+    <string name="welcome_fact_kg">kg</string>
+    <string name="welcome_fact_kg_caption">PER REP</string>
+    <string name="welcome_fact_gates">Gates</string>
+    <string name="welcome_fact_gates_caption">NOT DAYS</string>
+    <string name="welcome_fact_watch">Watch</string>
+    <string name="welcome_fact_watch_caption">LOGS SETS</string>
     <string name="welcome_private">Your answers stay on this phone.</string>
     <string name="goal_title">What are you training for?</string>
-    <string name="goal_body">Pick one. You can change it later.</string>
+    <string name="goal_body">Pick one main goal. You can change it later.</string>
     <string name="goal_skill_label">A SKILL</string>
     <string name="goal_general_label">OR GENERAL FITNESS</string>
     <plurals name="goal_skill_gates">
@@ -58,58 +73,81 @@
         <item quantity="other">%1$d gates</item>
     </plurals>
     <string name="goal_general">Get stronger all round</string>
-    <string name="goal_general_detail">Every movement, evenly</string>
+    <string name="goal_general_tag">EVERY MOVEMENT</string>
     <string name="goal_more_coming">Handstand, front lever and pistol squat paths are on the way.</string>
     <string name="how_title">How should we build it?</string>
-    <string name="how_plan_label">YOUR PLAN</string>
+    <string name="how_plan_label">Your plan</string>
     <string name="how_all_round">All-round</string>
     <string name="how_all_round_body">Your skill first each session, then the rest of your body. Stronger and fitter overall.</string>
     <string name="how_focused">Focused</string>
     <string name="how_focused_body">More skill work. Everything else gets just enough to hold steady.</string>
     <string name="how_suggested">SUGGESTED</string>
-    <string name="how_pull_up_label">CAN YOU DO A STRICT PULL-UP?</string>
+    <string name="how_pull_up_label">Can you do a strict pull-up?</string>
     <string name="how_pull_up_yes">Yes</string>
     <string name="how_pull_up_not_yet">Not yet</string>
     <string name="how_pull_up_not_sure">Not sure</string>
     <string name="how_pull_up_note">Your first sessions measure the rest, so there\'s nothing else to guess.</string>
-    <string name="how_bodyweight_label">BODYWEIGHT, KG (OPTIONAL)</string>
+    <string name="how_bodyweight_label">Bodyweight</string>
+    <string name="how_optional">OPTIONAL</string>
+    <string name="how_bodyweight_description">Bodyweight in kilograms</string>
     <string name="how_bodyweight_hint">e.g. 74.2</string>
     <string name="how_bodyweight_note">Turns every rep into kg. Encrypted on this phone, never sent to your watch.</string>
     <string name="how_bodyweight_invalid">Enter a weight between 20 and 350 kg, or leave it empty.</string>
     <string name="week_title">When will you train?</string>
     <string name="week_body">We\'ll remind you on these days. Miss one and your plan just moves to the next session. Nothing breaks.</string>
-    <string name="week_days_label">DAYS</string>
+    <string name="week_days_label">Days</string>
     <plurals name="week_days_count">
         <item quantity="one">%1$d A WEEK</item>
         <item quantity="other">%1$d A WEEK</item>
     </plurals>
-    <string name="week_minutes_label">TIME PER SESSION</string>
-    <string name="week_kit_label">WHAT CAN YOU USE?</string>
-    <string name="week_kit_note">A floor and something to step on are assumed. Pick any of these you have.</string>
+    <string name="week_minutes_label">Time per session</string>
+    <string name="week_kit_label">What do you have?</string>
+    <string name="week_kit_note">Pick everything you can use. A wall, a chair and the floor are all you need to start.</string>
+    <string name="week_kit_missing">%1$s needs %2$s. Until you add it under Body, your plan trains everything else and leaves the skill work out.</string>
     <string name="week_build">Build my plan</string>
-    <string name="ready_label">YOUR PLAN IS READY</string>
+    <string name="ready_label">YOUR PLAN IS READY · %1$s</string>
     <string name="ready_general">Stronger all round</string>
     <string name="ready_style_all_round">ALL-ROUND</string>
     <string name="ready_style_focused">FOCUSED</string>
+    <string name="ready_style_general">GENERAL</string>
+    <string name="ready_gates">GATES</string>
+    <string name="ready_times">%1$d×</string>
+    <plurals name="ready_gates_to_skill">
+        <item quantity="one">%1$d GATE TO THE SKILL</item>
+        <item quantity="other">%1$d GATES TO THE SKILL</item>
+    </plurals>
+    <string name="ready_pass_to_move_on">PASS TO MOVE ON</string>
+    <string name="ready_first_gate">First gate: %1$s</string>
     <string name="ready_per_week">PER WEEK</string>
     <string name="ready_minutes">MIN EACH</string>
-    <string name="ready_first_session">FIRST SESSION</string>
     <string name="ready_learning">Your first sessions end with a best-effort set. That\'s how the coach finds your level, so targets start on the easy side.</string>
     <string name="ready_start">Start</string>
 
     <!-- Today -->
     <string name="today_why">WHY THIS SESSION</string>
-    <string name="today_session_label">SESSION</string>
     <plurals name="today_exercises">
         <item quantity="one">%1$d EXERCISE</item>
         <item quantity="other">%1$d EXERCISES</item>
     </plurals>
     <string name="today_sets">%1$d × %2$s</string>
     <string name="today_sets_then_best">%1$d × %2$s, then a best effort</string>
-    <string name="today_light">LIGHT</string>
-    <string name="today_skill">SKILL</string>
     <string name="today_start">Start session</string>
-    <string name="today_start_minutes">Start session · %1$d min</string>
+    <string name="no_value">None</string>
+    <string name="today_body_kg">BODY KG</string>
+    <string name="today_week_count">%1$d/%2$d</string>
+    <string name="today_last_seven_days">LAST 7 DAYS</string>
+    <string name="today_session_length">THIS SESSION</string>
+    <string name="today_lead_skill">SKILL WORK · %1$s</string>
+    <string name="today_lead_first">FIRST UP · %1$s</string>
+    <string name="today_hero">%1$d×%2$d</string>
+    <string name="seconds_unit">s</string>
+    <string name="today_lead_note_hold">Hold steady, and stop before your form breaks.</string>
+    <plurals name="today_lead_note_reps">
+        <item quantity="one">Stop with about %1$d rep left in the tank.</item>
+        <item quantity="other">Stop with about %1$d reps left in the tank.</item>
+    </plurals>
+    <string name="today_lead_note_best">The last set is a best effort.</string>
+    <string name="today_rest_label">TODAY</string>
     <string name="today_resume">Resume session</string>
     <string name="today_minutes">%1$d MIN</string>
     <string name="today_rest_title">Rest today</string>
@@ -133,22 +171,30 @@
     <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see kilograms per rep.</string>
 
     <!-- Workout -->
-    <string name="workout_exercise_label">EXERCISE %1$d OF %2$d</string>
-    <string name="workout_set_label">SET %1$d OF %2$d</string>
     <plurals name="workout_work_instructions">
         <item quantity="one">Stop with about %1$d rep left in the tank. Clean reps only.</item>
         <item quantity="other">Stop with about %1$d reps left in the tank. Clean reps only.</item>
     </plurals>
     <string name="workout_best_effort_instructions">Best effort: as many as you can with good form. Stop when your form breaks, not after.</string>
     <string name="workout_light_instructions">Light work: stay well inside what you can do.</string>
-    <string name="workout_effort_label">HOW DID IT FEEL?</string>
-    <string name="workout_effort_easy">Easy</string>
-    <string name="workout_effort_right">Right</string>
-    <string name="workout_effort_hard">Hard</string>
     <string name="workout_log_set">Log set</string>
-    <string name="workout_skip_exercise">Skip this exercise</string>
-    <string name="workout_next_exercise">Move to the next exercise</string>
-    <string name="workout_finish">End workout and save</string>
+    <string name="workout_set_short">SET %1$d/%2$d</string>
+    <string name="workout_exercise_short">%1$d/%2$d</string>
+    <string name="workout_finish_short">FINISH</string>
+    <string name="workout_finish_short_sentence">Finish</string>
+    <string name="workout_unit_reps">REPS DONE</string>
+    <string name="workout_unit_seconds">SECONDS HELD</string>
+    <string name="workout_of_target">/%1$d</string>
+    <string name="workout_reps_left_question">How many more could you do?</string>
+    <string name="workout_reps_left_help">Be honest: it\'s how the coach knows when to move you up.</string>
+    <string name="workout_reps_left_max">%1$d+</string>
+    <string name="workout_log_hint">%1$d · %2$s LEFT</string>
+    <string name="workout_skip_short">Skip</string>
+    <string name="workout_next_short">Next</string>
+    <string name="workout_then_set">Then set %1$d of %2$d</string>
+    <string name="workout_then_exercise">Then %1$s</string>
+    <string name="workout_aim">AIM %1$s</string>
+    <string name="workout_last_set">Last set of the workout</string>
     <string name="workout_rest_label">REST</string>
     <string name="workout_rest_next">Next: %1$s, set %2$d of %3$d, %4$s</string>
     <string name="workout_skip_rest">Skip rest</string>
@@ -156,8 +202,6 @@
     <string name="workout_band_label">BAND</string>
     <string name="workout_band_none">None</string>
     <string name="workout_band_choice">%1$s · %2$s kg</string>
-    <string name="workout_load">%1$s kg per rep</string>
-    <string name="workout_load_estimate">About %1$s kg per rep (estimate)</string>
     <string name="workout_band_note">Band-assisted sets build toward a gate but don\'t pass it.</string>
     <string name="workout_saved_label">WORKOUT SAVED</string>
     <plurals name="workout_saved_sets">
@@ -171,20 +215,31 @@
     <string name="workout_back">Back to Today</string>
 
     <!-- Skills -->
-    <string name="skills_label">EVERY MOVEMENT</string>
-    <string name="skills_title">Your ladders</string>
-    <string name="skills_body">Each movement has a ladder from easiest to hardest. Top out an exercise\'s range and you move up a rung.</string>
-    <string name="skills_rung">RUNG %1$d OF %2$d</string>
-    <string name="skills_target">Target %1$s</string>
-    <string name="skills_next">Next: %1$s</string>
-    <string name="skills_top">Top of the ladder</string>
-    <string name="skills_no_kit">Needs kit you haven\'t added yet</string>
-    <string name="skills_gate">Trained by your skill gates for now</string>
+    <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>
+    <string name="skills_rungs_description">Step %1$d of %2$d on this ladder.</string>
+    <string name="skills_target_label">TARGET</string>
+    <string name="skills_step_figure">%1$d/%2$d</string>
+    <string name="skills_step_label">STEP</string>
+    <string name="skills_left_label">TO THE TOP</string>
+    <string name="skills_next_label">NEXT · %1$s</string>
+    <string name="skills_next_title">Opens when you top out this one.</string>
+    <string name="skills_next_body">Hit your target on every work set and it goes up. Reach the top of the range and you move up a rung.</string>
+    <string name="skills_top_label">TOP OF THE LADDER</string>
+    <string name="skills_top">Nothing harder to unlock here.</string>
+    <string name="skills_top_body">Your targets keep rising on this one as you get stronger.</string>
+    <string name="skills_gate_label">YOUR GOAL</string>
+    <string name="skills_gate_title">Trained by your skill gates.</string>
+    <string name="skills_gate">Your goal trains this movement for now, through its own exercises. The ladder picks up again once the goal no longer needs it.</string>
+    <string name="skills_kit_label">NEEDS KIT</string>
+    <string name="skills_no_kit_title">Nothing here yet</string>
+    <string name="skills_no_kit">Every step of this ladder needs kit you haven\'t added. Add it under Body to start it.</string>
+    <string name="skills_how_to">How to do %1$s</string>
 
     <!-- Train -->
     <string name="train_label">TRAIN</string>
-    <string name="train_title">Pick your own</string>
-    <string name="train_body">Every workout here uses your own exercises and targets. Anything you trained too recently comes back light.</string>
+    <string name="train_body_focus">BODY FOCUS</string>
+    <string name="train_all">All</string>
+    <string name="train_tag_skill">SKILL</string>
     <string name="train_programs">PROGRAMS</string>
     <string name="train_workouts">SINGLE WORKOUTS</string>
     <string name="train_current_program">YOUR PLAN</string>
@@ -196,8 +251,8 @@
         <item quantity="one">%1$d MIN · %2$d MOVE</item>
         <item quantity="other">%1$d MIN · %2$d MOVES</item>
     </plurals>
-    <string name="train_some_light">SOME LIGHT TODAY</string>
-    <string name="train_nothing_safe">Nothing in this one can be trained safely today.</string>
+    <string name="train_some_light">SOME LIGHT</string>
+    <string name="train_nothing_safe">NOTHING SAFE TODAY</string>
     <string name="focus_full_body">Full body</string>
     <string name="focus_upper">Upper body</string>
     <string name="focus_pull">Pull</string>
@@ -206,24 +261,23 @@
     <string name="focus_core">Core</string>
 
     <!-- A single workout -->
-    <string name="focus_workout_label">SINGLE WORKOUT</string>
     <string name="focus_workout_note">A one-off workout. It counts toward this week\'s training, and your targets move up when you hit them, but your next planned session is still waiting on Today.</string>
+    <string name="focus_workout_nothing">None of this can be trained safely today. It was worked too recently, needs kit you haven\'t added, or would load an area that hurt. Try another, or come back tomorrow.</string>
     <string name="focus_workout_start">Start workout</string>
-    <string name="focus_workout_resume">Resume the workout in progress</string>
+    <string name="focus_workout_resume">Resume workout</string>
     <string name="focus_workout_not_found">This workout isn\'t in the app any more.</string>
     <string name="focus_workout_in_progress">You already have a workout in progress. Finish or end it first.</string>
-    <string name="open_exercise">Open %1$s</string>
 
     <!-- Exercise -->
     <string name="exercise_kg_per_rep">KG / REP</string>
-    <string name="exercise_share_measured">%1$s%% BW · MEASURED</string>
-    <string name="exercise_share_estimate">~%1$s%% BW · ESTIMATE</string>
-    <string name="exercise_target">YOUR TARGET</string>
-    <string name="exercise_best">YOUR BEST</string>
-    <string name="exercise_cues">HOW TO DO IT</string>
+    <string name="exercise_share_measured">BW · MEASURED</string>
+    <string name="exercise_share_estimate">BW · ESTIMATE</string>
+    <string name="exercise_target">TARGET</string>
+    <string name="exercise_best">BEST</string>
+    <string name="exercise_cues">CUES</string>
     <string name="exercise_ladder">THE LADDER</string>
-    <string name="exercise_rung_done">BELOW YOU</string>
-    <string name="exercise_rung_current">YOU ARE HERE</string>
+    <string name="exercise_rung_done">DONE</string>
+    <string name="exercise_rung_current">TRAINING NOW</string>
     <string name="exercise_rung_later">LATER</string>
     <string name="exercise_or">%1$s or %2$s</string>
     <string name="exercise_skill">Part of a skill path. It\'s passed by a strict set at the gate\'s target.</string>
@@ -233,29 +287,53 @@
     <string name="program_label">SKILL PROGRAM</string>
     <string name="program_body">You move on when you pass a gate, so there\'s no deadline. The rest of your body keeps training around it.</string>
     <string name="program_gates">GATES</string>
+    <string name="program_to_pass">TO PASS</string>
     <string name="program_make_plan">Make this my plan</string>
     <string name="program_switch_note">Your workouts, bests and bodyweight all stay. Only the goal your sessions are built around changes.</string>
-    <string name="program_is_plan">This is your plan.</string>
+    <string name="program_is_plan">This is your plan. Today builds every session around it.</string>
     <string name="program_not_found">This program isn\'t in the app any more.</string>
 
     <!-- Path -->
-    <string name="path_label">THE WHOLE PATH</string>
-    <string name="path_status_passed">PASSED</string>
-    <string name="path_status_current">WORKING ON IT</string>
-    <string name="path_status_locked">LATER</string>
-    <string name="path_best">Best %1$s</string>
+    <string name="path_goal_label">GOAL · %1$s</string>
+    <plurals name="path_gates_to_go">
+        <item quantity="one">gate to go</item>
+        <item quantity="other">gates to go</item>
+    </plurals>
+    <string name="path_reached">goal reached</string>
+    <string name="path_passed_count">%1$d OF %2$d GATES PASSED</string>
+    <string name="path_gate_trains">What this gate trains · %1$s</string>
+    <string name="path_train_next">Train the next gate</string>
+    <string name="path_change_goal">Change goal</string>
+    <string name="path_pick_goal">Pick a skill</string>
+    <string name="gate_passed_best">Passed · best %1$s</string>
+    <string name="gate_current_best">Best %1$d · training now</string>
+    <string name="gate_current">Training now</string>
+    <string name="gate_goal">Your goal</string>
+    <string name="gate_later">Later</string>
+    <string name="gate_progress">%1$d/%2$d%3$s</string>
+    <string name="gate_reps_target">×%1$d</string>
     <string name="path_no_goal">No skill goal yet. Your plan trains every movement evenly.</string>
 
     <!-- Equipment -->
-    <string name="equipment_label">EQUIPMENT</string>
-    <string name="equipment_title">Bodyweight and bands</string>
-    <string name="equipment_body">Used to work out how many kilograms each rep moves. Stored only on this phone, encrypted.</string>
-    <string name="equipment_bodyweight_label">BODYWEIGHT, KG</string>
-    <string name="equipment_bodyweight_current">Saved: %1$s kg</string>
-    <string name="equipment_bodyweight_save">Save bodyweight</string>
+    <string name="body_trend_label">BODYWEIGHT · TREND</string>
+    <string name="body_kg_per_week">KG / WEEK</string>
+    <string name="body_no_weight">Weigh in to start your trend. Your weight stays on this phone, encrypted.</string>
+    <string name="body_trend_waiting">Weigh in a few more times over the next week or two and your trend shows here.</string>
+    <string name="body_chart_description">Your recent weigh-ins, with the trend now at %1$s kg.</string>
+    <string name="body_today">TODAY</string>
+    <string name="body_on_the_bar">ON THE BAR</string>
+    <string name="body_kg_per_rep">KG PER REP</string>
+    <string name="body_share_measured">%1$d%% BW · MEASURED</string>
+    <string name="body_share_estimated">%1$d%% BW · EST</string>
+    <string name="body_kilo_note">Every kilo you lose makes each of these about %1$s%% lighter. Your plan already counts it.</string>
+    <string name="body_kit_label">YOUR KIT</string>
+    <string name="body_kit_note">Your plan only uses what is picked here. A wall, a chair and the floor are always there.</string>
+    <string name="body_weigh_in">Weigh in</string>
+    <string name="body_weigh_in_label">BODYWEIGHT, KG</string>
+    <string name="body_weigh_in_save">Save</string>
+    <string name="body_weigh_in_cancel">Cancel</string>
     <string name="equipment_bands_label">BANDS</string>
-    <string name="equipment_no_bands">No bands yet. Add one to use it for assisted sets.</string>
-    <string name="equipment_band_help">Helps by about %1$s kg</string>
+    <string name="equipment_band_help">HELPS ABOUT %1$s KG</string>
     <string name="equipment_band_remove">Remove</string>
     <string name="equipment_band_needs_bodyweight">Save your bodyweight first. Calibrating a band needs it.</string>
     <string name="equipment_band_add">Add a band</string>

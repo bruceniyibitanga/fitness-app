@@ -1,6 +1,7 @@
 package app.levitx.phone.onboarding
 
 import app.levitx.core.coach.Coach
+import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
@@ -43,6 +44,34 @@ class OnboardingViewModelTest {
         viewModel.answerPullUp(PullUpAnswer.YES)
         viewModel.next()
         assertEquals(OnboardingStep.HOW, step)
+    }
+
+    @Test
+    fun noKitIsAssumedAndNothingYetClearsWhatWasPicked() {
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.equipment)
+
+        viewModel.chooseEquipment(Equipment.PULL_UP_BAR)
+        viewModel.chooseEquipment(Equipment.BOX)
+        assertEquals(setOf(Equipment.PULL_UP_BAR, Equipment.BOX), viewModel.uiState.value.equipment)
+
+        viewModel.chooseEquipment(Equipment.BOX)
+        assertEquals(setOf(Equipment.PULL_UP_BAR), viewModel.uiState.value.equipment)
+
+        viewModel.chooseEquipment(null)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.equipment)
+    }
+
+    @Test
+    fun aBarGoalWithoutABarSaysWhatIsMissing() {
+        viewModel.chooseGoal("muscle_up")
+        assertEquals(setOf(Equipment.PULL_UP_BAR), viewModel.uiState.value.missingGoalKit)
+
+        viewModel.chooseEquipment(Equipment.PULL_UP_BAR)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.missingGoalKit)
+
+        viewModel.chooseGoal(null)
+        viewModel.chooseEquipment(null)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.missingGoalKit)
     }
 
     @Test

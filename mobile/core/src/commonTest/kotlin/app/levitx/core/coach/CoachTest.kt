@@ -25,6 +25,29 @@ class CoachTest {
     }
 
     @Test
+    fun everySessionHasTheGoalsSkillWorkWhenItCanSafelyBeDone() {
+        // A newcomer for a muscle-up, who can already do a pull-up: the session
+        // could otherwise drop the gate and with it every pulling exercise.
+        val muscleUp = newcomer(CoachProfile("muscle_up", equipment = fullKit))
+        val session = first(muscleUp.copy(rungs = mapOf(MovementPattern.VERTICAL_PULL to 3)))
+        assertNotNull(session.plans.firstOrNull { it.gateId != null })
+        assertTrue(session.plans.any { it.exercise.pattern == MovementPattern.VERTICAL_PULL })
+    }
+
+    @Test
+    fun withoutTheKitForTheGoalTheCoachSaysWhatIsMissing() {
+        val noBar = newcomer(pullUpProfile(equipment = emptySet()))
+        val path = assertNotNull(noBar.profile.goalPath)
+
+        val recommendation = coach.recommend(noBar, atDay(0))
+
+        assertEquals(CoachReason.NeedsKit(path.name, setOf(Equipment.PULL_UP_BAR)), recommendation.reason)
+        assertNull(noBar.currentGatePattern())
+        assertEquals(setOf(Equipment.PULL_UP_BAR), noBar.kitMissingForGoal())
+        assertTrue(CoachPhrases.describe(recommendation.reason).contains("a pull-up bar"))
+    }
+
+    @Test
     fun theFirstSessionStartsWithTheSkillAndFitsTheTime() {
         val recommendation = coach.recommend(newcomer(), atDay(0))
         val session = assertNotNull(recommendation.session)
@@ -181,9 +204,15 @@ class CoachTest {
 
     @Test
     fun theCurrentExerciseFollowsTheRungAndTheKit() {
-        val model = newcomer().copy(rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to 3))
+        val model = newcomer().copy(rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to 4))
         assertEquals("horizontal_push.push_up", model.currentExercise(MovementPattern.HORIZONTAL_PUSH)?.id)
-        assertNull(newcomer(pullUpProfile(equipment = emptySet())).currentExercise(MovementPattern.HORIZONTAL_PULL))
+        val noKit = newcomer(pullUpProfile(equipment = emptySet()))
+        assertNull(noKit.currentExercise(MovementPattern.HORIZONTAL_PULL))
+        // With no kit at all, nothing is assumed: push-ups start against a wall.
+        assertEquals("horizontal_push.wall", noKit.currentExercise(MovementPattern.HORIZONTAL_PUSH)?.id)
+        // A box rung is skipped, not stood on: rung 1 needs a box, so rung 0 is used.
+        val onBoxRung = noKit.copy(rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to 1))
+        assertEquals("horizontal_push.wall", onBoxRung.currentExercise(MovementPattern.HORIZONTAL_PUSH)?.id)
     }
 
     @Test
