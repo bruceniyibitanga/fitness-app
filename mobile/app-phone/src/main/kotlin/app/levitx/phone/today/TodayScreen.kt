@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,7 +47,6 @@ import app.levitx.core.load.calculateEffectiveLoad
 import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
-import app.levitx.design.LevitxSpacing
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
@@ -57,11 +55,9 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.OptionCard
-import app.levitx.phone.ui.PrimaryButton
+import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
-import app.levitx.phone.ui.SecondaryButton
-import app.levitx.phone.ui.SectionLabel
 import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
@@ -313,19 +309,25 @@ private fun SuggestionCard(suggestion: Suggestion, onStart: (SuggestionChoice?) 
     var choice by rememberSaveable(suggestion) { mutableStateOf(suggestion.recommended) }
     val suggested = stringResource(R.string.how_suggested)
     Column(
-        verticalArrangement = Arrangement.spacedBy(LevitxSpacing.Small),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier
             .fillMaxWidth()
             .background(LevitxColors.Surface)
             .padding(ScreenPadding),
     ) {
-        SectionLabel(stringResource(R.string.today_check_label), color = LevitxColors.Accent)
-        Text(stringResource(R.string.today_check_title), style = MaterialTheme.typography.headlineSmall)
-        SectionLabel(stringResource(R.string.today_check_noticed))
+        Caption(stringResource(R.string.today_check_label), color = LevitxColors.Accent)
+        Text(
+            text = stringResource(R.string.today_check_title),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = LevitxColors.Text,
+            modifier = Modifier.semantics { heading() },
+        )
+        Caption(stringResource(R.string.today_check_noticed), modifier = Modifier.padding(top = 6.dp))
         suggestion.signals.forEach { signal ->
-            Text(CoachPhrases.describe(signal), style = MaterialTheme.typography.bodyMedium)
+            Text(CoachPhrases.describe(signal), fontSize = 14.sp, lineHeight = 20.sp, color = LevitxColors.Text)
         }
-        SectionLabel(stringResource(R.string.today_check_question))
+        Caption(stringResource(R.string.today_check_question), modifier = Modifier.padding(top = 6.dp))
         listOf(
             Triple(SuggestionChoice.KEEP, R.string.today_choice_keep, R.string.today_choice_keep_body),
             Triple(SuggestionChoice.LIGHTER, R.string.today_choice_lighter, R.string.today_choice_lighter_body),
@@ -347,20 +349,16 @@ private fun SuggestionCard(suggestion: Suggestion, onStart: (SuggestionChoice?) 
                 },
             )
         }
-        Text(
-            text = stringResource(R.string.today_choice_note),
-            style = MaterialTheme.typography.bodySmall,
-            color = LevitxColors.TextMuted,
-        )
+        Help(stringResource(R.string.today_choice_note))
         when (choice) {
-            SuggestionChoice.REST -> PrimaryButton(text = stringResource(R.string.today_take_rest), onClick = onRest)
+            SuggestionChoice.REST -> AccentBar(text = stringResource(R.string.today_take_rest), onClick = onRest)
 
-            SuggestionChoice.LIGHTER -> PrimaryButton(
+            SuggestionChoice.LIGHTER -> AccentBar(
                 text = stringResource(R.string.today_start_lighter),
                 onClick = { onStart(SuggestionChoice.LIGHTER) },
             )
 
-            SuggestionChoice.KEEP -> PrimaryButton(
+            SuggestionChoice.KEEP -> AccentBar(
                 text = stringResource(R.string.today_start),
                 onClick = { onStart(SuggestionChoice.KEEP) },
             )
@@ -372,15 +370,20 @@ private fun SuggestionCard(suggestion: Suggestion, onStart: (SuggestionChoice?) 
 @Composable
 private fun WeightNotice(onAcknowledge: () -> Unit) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(LevitxSpacing.Small),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier
             .fillMaxWidth()
             .background(LevitxColors.Surface)
             .padding(ScreenPadding),
     ) {
-        SectionLabel(stringResource(R.string.today_weight_label), color = LevitxColors.Ice)
-        Text(stringResource(R.string.today_weight_body), style = MaterialTheme.typography.bodyMedium)
-        SecondaryButton(stringResource(R.string.today_weight_ok), onAcknowledge)
+        Caption(stringResource(R.string.today_weight_label), color = LevitxColors.Ice)
+        Text(
+            stringResource(R.string.today_weight_body),
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            color = LevitxColors.Text,
+        )
+        QuietBar(stringResource(R.string.today_weight_ok), onAcknowledge)
     }
 }
 

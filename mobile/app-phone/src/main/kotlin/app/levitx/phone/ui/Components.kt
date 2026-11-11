@@ -47,28 +47,16 @@ import app.levitx.phone.R
  * buttons, labels and number entry.
  */
 
-/** Minimum touch target height for the main action on a screen. */
-private val PrimaryButtonHeight = 56.dp
+/** Height of the − and + buttons beside a number, a full touch target. */
+private val StepperButtonHeight = 56.dp
 private val ProgressBarHeight = 4.dp
 private val StepperButtonWidth = 64.dp
 private val NumberFieldWidth = 120.dp
 
-/** Mono uppercase label above a value, like "TODAY". */
+/** Mono uppercase label above a number field. Screens use [Caption]; this stays for the fields. */
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier, color: Color = LevitxColors.TextMuted) {
     Text(text = text, style = LevitxType.Label, color = color, modifier = modifier)
-}
-
-/** The one main action on a screen. Kept for older screens; it is an [AccentBar]. */
-@Composable
-fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    AccentBar(text = text, onClick = onClick, modifier = modifier, enabled = enabled)
-}
-
-/** A secondary action next to a [PrimaryButton]. It is a [QuietBar]. */
-@Composable
-fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    QuietBar(text = text, onClick = onClick, modifier = modifier)
 }
 
 /**
@@ -184,7 +172,7 @@ private fun StepperButton(symbol: String, onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .width(StepperButtonWidth)
-            .heightIn(min = PrimaryButtonHeight)
+            .heightIn(min = StepperButtonHeight)
             .border(1.dp, LevitxColors.Tick)
             .clickable(role = Role.Button, onClick = onClick),
     ) { Text(symbol, style = MaterialTheme.typography.titleLarge, color = LevitxColors.Text) }
