@@ -51,11 +51,10 @@ private const val MAX_BAND_NAME_LENGTH = 30
 
 /** Equipment destination: connects [EquipmentViewModel] to [EquipmentScreen]. */
 @Composable
-fun EquipmentRoute(onBack: () -> Unit, viewModel: EquipmentViewModel = hiltViewModel()) {
+fun EquipmentRoute(viewModel: EquipmentViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     EquipmentScreen(
         uiState = uiState,
-        onBack = onBack,
         onSaveBodyweight = viewModel::saveBodyweight,
         onAddBand = viewModel::addBand,
         onDeleteBand = viewModel::deleteBand,
@@ -66,7 +65,6 @@ fun EquipmentRoute(onBack: () -> Unit, viewModel: EquipmentViewModel = hiltViewM
 @Composable
 fun EquipmentScreen(
     uiState: EquipmentUiState,
-    onBack: () -> Unit,
     onSaveBodyweight: (Double) -> Unit,
     onAddBand: (name: String, assistanceKg: Double) -> Unit,
     onDeleteBand: (id: String) -> Unit,
@@ -80,7 +78,6 @@ fun EquipmentScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = LevitxSpacing.Medium, vertical = LevitxSpacing.Medium),
         ) {
-            TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
             when (uiState) {
                 EquipmentUiState.Loading -> Unit
 
@@ -236,7 +233,6 @@ private fun EquipmentScreenPreview() {
     LevitxTheme {
         EquipmentScreen(
             uiState = EquipmentUiState.Ready(74.5, listOf(Band("1", "Red", 22.5))),
-            onBack = {},
             onSaveBodyweight = {},
             onAddBand = { _, _ -> },
             onDeleteBand = {},

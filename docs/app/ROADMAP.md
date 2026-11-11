@@ -71,7 +71,7 @@ Trying the Phase 2 and 3 builds showed the app needs to work like a trainer, not
 
 1. Redesign onboarding, Today, Train, program and workout screens in the design canvas, and get them approved.
 2. Build the coach engine in `:core` ([ADR 0007](adr/0007-adaptive-coach.md), [COACH-ENGINE.md](COACH-ENGINE.md)), with its simulation tests. Done. Storing its model, a session run with more than one exercise, and reading weight from Health Connect come with step 3.
-3. Rebuild the phone screens to the approved design.
+3. Rebuild the phone screens to the approved design. Setup, Today, the workout, Skills and the tab bar are done, driven by the coach. Still to come: the Train library with workout and exercise detail, then the Health Connect weight reading and a weekly weigh-in prompt.
 4. Bring the watch in line.
 5. Bundle exercise and onboarding photos.
 

@@ -20,9 +20,9 @@ mobile/
   app-wear/                  Wear OS app (Compose for Wear OS, Navigation 3)
 ```
 
-Each app module is split by feature (`goal/`, `startingtest/`, `home/`, `session/`, `path/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
+Each app module is split by feature (`onboarding/`, `main/`, `today/`, `workout/`, `train/`, `path/`, `skills/`, `equipment/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
 
-Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan, and `SessionRun` holds the rules for moving through a session (log a set, rest, finish). Both apps' session ViewModels run on `SessionRun`; they differ only in where they keep it between sets (saved state on the phone, an encrypted draft on the watch). ViewModels only combine flows and map the result to UI state.
+Training logic lives in `:core`, not in ViewModels. On the phone the coach plans every session and `WorkoutRun` holds the rules for moving through one (log a set, rest, skip, finish). The watch still runs a single gate with `SessionRun` and `SkillPath.trainingDay(bests)` until it moves over to the coach. ViewModels only combine flows and map the result to UI state.
 
 ### The coach
 
@@ -51,6 +51,17 @@ Inside, each concern has one home:
 The phone stores the coach through `CoachRepository` in `:data`. What the coach has learned is one JSON document in the `coach_state` table, with its own format version. It is a separate type from `AthleteModel` (`CoachDocument`), so the stored format only changes on purpose. Bests and bodyweight aren't in it: they stay in their own tables, which the path screen, the bodyweight screen and the watch sync already read, and the repository fills them into the model when it reads it. Every change is a read, a call to `Coach` and a write in one transaction. A finished workout is stored as one `training_session` row per exercise, sharing a `workoutId`, so it can't be recorded twice.
 
 `WorkoutRun` in `:core` runs a planned session exercise by exercise, the way `SessionRun` runs one gate. The workout in progress is saved after every change in `workout_draft`, so it survives the app being killed. `SessionRun` stays until the watch moves over to `WorkoutRun`.
+
+### The phone app
+
+The phone has three destinations on its Navigation 3 back stack: setup, the tabs, and the workout in progress. Which comes first is decided once at launch: setup for someone the coach doesn't know yet, the tabs for everyone else. Locked or unreadable data goes to the tabs, which explain it, so setup can never overwrite a coach that is still there.
+
+- **Setup** (`onboarding/`) asks only what training can't tell the coach: the goal, all-round or focused, whether they can do a pull-up, optional bodyweight, the week and the kit. It shows the first session the coach would plan before anything is saved, then saves it all in one go.
+- **The tabs** (`main/`) are Today, Train, Plan, Skills and Body. They swap content in place, so back from any tab leaves the app.
+- **Today** asks `Coach.recommend` for the next session and shows the reason and the Keep / Lighter / Rest offer. Starting saves a `WorkoutRun` as the draft before the workout screen opens, so the draft is the one place the workout in progress lives. Starting again resumes it.
+- **The workout** reads the draft, saves it after every change, and hands the finished run to `CoachRepository.recordWorkout`. Draft writes go through one lock, in order, and recording waits behind them, so an older write can't bring a finished workout back.
+- **Skills** shows where the person is on every ladder, read straight from the coach's model through `currentExercise` and `currentGatePattern`, so it can't disagree with what Today plans.
+- **Train** is a placeholder until the workout library lands.
 
 A new safety rule is one object added to `HardRules.all`, and a new scoring term is one object added to `ScoringTerms.all`. Neither means changing the code that uses them. The rules and terms are `internal`, so the apps can't reach around `Coach`.
 
@@ -146,7 +157,7 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 - `:core`: a unit test for every rule, including bad input.
 - ViewModels: unit tests with fake repositories and `kotlinx-coroutines-test`.
 - Repositories: fakes in `:testing` (`FakeGoalRepository`, `FakeProgressRepository`, `FakeSessionRepository` and others) keep state in memory, so ViewModel tests run on the JVM. Only `testImplementation` depends on them, so they never ship.
-- Process death: a test rebuilds the session ViewModel from the same `SavedStateHandle` to check a session in progress survives the app being killed.
+- Process death: the workout in progress is saved as an encrypted draft after every change, and the workout tests check the draft matches what is on screen after each step.
 - Migrations: an emulator test upgrades a version 1 database to the latest and checks nothing was lost.
 - Encryption: on an emulator, a test checks the database file doesn't start with SQLite's plain-text header, and that a tampered key file refuses to unlock.
 - Sync: `:sync` unit tests run a pretend phone and a pretend watch against one in-memory Data Layer. They cover the full handshake, retries, the phone being out of reach, unreadable payloads and a second watch. Payload validation has its own tests with deliberately bad input.

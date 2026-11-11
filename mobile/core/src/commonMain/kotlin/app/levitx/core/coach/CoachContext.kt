@@ -14,13 +14,13 @@ internal class CoachContext(val model: AthleteModel, val nowEpochMillis: Long) {
     val path: SkillPath? = model.profile.goalPath
 
     /** The gate being worked on, or null with no goal or once the path is done. */
-    val currentGate: Gate? = path?.let { goal -> goal.progressFor(model.gateBests).currentIndex?.let(goal.gates::get) }
+    val currentGate: Gate? = model.currentGate()
 
     /** The pattern the current gate trains, or null with no gate to work on. */
     val currentGatePattern: MovementPattern? = currentGate?.let(SkillTraining::exerciseFor)?.pattern
 
     /** The patterns the goal's gates train. */
-    val goalPatterns: Set<MovementPattern> = path?.let(SkillTraining::patternsOf).orEmpty()
+    val goalPatterns: Set<MovementPattern> = model.goalPatterns()
 
     /** Weekly hard-set targets per pattern. */
     val weeklyTargets: Map<MovementPattern, Double> = VolumeTargets.weekly(model.profile)
@@ -83,3 +83,25 @@ internal fun AthleteModel.exerciseFor(
     return ladder.usableRungAtOrBelow(rung(pattern), profile.equipment)
         ?.let { ladder.exerciseAt(it, profile.equipment, variant) }
 }
+
+/**
+ * The ladder exercise this person trains for [pattern] right now, or null
+ * without the kit for any of it. For the pattern of the gate being worked on,
+ * it is what the ladder holds for after the gate.
+ */
+public fun AthleteModel.currentExercise(pattern: MovementPattern): Exercise? = exerciseFor(pattern, goalPatterns())
+
+/** The gate being worked on, or null with no goal or once the path is done. */
+public fun AthleteModel.currentGate(): Gate? =
+    profile.goalPath?.let { path -> path.progressFor(gateBests).currentIndex?.let(path.gates::get) }
+
+/**
+ * The pattern trained through the current gate rather than its ladder, or
+ * null with no gate to work on. Sessions train this pattern with the gate's
+ * own exercise until the gate is passed.
+ */
+public fun AthleteModel.currentGatePattern(): MovementPattern? = currentGate()?.let(SkillTraining::exerciseFor)?.pattern
+
+/** The patterns the goal's gates train, which get the most weekly volume. Empty with no goal. */
+internal fun AthleteModel.goalPatterns(): Set<MovementPattern> =
+    profile.goalPath?.let(SkillTraining::patternsOf).orEmpty()

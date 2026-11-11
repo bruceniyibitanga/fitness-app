@@ -178,4 +178,22 @@ class CoachTest {
         assertIs<ReadinessSignal.LongGap>(suggestion.signals.single())
         assertEquals(SuggestionChoice.LIGHTER, suggestion.recommended)
     }
+
+    @Test
+    fun theCurrentExerciseFollowsTheRungAndTheKit() {
+        val model = newcomer().copy(rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to 3))
+        assertEquals("horizontal_push.push_up", model.currentExercise(MovementPattern.HORIZONTAL_PUSH)?.id)
+        assertNull(newcomer(pullUpProfile(equipment = emptySet())).currentExercise(MovementPattern.HORIZONTAL_PULL))
+    }
+
+    @Test
+    fun theCurrentGateMovesOnAsGatesArePassed() {
+        val model = newcomer()
+        val path = checkNotNull(model.profile.goalPath)
+        assertEquals(path.gates.first(), model.currentGate())
+        assertEquals(MovementPattern.VERTICAL_PULL, model.currentGatePattern())
+        val passedAll = model.copy(gateBests = path.gates.associate { it.id to it.target })
+        assertNull(passedAll.currentGate())
+        assertNull(passedAll.currentGatePattern())
+    }
 }
