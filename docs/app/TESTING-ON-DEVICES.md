@@ -27,7 +27,7 @@ Each test build's summary page shows the fingerprint it was signed with, so you 
 
 This key is for test builds only. Release builds will be signed through Play App Signing, with a different key. If this one is ever lost or leaked, make a new one and replace the two secrets. The only cost is uninstalling the old test builds once.
 
-Without the secrets, builds still work, but each one gets a throwaway key. The run shows a warning when that happens.
+Without the secrets, builds still work, but each one gets a throwaway key, so you'd have to uninstall before every new build. The run shows a warning when that happens.
 
 ## Getting a build
 

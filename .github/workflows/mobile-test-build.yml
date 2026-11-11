@@ -53,25 +53,34 @@ jobs:
           cache-provider: basic
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      # The key lives in the runner's temp folder, which is wiped when the job ends.
+      # The key lives in the runner's temp folder, which is wiped when the job
+      # ends. Without the secrets a throwaway key is made in the same format,
+      # so the signing setup is exercised on every run either way.
       - name: Set up the test signing key
-        id: key
         env:
           KEYSTORE_BASE64: ${{ secrets.LEVITX_TEST_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.LEVITX_TEST_KEYSTORE_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::warning::No test signing key in the repository secrets. These builds use a throwaway key, so they can't be installed over earlier test builds. See docs/app/TESTING-ON-DEVICES.md."
-            exit 0
-          fi
           keystore="$RUNNER_TEMP/levitx-test.p12"
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
-          echo "path=$keystore" >> "$GITHUB_OUTPUT"
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+            password="$KEYSTORE_PASSWORD"
+          else
+            echo "::warning::No test signing key in the repository secrets. These builds use a throwaway key, so they can't be installed over earlier test builds. See docs/app/TESTING-ON-DEVICES.md."
+            password=$(openssl rand -hex 24)
+            echo "::add-mask::$password"
+            keytool -genkeypair -keystore "$keystore" -storetype PKCS12 -storepass "$password" -keypass "$password" \
+              -alias levitx-test -keyalg RSA -keysize 3072 -validity 1 -dname "CN=Levitx throwaway test key" 2>/dev/null
+          fi
+          {
+            echo "LEVITX_TEST_KEYSTORE=$keystore"
+            echo "LEVITX_TEST_KEYSTORE_PASSWORD=$password"
+          } >> "$GITHUB_ENV"
 
+      # LEVITX_TEST_KEYSTORE and LEVITX_TEST_KEYSTORE_PASSWORD, set above, are
+      # read by the levitx.android.application convention plugin.
       - name: Build
         env:
-          # Read by the levitx.android.application convention plugin.
-          LEVITX_TEST_KEYSTORE: ${{ steps.key.outputs.path }}
-          LEVITX_TEST_KEYSTORE_PASSWORD: ${{ secrets.LEVITX_TEST_KEYSTORE_PASSWORD }}
           LEVITX_TEST_BUILD_LABEL: test.${{ github.run_number }}
         run: ./gradlew :app-phone:assembleDebug :app-wear:assembleDebug --stacktrace
 
