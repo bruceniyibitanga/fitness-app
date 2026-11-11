@@ -1,6 +1,6 @@
 # 0007: An adaptive coach plans every session, with explicit safety rules underneath
 
-**Status:** Proposed, November 2026. The numbers in it need review by a qualified coach before release, like the gates.
+**Status:** Accepted, November 2026. The engine is built in `:core`. The numbers in it need review by a qualified coach before release, like the gates.
 
 ## Context
 
@@ -15,7 +15,7 @@ Two things pull against each other:
 
 **The coach is a deterministic engine in `:core`, in three layers.**
 
-1. **Hard rules.** Pain rules, tendon load caps, recovery spacing and skill gate order. Written out plainly, unit tested, never traded off against anything else.
+1. **Hard rules.** Pain rules, weekly load limits, recovery spacing and skill gate order. Written out plainly, unit tested, never traded off against anything else. A session that breaks one is eased or cut until it doesn't.
 2. **A model of the person** that updates after every set: what they can do per movement, how sure we are, recent fatigue, how often they turn up, what they swap or skip, and their bodyweight trend.
 3. **Scoring.** Each session is chosen by building a few candidates that pass the hard rules and scoring them against goal progress, weekly volume, recovery, time, equipment, novelty and preference. Same inputs, same session.
 
