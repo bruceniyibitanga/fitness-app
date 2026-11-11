@@ -320,7 +320,7 @@
     <string name="body_kg_per_week">KG / WEEK</string>
     <string name="body_no_weight">Weigh in to start your trend. Your weight stays on this phone, encrypted.</string>
     <string name="body_trend_waiting">Weigh in a few more times over the next week or two and your trend shows here.</string>
-    <string name="body_chart_description">Bodyweight from %1$d weigh-ins, now %2$s kg.</string>
+    <string name="body_chart_description">Your recent weigh-ins, with the trend now at %1$s kg.</string>
     <string name="body_today">TODAY</string>
     <string name="body_on_the_bar">ON THE BAR</string>
     <string name="body_kg_per_rep">KG PER REP</string>

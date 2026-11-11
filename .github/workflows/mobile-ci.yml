@@ -191,11 +191,24 @@ jobs:
           cache-provider: basic
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      # AGP names suite tasks update{Suite}{Target}{Variant}TestSuite. The
-      # task is named directly: listing every task would also configure the
+      # AGP names suite tasks update{Suite}{Target}{Variant}TestSuite, but the
+      # target part isn't documented for a plain app, so the name is read from
+      # the registered task names. Reading names doesn't configure the tasks,
+      # which matters: configuring every task would also configure the
       # release variant, which has no unit tests and so can't render.
       - name: Render
-        run: ./gradlew :app-phone:updateScreenshotTestDefaultDebugTestSuite --stacktrace
+        run: |
+          cat > "$RUNNER_TEMP/names.gradle.kts" <<'KTS'
+          gradle.projectsEvaluated {
+              rootProject.project(":app-phone").tasks.names
+                  .filter { it.contains("Screenshot", ignoreCase = true) }
+                  .forEach { println("SUITE_TASK $it") }
+          }
+          KTS
+          ./gradlew -q --no-configuration-cache -I "$RUNNER_TEMP/names.gradle.kts" :app-phone:help | tee names.txt
+          task=$(grep -oE 'SUITE_TASK update[A-Za-z]*Debug[A-Za-z]*' names.txt | head -1 | cut -d' ' -f2)
+          if [ -z "$task" ]; then echo "::error::No screenshot update task found"; exit 1; fi
+          ./gradlew ":app-phone:$task" --stacktrace
 
       - name: Upload the images
         if: always()

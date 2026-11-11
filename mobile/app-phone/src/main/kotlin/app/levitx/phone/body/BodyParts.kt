@@ -101,7 +101,7 @@ internal fun BodyweightTrend(state: BodyUiState.Ready) {
  */
 @Composable
 private fun TrendChart(weighIns: List<WeighIn>, nowEpochMillis: Long, currentKg: Double) {
-    val description = stringResource(R.string.body_chart_description, weighIns.size, formatKg(currentKg))
+    val description = stringResource(R.string.body_chart_description, formatKg(currentKg))
     val start = weighIns.first().atEpochMillis
     val low = weighIns.minOf { it.kg } - CHART_PADDING_KG
     val high = weighIns.maxOf { it.kg } + CHART_PADDING_KG

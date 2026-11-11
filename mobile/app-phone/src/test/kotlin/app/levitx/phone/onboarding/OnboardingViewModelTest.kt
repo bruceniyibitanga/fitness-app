@@ -48,7 +48,7 @@ class OnboardingViewModelTest {
 
     @Test
     fun noKitIsAssumedAndNothingYetClearsWhatWasPicked() {
-        assertEquals(emptySet(), viewModel.uiState.value.equipment)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.equipment)
 
         viewModel.chooseEquipment(Equipment.PULL_UP_BAR)
         viewModel.chooseEquipment(Equipment.BOX)
@@ -58,7 +58,7 @@ class OnboardingViewModelTest {
         assertEquals(setOf(Equipment.PULL_UP_BAR), viewModel.uiState.value.equipment)
 
         viewModel.chooseEquipment(null)
-        assertEquals(emptySet(), viewModel.uiState.value.equipment)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.equipment)
     }
 
     @Test
@@ -67,11 +67,11 @@ class OnboardingViewModelTest {
         assertEquals(setOf(Equipment.PULL_UP_BAR), viewModel.uiState.value.missingGoalKit)
 
         viewModel.chooseEquipment(Equipment.PULL_UP_BAR)
-        assertEquals(emptySet(), viewModel.uiState.value.missingGoalKit)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.missingGoalKit)
 
         viewModel.chooseGoal(null)
         viewModel.chooseEquipment(null)
-        assertEquals(emptySet(), viewModel.uiState.value.missingGoalKit)
+        assertEquals(emptySet<Equipment>(), viewModel.uiState.value.missingGoalKit)
     }
 
     @Test
