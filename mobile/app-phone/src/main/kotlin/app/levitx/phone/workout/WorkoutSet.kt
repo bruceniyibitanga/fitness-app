@@ -182,7 +182,7 @@ private fun instructions(state: WorkoutUiState.Active): String = when {
     // Negatives are all about the lowering, so that's the instruction, whatever the effort.
     state.plan.exercise.lowerSeconds != null -> stringResource(
         R.string.workout_negative_instructions,
-        checkNotNull(state.plan.exercise.lowerSeconds),
+        measureText(GateMeasure.HOLD_SECONDS, checkNotNull(state.plan.exercise.lowerSeconds)),
     )
 
     else -> pluralStringResource(

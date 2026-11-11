@@ -28,14 +28,14 @@ class SetTimerTest {
         assertEquals(4, (negatives.phaseAt(10_000) as TimerPhase.ToTop).secondsLeft)
         assertEquals(TimerPhase.Lowering(rep = 1, millisIn = 0, millisTotal = 5_000), negatives.phaseAt(14_000))
         // Rep 2, three seconds into its lowering.
-        assertEquals(TimerPhase.Lowering(rep = 2, millisIn = 3_000, millisTotal = 5_000), negatives.phaseAt(30_000))
+        assertEquals(TimerPhase.Lowering(rep = 2, millisIn = 3_000, millisTotal = 5_000), negatives.phaseAt(26_000))
     }
 
     @Test
     fun onlyFullyLoweredRepsCount() {
         assertEquals(0, negatives.countAt(18_999))
         assertEquals(1, negatives.countAt(19_000))
-        assertEquals(1, negatives.countAt(30_000))
+        assertEquals(1, negatives.countAt(26_000))
     }
 
     @Test

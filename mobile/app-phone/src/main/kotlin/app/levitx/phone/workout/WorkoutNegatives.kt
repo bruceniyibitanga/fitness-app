@@ -27,11 +27,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.SquareNote
+import app.levitx.phone.ui.measureText
 
 /** More reps than this and the rep squares would be too thin to read, so they show as a count. */
 private const val MAX_REP_SQUARES = 10
@@ -125,7 +127,11 @@ private fun TempoStrip(phase: TimerPhase, timer: SetTimer, lowerSeconds: Int) {
         is TimerPhase.Done -> 1f
         else -> 0f
     }
-    val description = stringResource(R.string.workout_timer_tempo, ceilSeconds(TO_TOP_MILLIS), lowerSeconds)
+    val description = stringResource(
+        R.string.workout_timer_tempo,
+        measureText(GateMeasure.HOLD_SECONDS, ceilSeconds(TO_TOP_MILLIS)),
+        measureText(GateMeasure.HOLD_SECONDS, lowerSeconds),
+    )
     Canvas(
         modifier = Modifier
             .padding(top = 28.dp)

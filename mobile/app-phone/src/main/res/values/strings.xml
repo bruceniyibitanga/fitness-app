@@ -209,7 +209,7 @@
     <string name="workout_count_in_hint">3 S COUNT-IN</string>
     <string name="workout_log_short">Log</string>
     <string name="workout_again_short">Again</string>
-    <string name="workout_negative_instructions">Lower for %1$d seconds each rep, in control all the way down. The timer sets the pace.</string>
+    <string name="workout_negative_instructions">Take %1$s to lower each rep, in control all the way down. The timer sets the pace.</string>
     <string name="workout_menu">Session menu</string>
     <string name="workout_of_count">%1$d/%2$d</string>
 
@@ -227,10 +227,13 @@
     <string name="workout_timer_hold_past_cue">Target hit. Keep going while your form holds: the time counts until you stop it.</string>
     <string name="workout_timer_hold_sounds">BEEP EVERY %1$d S · DOUBLE BEEP AT %2$d S</string>
     <string name="workout_timer_sounds_off">SOUNDS OFF · TURN THEM ON IN THE MENU</string>
-    <string name="workout_timer_hold_bar">Held %1$d seconds of a %2$d second target.</string>
+    <plurals name="workout_timer_hold_bar">
+        <item quantity="one">Held %1$d second of a %2$d second target.</item>
+        <item quantity="other">Held %1$d seconds of a %2$d second target.</item>
+    </plurals>
     <string name="workout_timer_target">TARGET %1$d S</string>
     <string name="workout_timer_start_now">Start now</string>
-    <string name="workout_timer_stop_seconds">Stop · log %1$d s</string>
+    <string name="workout_timer_stop_seconds">Stop · %1$d s</string>
     <string name="workout_timer_stop_reps">Stop · log %1$d</string>
     <string name="workout_timer_tap_anywhere">TAP ANYWHERE</string>
     <string name="workout_timer_skip_count">SKIP COUNT</string>
@@ -241,7 +244,7 @@
     <string name="workout_timer_lowering">LOWERING · SLOWER THAN YOU THINK</string>
     <string name="workout_timer_all_paced">ALL REPS PACED</string>
     <string name="workout_timer_negative_cue">Beeps set the pace, so you never need to touch the phone. Tap anywhere to stop early: you can fix the count before you log it.</string>
-    <string name="workout_timer_tempo">Each rep: %1$d seconds to get to the top, then %2$d seconds lowering.</string>
+    <string name="workout_timer_tempo">Each rep: %1$s to get to the top, then %2$s lowering.</string>
     <string name="workout_timer_tempo_top">TO THE TOP %1$d S</string>
     <string name="workout_timer_tempo_lower">LOWER %1$d S</string>
 
@@ -255,8 +258,8 @@
     <string name="workout_rest_extra">+%1$s</string>
     <string name="workout_rest_planned">PLANNED %1$s</string>
     <string name="workout_rest_next_set">NEXT · SET %1$d OF %2$d</string>
-    <string name="workout_logged">Set %1$d logged: %2$s</string>
-    <string name="workout_logged_left">Set %1$d logged: %2$s, %3$s left</string>
+    <string name="workout_logged">Logged set %1$d: %2$s</string>
+    <string name="workout_logged_left">Logged set %1$d: %2$s, %3$s left</string>
     <string name="workout_undo">UNDO</string>
 
     <!-- Workout: session menu -->
