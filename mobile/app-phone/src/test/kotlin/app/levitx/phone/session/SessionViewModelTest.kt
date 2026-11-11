@@ -139,6 +139,38 @@ class SessionViewModelTest {
         assertTrue(state.tracksLoad)
     }
 
+    @Test
+    fun aSessionKilledOnTheLastRestKeepsItsPlanAndStart() = runTest {
+        val savedState = SavedStateHandle()
+        val first = viewModel(savedState)
+        first.logSet(4, 2, addedKg = 5.0)
+        val before = first.uiState.value as SessionUiState.Active
+
+        val restored = viewModel(savedState).uiState.value as SessionUiState.Active
+
+        assertEquals(before.plan, restored.plan)
+        assertEquals(before.logged, restored.logged)
+        assertEquals(5.0, restored.logged.single().addedKg, 0.0)
+    }
+
+    @Test
+    fun impossibleLoadFiguresAreClampedInsteadOfCrashing() = runTest {
+        val viewModel = viewModel()
+        viewModel.logSet(5, 2, addedKg = Double.NaN, assistanceKg = -3.0)
+        val set = (viewModel.uiState.value as SessionUiState.Active).logged.single()
+        assertEquals(0.0, set.addedKg, 0.0)
+        assertEquals(0.0, set.assistanceKg, 0.0)
+    }
+
+    @Test
+    fun finishingTwiceSavesOnce() = runTest {
+        val viewModel = viewModel()
+        viewModel.logSet(5, 1)
+        viewModel.finish()
+        viewModel.finish()
+        assertEquals(1, sessions.sessions.size)
+    }
+
     private class FakeClock : TrainingClock {
         val elapsed = 50_000L
 

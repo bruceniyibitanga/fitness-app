@@ -22,7 +22,7 @@ mobile/
 
 Each app module is split by feature (`goal/`, `startingtest/`, `home/`, `session/`, `path/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
 
-Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan, and `SessionRun` holds the rules for moving through a session (log a set, rest, finish). ViewModels only combine flows and map the result to UI state.
+Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan, and `SessionRun` holds the rules for moving through a session (log a set, rest, finish). Both apps' session ViewModels run on `SessionRun`; they differ only in where they keep it between sets (saved state on the phone, an encrypted draft on the watch). ViewModels only combine flows and map the result to UI state.
 
 ## Layers
 
