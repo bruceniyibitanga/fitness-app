@@ -191,15 +191,11 @@ jobs:
           cache-provider: basic
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      # The suite's task names come from AGP and have changed between
-      # versions, so the update task is looked up rather than hard-coded.
+      # AGP names suite tasks update{Suite}{Target}{Variant}TestSuite. The
+      # task is named directly: listing every task would also configure the
+      # release variant, which has no unit tests and so can't render.
       - name: Render
-        run: |
-          ./gradlew -q :app-phone:tasks --all > tasks.txt
-          grep -i screenshot tasks.txt || true
-          task=$(grep -oiE '^update[A-Za-z]*Screenshot[A-Za-z]*' tasks.txt | grep -i debug | head -1)
-          if [ -z "$task" ]; then echo "::error::No screenshot update task found"; exit 1; fi
-          ./gradlew ":app-phone:$task" --stacktrace
+        run: ./gradlew :app-phone:updateScreenshotTestDefaultDebugTestSuite --stacktrace
 
       - name: Upload the images
         if: always()
