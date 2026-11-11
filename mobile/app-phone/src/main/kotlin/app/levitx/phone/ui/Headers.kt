@@ -47,6 +47,9 @@ private val PhotoHeaderHeight = 230.dp
 /** Where a header photo starts fading into the background, as a fraction of its height. */
 private const val PHOTO_FADE_START = 0.52f
 
+/** How dark the square behind the back arrow on a photo is. */
+private const val BACK_SCRIM_ALPHA = 0.6f
+
 /** The Levitx mark and wordmark, as in the top-left of the design. */
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
@@ -128,7 +131,14 @@ fun PhotoHeader(
                     Brush.verticalGradient(PHOTO_FADE_START to Color.Transparent, 1f to LevitxColors.Background),
                 ),
         )
-        BackButton(onBack, modifier = Modifier.padding(4.dp).statusBarsPadding())
+        // A dark square behind the arrow keeps it readable on a bright photo.
+        BackButton(
+            onBack,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(4.dp)
+                .background(LevitxColors.Background.copy(alpha = BACK_SCRIM_ALPHA)),
+        )
     }
 }
 

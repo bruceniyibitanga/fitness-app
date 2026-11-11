@@ -320,11 +320,11 @@ private fun NextUp(state: WorkoutUiState.Active) {
             .padding(horizontal = ScreenPadding),
     ) {
         if (nextPlan != null) {
-            Caption(
-                stringResource(R.string.workout_rest_short, durationText(plan.restSeconds)),
-                color = LevitxColors.Ice,
-                modifier = Modifier.width(72.dp),
-            )
+            // "REST" over the time, in a fixed column so the next line always starts in the same place.
+            Column(modifier = Modifier.width(64.dp)) {
+                Caption(stringResource(R.string.workout_rest_label), color = LevitxColors.Ice)
+                Caption(durationText(plan.restSeconds), color = LevitxColors.Ice)
+            }
             Text(
                 text = if (lastSetOfExercise) {
                     stringResource(R.string.workout_then_exercise, nextPlan.exercise.name)

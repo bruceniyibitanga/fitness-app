@@ -191,7 +191,6 @@
     <string name="workout_log_hint">%1$d · %2$s LEFT</string>
     <string name="workout_skip_short">Skip</string>
     <string name="workout_next_short">Next</string>
-    <string name="workout_rest_short">REST %1$s</string>
     <string name="workout_then_set">Then set %1$d of %2$d</string>
     <string name="workout_then_exercise">Then %1$s</string>
     <string name="workout_aim">AIM %1$s</string>
