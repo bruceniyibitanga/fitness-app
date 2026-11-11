@@ -25,6 +25,9 @@ android {
     }
 
     testOptions {
+        // The preview renderer resolves the app's themes and drawables from
+        // the compiled resources, which unit tests only see with this on.
+        unitTests.isIncludeAndroidResources = true
         // Renders the previews in src/screenshotTest to images (Compose
         // Preview Screenshot Testing on AGP test suites). CI uploads them so
         // each screen can be compared with its design artboard.

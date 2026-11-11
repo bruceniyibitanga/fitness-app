@@ -216,15 +216,25 @@
     <string name="workout_back">Back to Today</string>
 
     <!-- Skills -->
-    <string name="skills_label">EVERY MOVEMENT</string>
-    <string name="skills_title">Your ladders</string>
-    <string name="skills_body">Each movement has a ladder from easiest to hardest. Top out an exercise\'s range and you move up a rung.</string>
-    <string name="skills_rung">RUNG %1$d OF %2$d</string>
-    <string name="skills_target">Target %1$s</string>
-    <string name="skills_next">Next: %1$s</string>
-    <string name="skills_top">Top of the ladder</string>
-    <string name="skills_no_kit">Needs kit you haven\'t added yet</string>
-    <string name="skills_gate">Trained by your skill gates for now</string>
+    <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>
+    <string name="skills_rungs_description">Step %1$d of %2$d on this ladder.</string>
+    <string name="skills_target_label">TARGET</string>
+    <string name="skills_step_figure">%1$d/%2$d</string>
+    <string name="skills_step_label">STEP</string>
+    <string name="skills_left_label">TO THE TOP</string>
+    <string name="skills_next_label">NEXT · %1$s</string>
+    <string name="skills_next_title">Opens when you top out this one.</string>
+    <string name="skills_next_body">Hit your target on every work set and it goes up. Reach the top of the range and you move up a rung.</string>
+    <string name="skills_top_label">TOP OF THE LADDER</string>
+    <string name="skills_top">Nothing harder to unlock here.</string>
+    <string name="skills_top_body">Your targets keep rising on this one as you get stronger.</string>
+    <string name="skills_gate_label">YOUR GOAL</string>
+    <string name="skills_gate_title">Trained by your skill gates.</string>
+    <string name="skills_gate">Your goal trains this movement for now, through its own exercises. The ladder picks up again once the goal no longer needs it.</string>
+    <string name="skills_kit_label">NEEDS KIT</string>
+    <string name="skills_no_kit_title">Nothing here yet</string>
+    <string name="skills_no_kit">Every step of this ladder needs kit you haven\'t added. Add it under Body to start it.</string>
+    <string name="skills_how_to">How to do %1$s</string>
 
     <!-- Train -->
     <string name="train_label">TRAIN</string>
@@ -279,17 +289,31 @@
     <string name="program_label">SKILL PROGRAM</string>
     <string name="program_body">You move on when you pass a gate, so there\'s no deadline. The rest of your body keeps training around it.</string>
     <string name="program_gates">GATES</string>
+    <string name="program_to_pass">TO PASS</string>
     <string name="program_make_plan">Make this my plan</string>
     <string name="program_switch_note">Your workouts, bests and bodyweight all stay. Only the goal your sessions are built around changes.</string>
-    <string name="program_is_plan">This is your plan.</string>
+    <string name="program_is_plan">This is your plan. Today builds every session around it.</string>
     <string name="program_not_found">This program isn\'t in the app any more.</string>
 
     <!-- Path -->
-    <string name="path_label">THE WHOLE PATH</string>
-    <string name="path_status_passed">PASSED</string>
-    <string name="path_status_current">WORKING ON IT</string>
-    <string name="path_status_locked">LATER</string>
-    <string name="path_best">Best %1$s</string>
+    <string name="path_goal_label">GOAL · %1$s</string>
+    <plurals name="path_gates_to_go">
+        <item quantity="one">gate to go</item>
+        <item quantity="other">gates to go</item>
+    </plurals>
+    <string name="path_reached">goal reached</string>
+    <string name="path_passed_count">%1$d OF %2$d GATES PASSED</string>
+    <string name="path_gate_trains">What this gate trains · %1$s</string>
+    <string name="path_train_next">Train the next gate</string>
+    <string name="path_change_goal">Change goal</string>
+    <string name="path_pick_goal">Pick a skill</string>
+    <string name="gate_passed_best">Passed · best %1$s</string>
+    <string name="gate_current_best">Best %1$d · training now</string>
+    <string name="gate_current">Training now</string>
+    <string name="gate_goal">Your goal</string>
+    <string name="gate_later">Later</string>
+    <string name="gate_progress">%1$d/%2$d%3$s</string>
+    <string name="gate_reps_target">×%1$d</string>
     <string name="path_no_goal">No skill goal yet. Your plan trains every movement evenly.</string>
 
     <!-- Equipment -->

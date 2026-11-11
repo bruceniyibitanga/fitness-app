@@ -17,6 +17,7 @@ import app.levitx.core.coach.currentGatePattern
  * @property exercise The exercise trained now, or null without the kit for any of it.
  * @property target Reps or seconds its work sets aim for, or null until the coach has a figure.
  * @property next The next exercise up the ladder the person has the kit for, or null at the top.
+ * @property nextRung 0-based rung of [next], or null with it.
  * @property isTrainedByGate True when sessions train this movement through the
  *   current skill gate rather than the ladder.
  */
@@ -27,6 +28,7 @@ data class LadderStanding(
     val exercise: Exercise?,
     val target: Int?,
     val next: Exercise?,
+    val nextRung: Int?,
     val isTrainedByGate: Boolean,
 )
 
@@ -42,13 +44,15 @@ private fun AthleteModel.standingOn(ladder: Ladder, gatePattern: MovementPattern
     // Without the kit for the rung the person reached, they train the highest one they can.
     val rung = ladder.usableRungAtOrBelow(rung(pattern), owned) ?: rung(pattern).coerceIn(0, ladder.rungs.lastIndex)
     val exercise = currentExercise(pattern)
+    val nextRung = exercise?.let { ladder.usableRungAbove(rung, owned) }
     return LadderStanding(
         pattern = pattern,
         rung = rung,
         rungCount = ladder.rungs.size,
         exercise = exercise,
         target = exercise?.let { exercises[it.id]?.target },
-        next = exercise?.let { ladder.usableRungAbove(rung, owned)?.let { above -> ladder.exerciseAt(above, owned) } },
+        next = nextRung?.let { ladder.exerciseAt(it, owned) },
+        nextRung = nextRung,
         isTrainedByGate = pattern == gatePattern,
     )
 }

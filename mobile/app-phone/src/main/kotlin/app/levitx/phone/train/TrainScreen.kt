@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +30,8 @@ import app.levitx.design.LevitxColors
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.Chip
+import app.levitx.phone.ui.ChipRow
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -99,16 +100,10 @@ private fun FocusChips(selected: WorkoutFocus?, onSelect: (WorkoutFocus?) -> Uni
         stringResource(R.string.train_body_focus),
         modifier = Modifier.padding(start = ScreenPadding, top = 16.dp, bottom = 10.dp),
     )
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = ScreenPadding)
-            .selectableGroup(),
-    ) {
-        FocusChip(stringResource(R.string.train_all), selected = selected == null, onClick = { onSelect(null) })
+    ChipRow {
+        Chip(stringResource(R.string.train_all), selected = selected == null, onClick = { onSelect(null) })
         WorkoutFocus.entries.forEach { focus ->
-            FocusChip(focusName(focus), selected = selected == focus, onClick = { onSelect(focus) })
+            Chip(focusName(focus), selected = selected == focus, onClick = { onSelect(focus) })
         }
     }
 }

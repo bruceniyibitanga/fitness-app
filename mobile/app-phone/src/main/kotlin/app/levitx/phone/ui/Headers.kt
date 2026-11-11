@@ -1,19 +1,26 @@
 package app.levitx.phone.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -34,6 +41,10 @@ import app.levitx.phone.R
 
 private const val WORDMARK_TRACKING = 2.4f
 private val ProgressHeight = 2.dp
+private val PhotoHeaderHeight = 230.dp
+
+/** Where a header photo starts fading into the background, as a fraction of its height. */
+private const val PHOTO_FADE_START = 0.52f
 
 /** The Levitx mark and wordmark, as in the top-left of the design. */
 @Composable
@@ -89,6 +100,30 @@ fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
             .clickable(role = Role.Button, onClick = onBack)
             .semantics { contentDescription = description },
     ) { Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = null, tint = LevitxColors.Text) }
+}
+
+/**
+ * A photo across the top of a detail screen, fading into the background at
+ * the bottom so the title can sit over its edge, with back in the corner.
+ */
+@Composable
+fun PhotoHeader(@DrawableRes photo: Int, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxWidth().height(PhotoHeaderHeight)) {
+        Image(
+            painter = painterResource(photo),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(PHOTO_FADE_START to Color.Transparent, 1f to LevitxColors.Background),
+                ),
+        )
+        BackButton(onBack, modifier = Modifier.padding(4.dp).statusBarsPadding())
+    }
 }
 
 /**

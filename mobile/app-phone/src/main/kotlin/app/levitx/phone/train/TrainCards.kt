@@ -2,7 +2,6 @@ package app.levitx.phone.train
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,13 +14,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -41,32 +38,10 @@ import app.levitx.phone.ui.pathPhoto
  * The pieces of the Train tab, sized as on the Train artboard.
  */
 
-private val ChipHeight = 40.dp
 private val ProgramCardWidth = 220.dp
 private val ProgramPhotoHeight = 112.dp
 private val WorkoutRowHeight = 68.dp
 private val WorkoutThumbSize = 52.dp
-
-/** A body-focus chip: cream when chosen, dark with an outline when not. */
-@Composable
-internal fun FocusChip(text: String, selected: Boolean, onClick: () -> Unit) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .height(ChipHeight)
-            .background(if (selected) LevitxColors.Text else LevitxColors.Surface)
-            .border(1.dp, if (selected) Color.Transparent else LevitxColors.Tick)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 14.dp),
-    ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (selected) LevitxColors.Background else LevitxColors.Text,
-        )
-    }
-}
 
 /**
  * A skill program as a card: its photo with a tag in the corner, then its

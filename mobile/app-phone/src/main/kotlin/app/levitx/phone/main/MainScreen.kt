@@ -90,7 +90,10 @@ fun MainRoute(navigation: MainNavigation) {
                 onOpenProgram = navigation.onOpenProgram,
             )
 
-            MainTab.PLAN -> PathRoute()
+            MainTab.PLAN -> PathRoute(
+                onTrain = { tab = MainTab.TODAY },
+                onChangeGoal = { tab = MainTab.TRAIN },
+            )
 
             MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
 
