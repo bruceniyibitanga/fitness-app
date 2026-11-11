@@ -12,6 +12,20 @@ internal interface EquipmentDao {
     @Query("SELECT kg FROM bodyweight_entry ORDER BY recordedAtEpochMillis DESC, id DESC LIMIT 1")
     fun observeLatestBodyweight(): Flow<Double?>
 
+    /** Every bodyweight reading since [sinceEpochMillis], oldest first. Emits again when one is added. */
+    @Query(
+        "SELECT * FROM bodyweight_entry WHERE recordedAtEpochMillis >= :sinceEpochMillis " +
+            "ORDER BY recordedAtEpochMillis",
+    )
+    fun observeBodyweightSince(sinceEpochMillis: Long): Flow<List<BodyweightEntity>>
+
+    /** Every bodyweight reading since [sinceEpochMillis] now, oldest first. */
+    @Query(
+        "SELECT * FROM bodyweight_entry WHERE recordedAtEpochMillis >= :sinceEpochMillis " +
+            "ORDER BY recordedAtEpochMillis",
+    )
+    suspend fun bodyweightSince(sinceEpochMillis: Long): List<BodyweightEntity>
+
     /** Adds a bodyweight reading. */
     @Insert
     suspend fun insertBodyweight(entry: BodyweightEntity)

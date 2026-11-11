@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.levitx.android.library)
     alias(libs.plugins.levitx.hilt)
     alias(libs.plugins.room)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -35,6 +36,8 @@ dependencies {
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     implementation(libs.sqlcipher.android)
+    // The coach's state and the workout in progress are stored as JSON documents.
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
 

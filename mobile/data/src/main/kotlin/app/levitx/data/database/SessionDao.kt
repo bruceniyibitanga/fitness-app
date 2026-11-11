@@ -24,6 +24,10 @@ internal interface SessionDao {
     @Insert
     suspend fun insertSets(sets: List<LoggedSetEntity>)
 
+    /** True when the coach workout [workoutId] is already stored. */
+    @Query("SELECT EXISTS(SELECT 1 FROM training_session WHERE workoutId = :workoutId)")
+    suspend fun hasWorkout(workoutId: String): Boolean
+
     /** Number of finished sessions. Used by tests and, later, the history screen. */
     @Query("SELECT COUNT(*) FROM training_session")
     suspend fun count(): Int

@@ -18,6 +18,7 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | Bodyweight (a log of readings), progress photos | Health | Local database / app-private files | Encrypted |
 | Bands and the help they give | Personal | Local database | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
+| What the coach has learned (training history, targets, latest pain advice, how suggestions went) and the workout in progress | Health | Local database, as JSON documents in two tables | Encrypted. Never synced. Reading a damaged document fails without quoting it, so none of it reaches a crash report |
 | The watch's copy of the goal, bests and bands, and its own sessions | Personal | The watch's local database | Encrypted the same way, with the watch's own Keystore key |
 | Heart rate | Health | Watch memory only, while a session runs | Never written to disk, never sent to the phone or anywhere else |
 | Settings | Low | Local database | Encrypted |
