@@ -11,6 +11,20 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      # react and react-dom must always be the same version. Bumped apart,
+      # the site fails to build (it happened with 19.3.1), so they move together.
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      # Tailwind's packages are released together.
+      tailwind:
+        patterns: ["tailwindcss", "@tailwindcss/*"]
+    ignore:
+      # TypeScript 7 (the native compiler) breaks linting: typescript-eslint,
+      # which eslint-config-next uses, only supports TypeScript below 6.1.
+      # Remove this once typescript-eslint supports 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # Reads mobile/gradle/libs.versions.toml and the Gradle wrapper version.
   - package-ecosystem: gradle
