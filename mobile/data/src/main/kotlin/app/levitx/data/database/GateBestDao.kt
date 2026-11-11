@@ -14,6 +14,10 @@ internal abstract class GateBestDao {
     @Query("SELECT * FROM gate_best")
     abstract fun observeAll(): Flow<List<GateBestEntity>>
 
+    /** Every stored best now. */
+    @Query("SELECT * FROM gate_best")
+    abstract suspend fun all(): List<GateBestEntity>
+
     /** The stored best for [gateId], or null if there isn't one. */
     @Query("SELECT best FROM gate_best WHERE gateId = :gateId")
     abstract suspend fun best(gateId: String): Int?

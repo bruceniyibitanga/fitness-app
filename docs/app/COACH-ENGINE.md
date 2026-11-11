@@ -237,11 +237,12 @@ Built, in `:core`:
 - the bodyweight trend and the fast-loss hold
 - reasons and their wording
 - the tests and simulation above
+- `WorkoutRun`, which runs a planned session exercise by exercise
+- storage in the encrypted database (`CoachRepository`), with the workout in progress saved after every set
 
 Not built yet:
 
-- **Storing the model.** It is plain data, ready for the encrypted database, but there are no tables for it yet.
-- **Running a session with more than one exercise.** `SessionRun` still runs one gate. The phone and watch session screens need a run that walks through a planned session's exercises.
+- **Feeding watch sessions to the coach.** A session done on the watch raises the gate's best, which the coach sees, but isn't yet in its history, so it doesn't count toward recovery or the week's volume. That comes when the watch moves to `WorkoutRun`.
 - **Health Connect.** The engine takes weigh-ins; nothing reads them from Health Connect yet.
 - **The screens.** Today, the suggestion card, the weigh-in and the week review are designed but not built.
 - **Offering to trim sessions** that keep finishing early. The model records how long each session took; nothing acts on it yet.

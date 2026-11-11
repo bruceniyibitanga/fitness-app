@@ -16,4 +16,8 @@ internal interface GoalDao {
     /** Saves [goal], replacing the previous one. Not @Upsert; see [GateBestDao]. */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun replace(goal: ActiveGoalEntity)
+
+    /** Removes the goal, for general fitness with no skill goal. */
+    @Query("DELETE FROM active_goal")
+    suspend fun clear()
 }

@@ -11,19 +11,26 @@ import androidx.room.Relation
 /**
  * A finished training session.
  *
+ * A coach workout with several exercises is stored as one row per exercise,
+ * sharing a [workoutId].
+ *
  * @property id Random UUID, so ids never clash when sessions sync between phone and watch.
- * @property gateId The gate trained, a `Gate.id` from `:core`.
+ * @property gateId The gate trained, a `Gate.id` from `:core`. For coach workouts
+ *   it is any exercise id, which is a gate id for skill work.
  * @property startedAtEpochMillis When it started, in UTC milliseconds.
  * @property finishedAtEpochMillis When it finished, in UTC milliseconds.
  * @property bodyweightKg Bodyweight at the time, if known (added in version 3).
+ * @property workoutId The coach workout this was part of, or null for a single-gate
+ *   session from before the coach or from the watch (added in version 5).
  */
-@Entity(tableName = "training_session")
+@Entity(tableName = "training_session", indices = [Index("workoutId")])
 internal data class TrainingSessionEntity(
     @PrimaryKey val id: String,
     val gateId: String,
     val startedAtEpochMillis: Long,
     val finishedAtEpochMillis: Long,
     val bodyweightKg: Double? = null,
+    @ColumnInfo(defaultValue = "NULL") val workoutId: String? = null,
 )
 
 /**

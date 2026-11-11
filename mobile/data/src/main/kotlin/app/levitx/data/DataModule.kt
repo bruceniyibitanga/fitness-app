@@ -2,6 +2,11 @@ package app.levitx.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import app.levitx.core.coach.Coach
+import app.levitx.data.coach.CoachRepository
+import app.levitx.data.coach.RoomCoachRepository
+import app.levitx.data.coach.RoomWorkoutDraftRepository
+import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.equipment.RoomEquipmentRepository
 import app.levitx.data.goal.GoalRepository
@@ -52,7 +57,18 @@ internal interface DataModule {
     @Binds
     fun bindEquipmentRepository(repository: RoomEquipmentRepository): EquipmentRepository
 
+    @Binds
+    fun bindCoachRepository(repository: RoomCoachRepository): CoachRepository
+
+    @Binds
+    fun bindWorkoutDraftRepository(repository: RoomWorkoutDraftRepository): WorkoutDraftRepository
+
     companion object {
+        // The coach holds no state, so one instance serves the whole app.
+        @Provides
+        @Singleton
+        fun provideCoach(): Coach = Coach()
+
         @Provides
         @IoDispatcher
         fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO

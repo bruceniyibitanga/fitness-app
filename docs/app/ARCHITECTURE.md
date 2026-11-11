@@ -48,6 +48,10 @@ Inside, each concern has one home:
 | `BodyweightTrend` | The weight trend and the fast-loss check. |
 | `CoachReason`, `CoachPhrases` | Why a session was chosen, as data, and the English for it. |
 
+The phone stores the coach through `CoachRepository` in `:data`. What the coach has learned is one JSON document in the `coach_state` table, with its own format version. It is a separate type from `AthleteModel` (`CoachDocument`), so the stored format only changes on purpose. Bests and bodyweight aren't in it: they stay in their own tables, which the path screen, the bodyweight screen and the watch sync already read, and the repository fills them into the model when it reads it. Every change is a read, a call to `Coach` and a write in one transaction. A finished workout is stored as one `training_session` row per exercise, sharing a `workoutId`, so it can't be recorded twice.
+
+`WorkoutRun` in `:core` runs a planned session exercise by exercise, the way `SessionRun` runs one gate. The workout in progress is saved after every change in `workout_draft`, so it survives the app being killed. `SessionRun` stays until the watch moves over to `WorkoutRun`.
+
 A new safety rule is one object added to `HardRules.all`, and a new scoring term is one object added to `ScoringTerms.all`. Neither means changing the code that uses them. The rules and terms are `internal`, so the apps can't reach around `Coach`.
 
 ## Layers

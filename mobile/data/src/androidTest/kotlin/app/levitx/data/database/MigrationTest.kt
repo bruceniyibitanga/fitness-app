@@ -77,4 +77,22 @@ class MigrationTest {
             }
         }
     }
+
+    @Test
+    fun version4To5KeepsSessionsAndStartsWithNoCoach() {
+        helper.createDatabase(name, 4).use { db ->
+            db.execSQL(
+                "INSERT INTO training_session (id, gateId, startedAtEpochMillis, finishedAtEpochMillis) " +
+                    "VALUES ('s1', 'g', 0, 1)",
+            )
+        }
+        helper.runMigrationsAndValidate(name, 5, true).use { db ->
+            db.query("SELECT workoutId FROM training_session WHERE id = 's1'").use { cursor ->
+                check(cursor.moveToFirst() && cursor.isNull(0)) { "an old session should belong to no workout" }
+            }
+            db.query("SELECT COUNT(*) FROM coach_state").use { cursor ->
+                check(cursor.moveToFirst() && cursor.getInt(0) == 0) { "the coach should start unset" }
+            }
+        }
+    }
 }
