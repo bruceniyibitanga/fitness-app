@@ -106,8 +106,7 @@ class SessionViewModel @Inject constructor(
      * @param assistanceKg Band help, 0 for none.
      */
     fun logSet(value: Int, repsInReserve: Int?, addedKg: Double = 0.0, assistanceKg: Double = 0.0) {
-        val current = run ?: return
-        if (state.value !is SessionUiState.Active) return
+        val current = activeRun() ?: return
         val next = current
             .withLoad(SetLoad(addedKg = addedKg.asModifierKg(), assistanceKg = assistanceKg.asModifierKg()))
             .logSet(value, repsInReserve, nowElapsedMillis = clock.elapsedRealtimeMillis())
@@ -119,14 +118,12 @@ class SessionViewModel @Inject constructor(
 
     /** Ends rest early, or after it runs out. */
     fun endRest() {
-        val current = run ?: return
-        if (state.value is SessionUiState.Active) update(current.endRest())
+        activeRun()?.let { update(it.endRest()) }
     }
 
     /** Ends the session now. Saves whatever sets were done; with none, there is nothing to save. */
     fun finish() {
-        val current = run ?: return
-        if (state.value !is SessionUiState.Active) return
+        val current = activeRun() ?: return
         val session = current.complete(finishedAtEpochMillis = clock.currentTimeMillis(), bodyweightKg = bodyweightKg)
         if (session == null) {
             state.value = SessionUiState.NothingToTrain
@@ -148,6 +145,9 @@ class SessionViewModel @Inject constructor(
             }
         }
     }
+
+    /** The session, while one is on screen. Null while loading, saving or after it's saved. */
+    private fun activeRun(): SessionRun? = run.takeIf { state.value is SessionUiState.Active }
 
     /** Keeps [next] as the session, copies it to saved state, and shows it. */
     private fun update(next: SessionRun) {
