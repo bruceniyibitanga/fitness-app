@@ -27,6 +27,16 @@ class LoadCatalogueTest {
         assertFailsWith<IllegalArgumentException> {
             LoadProfile("x", "X", bodyweightShare = 1.1, evidence = LoadEvidence.ESTIMATED)
         }
+        assertFailsWith<IllegalArgumentException> {
+            LoadProfile("x", "X", bodyweightShare = 0.5, evidence = LoadEvidence.ESTIMATED, addedWeightShare = 1.5)
+        }
+    }
+
+    @Test
+    fun onTheFloorAVestCountsLikeTheBodyAndOnABarItCountsInFull() {
+        assertEquals(LoadCatalogue.pushUp.bodyweightShare, LoadCatalogue.pushUp.addedWeightShare)
+        assertEquals(1.0, LoadCatalogue.pullUp.addedWeightShare)
+        assertEquals(1.0, LoadCatalogue.dip.addedWeightShare)
     }
 
     @Test

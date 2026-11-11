@@ -26,8 +26,12 @@ public enum class LoadEvidence {
  * @property bodyweightShare Fraction of bodyweight moved per rep, above 0 and at most 1.
  * @property evidence Whether [bodyweightShare] was measured or estimated.
  * @property source Citation for a measured figure. Null for estimates.
- * @throws IllegalArgumentException if [bodyweightShare] is outside (0, 1], or
- *   a measured profile has no source.
+ * @property addedWeightShare Fraction of a vest or belt moved per rep. On the
+ *   floor it is the same as [bodyweightShare], because the hands carry part of
+ *   the vest just as they carry part of the body. Hanging from a bar or
+ *   supported on dip bars, everything worn on the torso is lifted, so it is 1.
+ * @throws IllegalArgumentException if either share is outside (0, 1], or a
+ *   measured profile has no source.
  */
 public data class LoadProfile(
     val id: String,
@@ -35,9 +39,11 @@ public data class LoadProfile(
     val bodyweightShare: Double,
     val evidence: LoadEvidence,
     val source: String? = null,
+    val addedWeightShare: Double = bodyweightShare,
 ) {
     init {
         require(bodyweightShare > 0.0 && bodyweightShare <= 1.0) { "bodyweightShare must be in (0, 1]" }
+        require(addedWeightShare > 0.0 && addedWeightShare <= 1.0) { "addedWeightShare must be in (0, 1]" }
         require(evidence != LoadEvidence.MEASURED || source != null) { "a measured profile needs a source" }
     }
 }
