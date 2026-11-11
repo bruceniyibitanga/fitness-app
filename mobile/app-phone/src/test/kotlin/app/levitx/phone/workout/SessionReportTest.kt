@@ -50,4 +50,11 @@ class SessionReportTest {
         val report = report(value = 4)
         assertTrue(report.changes.all { change -> report.exercises.any { it.name == change.name } })
     }
+
+    @Test
+    fun aBestThatReachesTheGateIsMarkedAsPassingIt() {
+        val passing = report(value = gate.target)
+        assertTrue(passing.bests.single { it.name == gate.title }.passedGate)
+        assertTrue(report(value = 4).bests.none { it.passedGate })
+    }
 }

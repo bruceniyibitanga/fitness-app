@@ -22,6 +22,7 @@
     <string name="plan_detail_tagged">%1$s · %2$s</string>
     <string name="plan_tag_skill">skill work</string>
     <string name="plan_tag_light">light</string>
+    <string name="plan_detail_attempt">Gate test at %1$s, then %2$d × %3$s</string>
     <string name="continue_button">Continue</string>
 
     <!-- Movement patterns -->
@@ -139,6 +140,7 @@
     <string name="today_session_length">THIS SESSION</string>
     <string name="today_lead_skill">SKILL WORK · %1$s</string>
     <string name="today_lead_first">FIRST UP · %1$s</string>
+    <string name="today_lead_attempt">GATE TEST FIRST · %1$s</string>
     <string name="today_hero">%1$d×%2$d</string>
     <string name="seconds_unit">s</string>
     <string name="today_lead_note_hold">Hold steady, and stop before your form breaks.</string>
@@ -147,6 +149,7 @@
         <item quantity="other">Stop with about %1$d reps left in the tank.</item>
     </plurals>
     <string name="today_lead_note_best">The last set is a best effort.</string>
+    <string name="today_lead_note_attempt">It starts with a fresh go at %1$s for the gate.</string>
     <string name="today_rest_label">TODAY</string>
     <string name="today_resume">Resume session</string>
     <string name="today_minutes">%1$d MIN</string>
@@ -299,6 +302,7 @@
     <string name="workout_summary_bests_label">NEW BESTS</string>
     <string name="workout_summary_was">WAS %1$s</string>
     <string name="workout_summary_first">FIRST TIME</string>
+    <string name="workout_summary_gate_passed">GATE PASSED</string>
     <string name="workout_summary_sets_label">EVERY SET · REPS LEFT UNDER</string>
     <string name="workout_summary_seconds">%1$ds</string>
     <string name="workout_summary_no_left">·</string>
@@ -307,6 +311,35 @@
     <string name="workout_change_held">stays at %1$s.</string>
     <string name="workout_change_up">moves up to %1$s.</string>
     <string name="workout_change_down">moves back to %1$s, to build up again.</string>
+
+    <!-- Workout: skill gates -->
+    <string name="gate_place">GATE %1$d OF %2$d · %3$s</string>
+    <string name="gate_test_label">GATE TEST</string>
+    <string name="gate_test_best">ONE SET · YOUR BEST SO FAR %1$s</string>
+    <string name="gate_test_body">One fresh set, before anything else. Reach the target and the next gate opens. Fall short and nothing is lost: it still counts as training, and the work sets follow as usual.</string>
+    <string name="gate_test_warm_up_title">WARM UP FIRST</string>
+    <string name="gate_test_warm_up">A couple of easy sets of something lighter, so the attempt is fresh, not cold.</string>
+    <string name="gate_test_ready">Warm up, then test</string>
+    <string name="gate_test_not_today">Not today</string>
+    <string name="gate_standard">THE STANDARD</string>
+    <string name="gate_standard_stop_reps">The count stops at the first rep that breaks one of these. Be honest: the next gate is harder.</string>
+    <string name="gate_standard_stop_hold">The time stops when your form breaks, not when you let go. Be honest: the next gate is harder.</string>
+    <string name="gate_check_label">THIS PASSES THE GATE · %1$s</string>
+    <string name="gate_check_title_reps">Did every rep count?</string>
+    <string name="gate_check_title_hold">Did the whole hold count?</string>
+    <string name="gate_check_no">Let me correct it</string>
+    <string name="gate_check_yes">Yes, it counts</string>
+    <string name="gate_passed_label">GATE %1$d OF %2$d · PASSED</string>
+    <string name="gate_passed_title">%1$s.\nGate passed.</string>
+    <string name="gate_passed_gain">+%1$d</string>
+    <string name="gate_passed_gain_label">ON YOUR BEST</string>
+    <string name="gate_passed_left_label">GATES TO GO</string>
+    <string name="gate_passed_next_label">NOW OPEN</string>
+    <string name="gate_passed_next_body">%1$s Your next sessions start building it.</string>
+    <string name="gate_passed_path_done_label">PATH COMPLETE</string>
+    <string name="gate_passed_path_done">That\'s the whole %1$s path.</string>
+    <string name="gate_passed_path_done_body">Every gate is passed. Pick a new goal from Train whenever you\'re ready.</string>
+    <string name="gate_passed_carry_on">Carry on with the session</string>
 
     <!-- Skills -->
     <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>

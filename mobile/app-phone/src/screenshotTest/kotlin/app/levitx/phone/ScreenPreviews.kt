@@ -11,12 +11,14 @@ import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.Intensity
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.SkillTraining
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
+import app.levitx.core.session.SetLoad
 import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.equipment.Band
@@ -50,6 +52,8 @@ import app.levitx.phone.train.ProgramSummary
 import app.levitx.phone.train.TrainScreen
 import app.levitx.phone.train.TrainUiState
 import app.levitx.phone.train.WorkoutSummary
+import app.levitx.phone.workout.GatePass
+import app.levitx.phone.workout.PendingSet
 import app.levitx.phone.workout.ReportBest
 import app.levitx.phone.workout.ReportChange
 import app.levitx.phone.workout.ReportExercise
@@ -391,5 +395,79 @@ fun SessionSummaryScreenshot() {
     )
     LevitxTheme {
         WorkoutScreen(uiState = WorkoutUiState.Finished(report), now = { 0L }, actions = noWorkoutActions)
+    }
+}
+
+/** A workout that starts with an attempt at the muscle-up path's 10 pull-ups gate. */
+private fun gateAttemptRun(): WorkoutRun {
+    val gate = checkNotNull(SkillCatalogue.gateById("muscle_up.pull_ups"))
+    val plan = ExercisePlan(
+        exercise = checkNotNull(SkillTraining.exerciseFor(gate)),
+        sets = listOf(PlannedSet(10, true)) + List(3) { PlannedSet(5, false) },
+        restSeconds = 120,
+        repsInReserve = 2,
+        intensity = Intensity.HARD,
+        gateId = gate.id,
+        isGateAttempt = true,
+    )
+    return WorkoutRun("preview", PlannedSession(listOf(plan)), startedAtEpochMillis = 0)
+}
+
+private val gateBestsBefore = mapOf(
+    "muscle_up.dead_hang" to 30,
+    "muscle_up.dips" to 10,
+    "muscle_up.pull_ups" to 8,
+)
+
+@PreviewTest
+@Preview(name = "20 Gate test", widthDp = 390, heightDp = 844)
+@Composable
+fun GateTestScreenshot() {
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(gateAttemptRun(), 75.6, emptyList(), gateBests = gateBestsBefore),
+            now = { 0L },
+            actions = noWorkoutActions,
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "21 Gate check", widthDp = 390, heightDp = 844)
+@Composable
+fun GateCheckScreenshot() {
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(
+                gateAttemptRun().deferAttempt(),
+                75.6,
+                emptyList(),
+                gateBests = gateBestsBefore,
+                pending = PendingSet(10, repsInReserve = 0, load = SetLoad.None),
+            ),
+            now = { 0L },
+            actions = noWorkoutActions,
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "22 Gate passed", widthDp = 390, heightDp = 844)
+@Composable
+fun GatePassedScreenshot() {
+    val run = gateAttemptRun()
+    val gate = checkNotNull(SkillCatalogue.gateById("muscle_up.pull_ups"))
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(
+                run.logSet(11, repsInReserve = 0, nowElapsedMillis = 0),
+                75.6,
+                emptyList(),
+                gateBests = gateBestsBefore + (gate.id to 11),
+                passed = GatePass(gate, SkillCatalogue.muscleUp, value = 11, was = 8),
+            ),
+            now = { 0L },
+            actions = noWorkoutActions,
+        )
     }
 }

@@ -54,12 +54,15 @@ fun WorkoutRoute(onDone: () -> Unit, viewModel: WorkoutViewModel = hiltViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     WorkoutScreen(
         uiState = uiState,
-        now = viewModel::elapsedRealtimeMillis,
+        now = viewModel.elapsedRealtimeMillis,
         actions = WorkoutActions(
-            onLogSet = viewModel::logSet,
+            onLogSet = { value, repsInReserve, addedKg, assistanceKg ->
+                viewModel.logSet(value, repsInReserve, addedKg, assistanceKg)
+            },
             onChooseLoad = viewModel::chooseLoad,
             onRest = viewModel::rest,
             onTimer = viewModel::timer,
+            onGate = viewModel::gate,
             onToggleSounds = viewModel::toggleSounds,
             onSkipExercise = viewModel::skipExercise,
             onFinish = viewModel::finish,
@@ -76,6 +79,7 @@ fun WorkoutRoute(onDone: () -> Unit, viewModel: WorkoutViewModel = hiltViewModel
  * @property onChooseLoad Sets the vest or belt and band help, in kg, for the sets to come.
  * @property onRest Ends rest, changes its length, or takes back the set that started it.
  * @property onTimer Starts, stops or cancels the hold or negative timer.
+ * @property onGate Puts off a gate attempt, confirms or takes back a gate-passing set, or carries on after a pass.
  * @property onToggleSounds Turns timer beeps on or off.
  * @property onSkipExercise Moves on to the next exercise.
  * @property onFinish Ends the workout and saves what was done.
@@ -86,6 +90,7 @@ data class WorkoutActions(
     val onChooseLoad: (addedKg: Double, assistanceKg: Double) -> Unit,
     val onRest: (RestAction) -> Unit,
     val onTimer: (TimerAction) -> Unit,
+    val onGate: (GateAction) -> Unit,
     val onToggleSounds: () -> Unit,
     val onSkipExercise: () -> Unit,
     val onFinish: () -> Unit,
@@ -94,7 +99,7 @@ data class WorkoutActions(
     /** Ready-made actions. */
     companion object {
         /** Actions that do nothing, for previews and screenshots. */
-        val None = WorkoutActions({ _, _, _, _ -> }, { _, _ -> }, {}, {}, {}, {}, {}, {})
+        val None = WorkoutActions({ _, _, _, _ -> }, { _, _ -> }, {}, {}, {}, {}, {}, {}, {})
     }
 }
 
@@ -125,13 +130,22 @@ fun WorkoutScreen(uiState: WorkoutUiState, now: () -> Long, actions: WorkoutActi
     }
 }
 
-/** The set, timer or rest, with the session menu over it when open. */
+/**
+ * The set, timer, rest or gate screen, with the session menu or the gate
+ * check over it when open.
+ */
 @Composable
 private fun ColumnScope.ActiveWorkout(state: WorkoutUiState.Active, now: () -> Long, actions: WorkoutActions) {
     var menuOpen by rememberSaveable { mutableStateOf(false) }
+    // The gate brief shows once for each attempt.
+    var briefSeen by rememberSaveable(state.run.exerciseIndex) { mutableStateOf(false) }
     val timer = state.timer
-    // Back closes the menu, then stops a running timer, before it leaves the workout.
+    val passed = state.passed
+    val restEndsAt = state.run.restEndsAtElapsedMillis
+    val showBrief = state.plan.isGateAttempt && state.run.logged[state.run.exerciseIndex].isEmpty() && !briefSeen
+    // Back closes whatever is over the set, then stops a running timer, before it leaves the workout.
     BackHandler(enabled = menuOpen) { menuOpen = false }
+    BackHandler(enabled = !menuOpen && state.pending != null) { actions.onGate(GateAction.RECOUNT) }
     BackHandler(enabled = !menuOpen && timer != null) { actions.onTimer(TimerAction.CANCEL) }
     Box(
         modifier = Modifier
@@ -140,13 +154,15 @@ private fun ColumnScope.ActiveWorkout(state: WorkoutUiState.Active, now: () -> L
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             SetBar(state, onMenu = { menuOpen = true })
-            val restEndsAt = state.run.restEndsAtElapsedMillis
             when {
+                passed != null -> GatePassed(state, passed, actions.onGate)
                 timer != null -> TimerPanel(state, timer, now, actions.onTimer)
                 restEndsAt != null -> Rest(state, restEndsAt, now, actions)
+                showBrief -> GateBrief(state, onReady = { briefSeen = true }, onGate = actions.onGate)
                 else -> NextSet(state, actions)
             }
         }
+        if (state.pending != null) StrictCheck(state, actions.onGate)
         if (menuOpen) SessionMenu(state, actions, onClose = { menuOpen = false })
     }
 }

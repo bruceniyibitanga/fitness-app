@@ -5,8 +5,10 @@ import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.Intensity
 import app.levitx.core.coach.PlannedSession
+import app.levitx.core.coach.SkillTraining
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.session.PlannedSet
+import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
@@ -174,6 +176,72 @@ class WorkoutViewModelTest {
             intensity = Intensity.HARD,
         )
         val drafts = FakeWorkoutDraftRepository(WorkoutRun("timed", PlannedSession(listOf(plan)), clock.now))
+        return WorkoutViewModel(FakeCoachRepository(coachState(), drafts), drafts, FakeEquipmentRepository(), clock)
+    }
+
+    @Test
+    fun aSetThatWouldPassAGateWaitsForTheStandardFirst() {
+        val gates = gateWorkout()
+        gates.logSet(10, repsInReserve = 0)
+        val waiting = gates.uiState.value as WorkoutUiState.Active
+        assertNotNull(waiting.pending)
+        assertEquals(0, waiting.run.logged.sumOf { it.size })
+
+        gates.gate(GateAction.CONFIRM)
+        val passed = gates.uiState.value as WorkoutUiState.Active
+        assertNull(passed.pending)
+        assertEquals(1, passed.run.logged.sumOf { it.size })
+        assertEquals("first_pull_up.scapular_pulls", passed.passed?.gate?.id)
+
+        gates.gate(GateAction.CARRY_ON)
+        assertNull((gates.uiState.value as WorkoutUiState.Active).passed)
+    }
+
+    @Test
+    fun aSetThatDidntMeetTheStandardGoesBackToBeCorrected() {
+        val gates = gateWorkout()
+        gates.logSet(10, repsInReserve = 0)
+        gates.gate(GateAction.RECOUNT)
+        val back = gates.uiState.value as WorkoutUiState.Active
+        assertNull(back.pending)
+        assertEquals(0, back.run.logged.sumOf { it.size })
+    }
+
+    @Test
+    fun aBandAssistedOrShortSetIsLoggedWithoutAsking() {
+        val gates = gateWorkout()
+        gates.logSet(10, repsInReserve = 0, assistanceKg = 10.0)
+        assertNull((gates.uiState.value as WorkoutUiState.Active).pending)
+        gates.rest(RestAction.END)
+        gates.logSet(8, repsInReserve = 0)
+        val after = gates.uiState.value as WorkoutUiState.Active
+        assertNull(after.pending)
+        assertNull(after.passed)
+        assertEquals(2, after.run.logged.sumOf { it.size })
+    }
+
+    @Test
+    fun anAttemptCanBePutOffAndThatIsSaved() {
+        val gates = gateWorkout()
+        gates.gate(GateAction.DEFER)
+        val deferred = gates.uiState.value as WorkoutUiState.Active
+        assertTrue(!deferred.plan.isGateAttempt)
+        assertTrue(deferred.plan.sets.last().isBestEffort)
+    }
+
+    /** A view model for a workout that starts with an attempt at the 10 scapular pull-ups gate. */
+    private fun gateWorkout(): WorkoutViewModel {
+        val gate = checkNotNull(SkillCatalogue.gateById("first_pull_up.scapular_pulls"))
+        val plan = ExercisePlan(
+            exercise = checkNotNull(SkillTraining.exerciseFor(gate)),
+            sets = listOf(PlannedSet(10, true)) + List(3) { PlannedSet(6, false) },
+            restSeconds = 120,
+            repsInReserve = 2,
+            intensity = Intensity.HARD,
+            gateId = gate.id,
+            isGateAttempt = true,
+        )
+        val drafts = FakeWorkoutDraftRepository(WorkoutRun("gate", PlannedSession(listOf(plan)), clock.now))
         return WorkoutViewModel(FakeCoachRepository(coachState(), drafts), drafts, FakeEquipmentRepository(), clock)
     }
 }

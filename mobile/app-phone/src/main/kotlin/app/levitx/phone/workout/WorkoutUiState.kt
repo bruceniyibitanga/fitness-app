@@ -4,7 +4,9 @@ import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
+import app.levitx.core.skills.Gate
 import app.levitx.core.skills.GateMeasure
+import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.equipment.Band
 
 /** What the workout screen shows. */
@@ -28,6 +30,10 @@ sealed interface WorkoutUiState {
      * @property counted What the timer counted once stopped, as the starting
      *   figure for logging. The person can correct it first.
      * @property soundsOn True when timers beep. Off for a quiet gym.
+     * @property gateBests The person's best per gate, to tell when a set passes one.
+     * @property pending A set that would pass a gate, waiting for the person to
+     *   confirm it met the standard.
+     * @property passed A gate just passed, to mark before carrying on.
      */
     data class Active(
         val run: WorkoutRun,
@@ -36,6 +42,9 @@ sealed interface WorkoutUiState {
         val timer: SetTimer? = null,
         val counted: Int? = null,
         val soundsOn: Boolean = true,
+        val gateBests: Map<String, Int> = emptyMap(),
+        val pending: PendingSet? = null,
+        val passed: GatePass? = null,
     ) : WorkoutUiState {
         /** The exercise up next. */
         val plan: ExercisePlan
@@ -44,6 +53,10 @@ sealed interface WorkoutUiState {
         /** The set up next. */
         val nextSet: PlannedSet
             get() = checkNotNull(run.nextSet) { "an active workout always has a set up next" }
+
+        /** The gate the exercise up next trains, or null when it isn't skill work. */
+        val gate: Gate?
+            get() = plan.gateId?.let(SkillCatalogue::gateById)
 
         /** True when the exercise has a load to show and vests or bands make sense for it. */
         val tracksLoad: Boolean

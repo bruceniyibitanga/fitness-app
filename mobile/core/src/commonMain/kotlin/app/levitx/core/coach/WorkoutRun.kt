@@ -162,6 +162,18 @@ public data class WorkoutRun(
     }
 
     /**
+     * Puts off today's gate attempt: the attempt moves to the end, as an
+     * ordinary best-effort set, and the work sets come first. Only before the
+     * exercise has started, since a set already done can't be reordered.
+     */
+    public fun deferAttempt(): WorkoutRun {
+        val plan = current?.takeIf { it.isGateAttempt && logged[exerciseIndex].isEmpty() && !isResting }
+            ?: return this
+        val deferred = plan.copy(sets = plan.sets.drop(1) + plan.sets.first(), isGateAttempt = false)
+        return copy(session = session.copy(plans = session.plans.replacing(exerciseIndex, deferred)))
+    }
+
+    /**
      * This run with any impossible rest ended. Rest is timed on the clock that
      * counts from boot, which starts again after a restart, so a saved rest
      * could look hours long. No rest is longer than the longest in the plan,

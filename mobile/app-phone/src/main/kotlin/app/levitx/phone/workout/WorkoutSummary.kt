@@ -128,10 +128,17 @@ private fun Bests(bests: List<ReportBest>) {
                 ) {
                     Text(best.name, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
                     Caption(
-                        text = best.was?.let {
-                            stringResource(R.string.workout_summary_was, measureText(best.measure, it))
-                        } ?: stringResource(R.string.workout_summary_first),
-                        color = LevitxColors.TextFaint,
+                        text = when {
+                            best.passedGate -> stringResource(R.string.workout_summary_gate_passed)
+
+                            best.was != null -> stringResource(
+                                R.string.workout_summary_was,
+                                measureText(best.measure, best.was),
+                            )
+
+                            else -> stringResource(R.string.workout_summary_first)
+                        },
+                        color = if (best.passedGate) LevitxColors.Accent else LevitxColors.TextFaint,
                     )
                 }
                 Text(measureText(best.measure, best.value), style = LevitxType.Figure, color = LevitxColors.Accent)

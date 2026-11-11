@@ -44,8 +44,15 @@ data class SessionReport(
  * @property measure Reps or seconds.
  * @property value The new best.
  * @property was The best before, or null for a gate's first.
+ * @property passedGate True when this best passed a skill gate.
  */
-data class ReportBest(val name: String, val measure: GateMeasure, val value: Int, val was: Int?)
+data class ReportBest(
+    val name: String,
+    val measure: GateMeasure,
+    val value: Int,
+    val was: Int?,
+    val passedGate: Boolean = false,
+)
 
 /**
  * One exercise as it was done.
@@ -99,7 +106,9 @@ internal fun sessionReport(
 
 private fun gateBests(before: AthleteModel, result: SessionResult): List<ReportBest> =
     result.newGateBests(before.gateBests).mapNotNull { (gateId, best) ->
-        SkillCatalogue.gateById(gateId)?.let { ReportBest(it.title, it.measure, best, before.gateBests[gateId]) }
+        SkillCatalogue.gateById(gateId)?.let { gate ->
+            ReportBest(gate.title, gate.measure, best, before.gateBests[gateId], passedGate = best >= gate.target)
+        }
     }
 
 /** Exercises beaten on a previous best. A first time isn't a best: there was nothing to beat. */
