@@ -65,6 +65,18 @@ These were made without a watch to test on. Each one has the result that would c
 | The screen stays on while the session screen is showing. | The hold timer runs on that screen and would be late if the watch dimmed. | Battery cost is noticeable. Then move the hold timer into the workout service and let the screen dim. |
 | The Tile has no preview image for the tile picker yet. | It has to be a screenshot of the real Tile. A made-up picture would misrepresent it. | As soon as the Tile has been seen on a watch or emulator: take the screenshot, add round and square versions, and switch the lint check back on. |
 
+## Next: the coach and the redesign
+
+Trying the Phase 2 and 3 builds showed the app needs to work like a trainer, not a set of screens. Before Phase 4, in this order:
+
+1. Redesign onboarding, Today, Train, program and workout screens in the design canvas, and get them approved.
+2. Build the coach engine in `:core` ([ADR 0007](adr/0007-adaptive-coach.md), [COACH-ENGINE.md](COACH-ENGINE.md)), with its simulation tests.
+3. Rebuild the phone screens to the approved design.
+4. Bring the watch in line.
+5. Bundle exercise and onboarding photos.
+
+Reading bodyweight from Health Connect moves here from Phase 4, because the coach uses the trend.
+
 ## Phase 4: Body and progress
 
 - Bodyweight log feeding load per rep.
