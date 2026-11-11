@@ -11,9 +11,14 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import app.levitx.phone.exercise.ExerciseRoute
 import app.levitx.phone.launch.LaunchViewModel
+import app.levitx.phone.main.MainNavigation
 import app.levitx.phone.main.MainRoute
 import app.levitx.phone.onboarding.OnboardingRoute
+import app.levitx.phone.program.ProgramRoute
+import app.levitx.phone.train.FocusWorkoutNavigation
+import app.levitx.phone.train.FocusWorkoutRoute
 import app.levitx.phone.workout.WorkoutRoute
 
 /**
@@ -49,10 +54,37 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                 OnboardingRoute(onFinished = { backStack.replaceAllWith(Destination.Main) })
             }
             entry<Destination.Main> {
-                MainRoute(onOpenWorkout = { backStack.add(Destination.Workout) })
+                MainRoute(
+                    MainNavigation(
+                        onOpenWorkout = { backStack.add(Destination.Workout) },
+                        onOpenFocusWorkout = { backStack.add(Destination.FocusWorkout(it)) },
+                        onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
+                        onOpenProgram = { backStack.add(Destination.Program(it)) },
+                    ),
+                )
             }
             entry<Destination.Workout> {
                 WorkoutRoute(onDone = { backStack.removeLastOrNull() })
+            }
+            entry<Destination.FocusWorkout> { key ->
+                FocusWorkoutRoute(
+                    focusName = key.focus,
+                    navigation = FocusWorkoutNavigation(
+                        onBack = { backStack.removeLastOrNull() },
+                        // The workout replaces this screen, so finishing it goes back to the tabs.
+                        onOpenWorkout = {
+                            backStack.removeLastOrNull()
+                            backStack.add(Destination.Workout)
+                        },
+                        onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
+                    ),
+                )
+            }
+            entry<Destination.ExerciseDetail> { key ->
+                ExerciseRoute(exerciseId = key.exerciseId, onBack = { backStack.removeLastOrNull() })
+            }
+            entry<Destination.Program> { key ->
+                ProgramRoute(pathId = key.pathId, onBack = { backStack.removeLastOrNull() })
             }
         },
     )

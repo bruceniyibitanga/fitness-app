@@ -1,5 +1,6 @@
 package app.levitx.phone.skills
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,16 +35,20 @@ import app.levitx.phone.ui.SectionLabel
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.patternName
 
-/** Skills tab: connects [SkillsViewModel] to [SkillsScreen]. */
+/**
+ * Skills tab: connects [SkillsViewModel] to [SkillsScreen].
+ *
+ * @param onOpenExercise Opens an exercise's detail, by id.
+ */
 @Composable
-fun SkillsRoute(viewModel: SkillsViewModel = hiltViewModel()) {
+fun SkillsRoute(onOpenExercise: (String) -> Unit, viewModel: SkillsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    SkillsScreen(uiState)
+    SkillsScreen(uiState, onOpenExercise)
 }
 
 /** Every movement's ladder: the rung the person is on, what they train there and what comes next. */
 @Composable
-fun SkillsScreen(uiState: SkillsUiState, modifier: Modifier = Modifier) {
+fun SkillsScreen(uiState: SkillsUiState, onOpenExercise: (String) -> Unit, modifier: Modifier = Modifier) {
     LazyColumn(modifier = modifier.fillMaxSize().padding(horizontal = LevitxSpacing.Medium)) {
         item {
             Column(
@@ -65,17 +71,29 @@ fun SkillsScreen(uiState: SkillsUiState, modifier: Modifier = Modifier) {
 
             is SkillsUiState.Ready -> items(uiState.ladders, key = { it.pattern.name }) { standing ->
                 HorizontalDivider(color = LevitxColors.Line)
-                LadderRow(standing)
+                LadderRow(standing, onOpenExercise)
             }
         }
     }
 }
 
 @Composable
-private fun LadderRow(standing: LadderStanding) {
+private fun LadderRow(standing: LadderStanding, onOpenExercise: (String) -> Unit) {
+    // Only a row with an exercise of its own opens anything.
+    val openable = standing.exercise?.takeUnless { standing.isTrainedByGate }
+    val openLabel = openable?.let { stringResource(R.string.open_exercise, it.name) }
     Column(
         verticalArrangement = Arrangement.spacedBy(LevitxSpacing.XSmall),
-        modifier = Modifier.padding(vertical = LevitxSpacing.Medium),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (openable == null) {
+                    Modifier
+                } else {
+                    Modifier.clickable(onClickLabel = openLabel, role = Role.Button) { onOpenExercise(openable.id) }
+                },
+            )
+            .padding(vertical = LevitxSpacing.Medium),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             SectionLabel(patternName(standing.pattern), modifier = Modifier.weight(1f))
@@ -122,6 +140,12 @@ private fun LadderRow(standing: LadderStanding) {
 private fun SkillsScreenPreview() {
     val profile = CoachProfile("first_pull_up", equipment = setOf(Equipment.PULL_UP_BAR))
     LevitxTheme {
-        SkillsScreen(SkillsUiState.Ready(standings(AthleteModel.starting(profile, PullUpAnswer.NOT_YET))))
+        SkillsScreen(
+            SkillsUiState.Ready(
+                standings(AthleteModel.starting(profile, PullUpAnswer.NOT_YET)),
+            ),
+            onOpenExercise = {
+            },
+        )
     }
 }

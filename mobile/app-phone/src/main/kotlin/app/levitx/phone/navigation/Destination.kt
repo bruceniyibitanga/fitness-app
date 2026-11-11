@@ -24,4 +24,29 @@ sealed interface Destination : NavKey {
     /** The workout in progress. It is read from the saved draft, so this key needs nothing else. */
     @Serializable
     data object Workout : Destination
+
+    /**
+     * A single workout picked from the Train tab, before it starts.
+     *
+     * @property focus The [app.levitx.core.coach.WorkoutFocus] name. Stored as text so a renamed focus can't
+     *   break restoring the back stack; an unknown name opens nothing.
+     */
+    @Serializable
+    data class FocusWorkout(val focus: String) : Destination
+
+    /**
+     * How to do one exercise, and where it sits on its ladder.
+     *
+     * @property exerciseId The exercise's catalogue id. Not personal data.
+     */
+    @Serializable
+    data class ExerciseDetail(val exerciseId: String) : Destination
+
+    /**
+     * A skill program, with the option to make it the plan.
+     *
+     * @property pathId The skill path's id.
+     */
+    @Serializable
+    data class Program(val pathId: String) : Destination
 }

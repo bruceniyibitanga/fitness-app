@@ -45,8 +45,23 @@ internal class SessionBuilder(private val templates: List<List<MovementPattern>>
             .distinct()
     }
 
-    private fun build(template: List<MovementPattern>, skill: ExercisePlan?, context: CoachContext): PlannedSession? {
-        val wanted = listOfNotNull(skill) + template.mapNotNull { ladderPlan(it, context) }
+    /**
+     * The workout for [focus], before the safety rules: the current gate's
+     * skill work first when the focus trains its movement, then the person's
+     * exercises for each movement, fitted to their time.
+     */
+    fun focused(focus: WorkoutFocus, context: CoachContext): PlannedSession? {
+        val skill = skillPlan(context)?.takeIf { context.currentGatePattern in focus.patterns }
+        val ladder = focus.patterns.flatMap { pattern ->
+            if (focus.everyOption) everyOptionPlans(pattern, context) else listOfNotNull(ladderPlan(pattern, context))
+        }
+        return fitted(listOfNotNull(skill) + ladder, context)
+    }
+
+    private fun build(template: List<MovementPattern>, skill: ExercisePlan?, context: CoachContext): PlannedSession? =
+        fitted(listOfNotNull(skill) + template.mapNotNull { ladderPlan(it, context) }, context)
+
+    private fun fitted(wanted: List<ExercisePlan>, context: CoachContext): PlannedSession? {
         val budget = (context.model.profile.sessionMinutes - CoachTuning.WARM_UP_MINUTES) * SECONDS_PER_MINUTE
         return fit(wanted, budget).takeIf { it.isNotEmpty() }?.let(::PlannedSession)
     }
@@ -74,24 +89,40 @@ internal class SessionBuilder(private val templates: List<List<MovementPattern>>
      * today's skill work, so the two never compete.
      */
     private fun ladderPlan(pattern: MovementPattern, context: CoachContext): ExercisePlan? =
-        context.exerciseFor(pattern)?.takeIf { pattern != context.currentGatePattern }?.let { exercise ->
-            val state = context.model.exercises[exercise.id] ?: ExerciseState(target = exercise.range.first)
-            val work = PlannedSet(state.target, isBestEffort = false)
-            val count = setsFor(pattern, context.model.profile)
-            val sets = if (state.isCalibrating) {
-                List(count - 1) { work } + PlannedSet(exercise.range.last, isBestEffort = true)
-            } else {
-                List(count) { work }
-            }
-            val isHold = exercise.measure == GateMeasure.HOLD_SECONDS
-            ExercisePlan(
-                exercise = exercise,
-                sets = sets,
-                restSeconds = if (isHold) SessionPlanner.REST_SECONDS_HOLDS else SessionPlanner.REST_SECONDS_REPS,
-                repsInReserve = SessionPlanner.TARGET_REPS_IN_RESERVE,
-                intensity = Intensity.HARD,
-            )
+        context.exerciseFor(pattern)?.takeIf { pattern != context.currentGatePattern }?.let { hardPlan(it, context) }
+
+    /**
+     * Hard work on every exercise on the person's rung of [pattern] they have
+     * the kit for. Like [ladderPlan], nothing for the pattern of the gate being
+     * worked on.
+     */
+    private fun everyOptionPlans(pattern: MovementPattern, context: CoachContext): List<ExercisePlan> {
+        val owned = context.model.profile.equipment
+        val ladder = ExerciseCatalogue.ladder(pattern)
+        val rung = ladder.usableRungAtOrBelow(context.model.rung(pattern), owned)
+            ?.takeIf { pattern != context.currentGatePattern }
+        return rung?.let { ladder.rungs[it].options.filter { option -> option.fits(owned) } }.orEmpty()
+            .map { hardPlan(it, context) }
+    }
+
+    private fun hardPlan(exercise: Exercise, context: CoachContext): ExercisePlan {
+        val state = context.model.exercises[exercise.id] ?: ExerciseState(target = exercise.range.first)
+        val work = PlannedSet(state.target, isBestEffort = false)
+        val count = setsFor(exercise.pattern, context.model.profile)
+        val sets = if (state.isCalibrating) {
+            List(count - 1) { work } + PlannedSet(exercise.range.last, isBestEffort = true)
+        } else {
+            List(count) { work }
         }
+        val isHold = exercise.measure == GateMeasure.HOLD_SECONDS
+        return ExercisePlan(
+            exercise = exercise,
+            sets = sets,
+            restSeconds = if (isHold) SessionPlanner.REST_SECONDS_HOLDS else SessionPlanner.REST_SECONDS_REPS,
+            repsInReserve = SessionPlanner.TARGET_REPS_IN_RESERVE,
+            intensity = Intensity.HARD,
+        )
+    }
 
     /** A focused plan gives patterns that have nothing to do with the goal the fewest sets. */
     private fun setsFor(pattern: MovementPattern, profile: CoachProfile): Int {
