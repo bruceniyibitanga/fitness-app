@@ -180,8 +180,6 @@
     <string name="workout_log_set">Log set</string>
     <string name="workout_set_short">SET %1$d/%2$d</string>
     <string name="workout_exercise_short">%1$d/%2$d</string>
-    <string name="workout_finish_short">FINISH</string>
-    <string name="workout_finish_short_sentence">Finish</string>
     <string name="workout_unit_reps">REPS DONE</string>
     <string name="workout_unit_seconds">SECONDS HELD</string>
     <string name="workout_of_target">/%1$d</string>
@@ -196,7 +194,6 @@
     <string name="workout_aim">AIM %1$s</string>
     <string name="workout_last_set">Last set of the workout</string>
     <string name="workout_rest_label">REST</string>
-    <string name="workout_rest_next">Next: %1$s, set %2$d of %3$d, %4$s</string>
     <string name="workout_skip_rest">Skip rest</string>
     <string name="workout_added_weight_label">ADDED WEIGHT (VEST OR BELT), KG</string>
     <string name="workout_band_label">BAND</string>
@@ -204,15 +201,112 @@
     <string name="workout_band_choice">%1$s · %2$s kg</string>
     <string name="workout_band_note">Band-assisted sets build toward a gate but don\'t pass it.</string>
     <string name="workout_saved_label">WORKOUT SAVED</string>
-    <plurals name="workout_saved_sets">
-        <item quantity="one">%1$d set</item>
-        <item quantity="other">%1$d sets</item>
-    </plurals>
-    <string name="workout_new_best">New best on %1$s: %2$s</string>
-    <string name="workout_saved_body">The coach has taken it in. Your next session is on Today.</string>
     <string name="workout_done">Done</string>
     <string name="workout_nothing">There\'s no workout in progress.</string>
     <string name="workout_back">Back to Today</string>
+    <string name="workout_start_hold">Start hold</string>
+    <string name="workout_start_negatives">Start negatives</string>
+    <string name="workout_count_in_hint">3 S COUNT-IN</string>
+    <string name="workout_log_short">Log</string>
+    <string name="workout_again_short">Again</string>
+    <string name="workout_negative_instructions">Take %1$s to lower each rep, in control all the way down. The timer sets the pace.</string>
+    <string name="workout_menu">Session menu</string>
+    <string name="workout_of_count">%1$d/%2$d</string>
+
+    <!-- Workout: hold and negative timers -->
+    <string name="workout_timer_stop">Stop the timer</string>
+    <string name="workout_timer_get_ready">GET IN POSITION</string>
+    <string name="workout_timer_hold_lead">The hold starts when the count ends. Leave the phone where you can see it, and tap anywhere when you let go.</string>
+    <string name="workout_timer_negative_lead">Rep 1 starts when the count ends. A beep sends you to the top, then a tick sounds each second as you lower.</string>
+    <string name="workout_timer_of_seconds">/%1$d s</string>
+    <string name="workout_timer_past">PAST YOUR TARGET · +%1$d S</string>
+    <string name="workout_timer_holding">HOLDING · %1$d S TO YOUR TARGET</string>
+    <string name="workout_timer_past_spoken">Past your target</string>
+    <string name="workout_timer_holding_spoken">Holding</string>
+    <string name="workout_timer_hold_cue">Stay tight and breathe. The time counts until you let go.</string>
+    <string name="workout_timer_hold_past_cue">Target hit. Keep going while your form holds: the time counts until you stop it.</string>
+    <string name="workout_timer_hold_sounds">BEEP EVERY %1$d S · DOUBLE BEEP AT %2$d S</string>
+    <string name="workout_timer_sounds_off">SOUNDS OFF · TURN THEM ON IN THE MENU</string>
+    <plurals name="workout_timer_hold_bar">
+        <item quantity="one">Held %1$d second of a %2$d second target.</item>
+        <item quantity="other">Held %1$d seconds of a %2$d second target.</item>
+    </plurals>
+    <string name="workout_timer_target">TARGET %1$d S</string>
+    <string name="workout_timer_start_now">Start now</string>
+    <string name="workout_timer_stop_seconds">Stop · %1$d s</string>
+    <string name="workout_timer_stop_reps">Stop · log %1$d</string>
+    <string name="workout_timer_tap_anywhere">TAP ANYWHERE</string>
+    <string name="workout_timer_skip_count">SKIP COUNT</string>
+    <string name="workout_timer_restart">Restart</string>
+    <string name="workout_timer_cancel">Cancel</string>
+    <string name="workout_timer_reps">REPS</string>
+    <string name="workout_timer_to_top">TO THE TOP · REP %1$d</string>
+    <string name="workout_timer_lowering">LOWERING · SLOWER THAN YOU THINK</string>
+    <string name="workout_timer_all_paced">ALL REPS PACED</string>
+    <string name="workout_timer_negative_cue">Beeps set the pace, so you never need to touch the phone. Tap anywhere to stop early: you can fix the count before you log it.</string>
+    <string name="workout_timer_tempo">Each rep: %1$s to get to the top, then %2$s lowering.</string>
+    <string name="workout_timer_tempo_top">TO THE TOP %1$d S</string>
+    <string name="workout_timer_tempo_lower">LOWER %1$d S</string>
+
+    <!-- Workout: rest -->
+    <string name="workout_rest_shorter">− 15 s</string>
+    <string name="workout_rest_longer">+ 15 s</string>
+    <string name="workout_start_set">Start set %1$d</string>
+    <string name="workout_rest_done">REST DONE · GO WHEN READY</string>
+    <string name="workout_rest_over">RESTED LONGER THAN PLANNED · THAT\'S FINE</string>
+    <string name="workout_rest_go">GO</string>
+    <string name="workout_rest_extra">+%1$s</string>
+    <string name="workout_rest_planned">PLANNED %1$s</string>
+    <string name="workout_rest_next_set">NEXT · SET %1$d OF %2$d</string>
+    <string name="workout_logged">Logged set %1$d: %2$s</string>
+    <string name="workout_logged_left">Logged set %1$d: %2$s, %3$s left</string>
+    <string name="workout_undo">UNDO</string>
+
+    <!-- Workout: session menu -->
+    <string name="workout_menu_back">Back to set</string>
+    <string name="workout_menu_title">What do you need?</string>
+    <string name="workout_menu_where">%1$s · SET %2$d OF %3$d</string>
+    <string name="workout_menu_skip">Skip this exercise</string>
+    <string name="workout_menu_skip_body">No penalty. The coach plans around it.</string>
+    <string name="workout_menu_next">Move to the next exercise</string>
+    <string name="workout_menu_next_body">The sets you\'ve done are kept.</string>
+    <string name="workout_menu_sounds">Sounds and buzzes</string>
+    <string name="workout_menu_sounds_on">On: beeps for timers and rest. Tap to turn them off.</string>
+    <string name="workout_menu_sounds_off">Off. Tap to turn them on.</string>
+    <string name="workout_menu_leave">Leave for now</string>
+    <string name="workout_menu_leave_body">Your workout is kept. Pick it up from Today.</string>
+    <string name="workout_menu_end_empty">End workout</string>
+    <plurals name="workout_menu_end">
+        <item quantity="one">End and save %1$d set</item>
+        <item quantity="other">End and save %1$d sets</item>
+    </plurals>
+
+    <!-- Workout: summary -->
+    <string name="workout_summary_done">SESSION DONE</string>
+    <plurals name="workout_summary_bests">
+        <item quantity="one">SESSION DONE · %1$d NEW BEST</item>
+        <item quantity="other">SESSION DONE · %1$d NEW BESTS</item>
+    </plurals>
+    <plurals name="workout_summary_sets">
+        <item quantity="one">set</item>
+        <item quantity="other">sets</item>
+    </plurals>
+    <string name="workout_summary_kg">%1$,d</string>
+    <string name="workout_summary_kg_label">KG MOVED</string>
+    <string name="workout_summary_minutes">%1$d min</string>
+    <string name="workout_summary_time_label">TIME</string>
+    <string name="workout_summary_exercises_label">EXERCISES</string>
+    <string name="workout_summary_bests_label">NEW BESTS</string>
+    <string name="workout_summary_was">WAS %1$s</string>
+    <string name="workout_summary_first">FIRST TIME</string>
+    <string name="workout_summary_sets_label">EVERY SET · REPS LEFT UNDER</string>
+    <string name="workout_summary_seconds">%1$ds</string>
+    <string name="workout_summary_no_left">·</string>
+    <string name="workout_summary_changes_label">WHAT CHANGES NEXT TIME</string>
+    <string name="workout_change_target">target %1$s → %2$s.</string>
+    <string name="workout_change_held">stays at %1$s.</string>
+    <string name="workout_change_up">moves up to %1$s.</string>
+    <string name="workout_change_down">moves back to %1$s, to build up again.</string>
 
     <!-- Skills -->
     <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>

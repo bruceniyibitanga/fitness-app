@@ -201,9 +201,18 @@ fun NumberedRow(
     Rule()
 }
 
-/** A one-line note with the design's small orange square in front, like "WHY THIS SESSION". */
+/**
+ * A one-line note with the design's small square in front, like "WHY THIS
+ * SESSION". Orange for the coach's notes; ice for a cue during a set.
+ */
 @Composable
-fun SquareNote(title: String?, text: String, modifier: Modifier = Modifier, filled: Boolean = true) {
+fun SquareNote(
+    title: String?,
+    text: String,
+    modifier: Modifier = Modifier,
+    filled: Boolean = true,
+    squareColor: Color = LevitxColors.Accent,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -214,7 +223,7 @@ fun SquareNote(title: String?, text: String, modifier: Modifier = Modifier, fill
         Box(
             Modifier
                 .size(6.dp)
-                .background(LevitxColors.Accent),
+                .background(squareColor),
         )
         Column(modifier = Modifier.padding(start = 12.dp)) {
             if (title != null) Caption(title, color = LevitxColors.Accent)

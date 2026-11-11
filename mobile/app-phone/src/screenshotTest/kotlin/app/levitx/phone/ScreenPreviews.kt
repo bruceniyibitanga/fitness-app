@@ -6,11 +6,18 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
+import app.levitx.core.coach.ExerciseLookup
+import app.levitx.core.coach.ExercisePlan
+import app.levitx.core.coach.Intensity
+import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.core.session.LoggedSet
+import app.levitx.core.session.PlannedSet
+import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.equipment.Band
 import app.levitx.phone.body.BarLoad
@@ -43,6 +50,12 @@ import app.levitx.phone.train.ProgramSummary
 import app.levitx.phone.train.TrainScreen
 import app.levitx.phone.train.TrainUiState
 import app.levitx.phone.train.WorkoutSummary
+import app.levitx.phone.workout.ReportBest
+import app.levitx.phone.workout.ReportChange
+import app.levitx.phone.workout.ReportExercise
+import app.levitx.phone.workout.SessionReport
+import app.levitx.phone.workout.SetTimer
+import app.levitx.phone.workout.TimerKind
 import app.levitx.phone.workout.WorkoutActions
 import app.levitx.phone.workout.WorkoutScreen
 import app.levitx.phone.workout.WorkoutUiState
@@ -62,7 +75,7 @@ private val noTodayActions =
 private fun muscleUp(kit: Set<Equipment> = setOf(Equipment.PULL_UP_BAR)) =
     AthleteModel.starting(CoachProfile("muscle_up", equipment = kit), PullUpAnswer.YES)
 
-private val noWorkoutActions = WorkoutActions({ _, _, _, _ -> }, {}, {}, {}, {})
+private val noWorkoutActions = WorkoutActions.None
 
 /** The first session the coach gives [muscleUp], about to start. */
 private fun firstRun(): WorkoutRun =
@@ -297,5 +310,86 @@ fun WorkoutDetailScreenshot() {
 fun ExerciseScreenshot() {
     LevitxTheme {
         ExerciseScreen(uiState = exerciseState(muscleUp(), "horizontal_push.push_up", nowEpochMillis = 0), onBack = {})
+    }
+}
+
+/** A workout that starts with three sets of [target] of the exercise [id]. */
+private fun timedRun(id: String, target: Int): WorkoutRun {
+    val plan = ExercisePlan(
+        exercise = checkNotNull(ExerciseLookup.byId(id)),
+        sets = List(3) { PlannedSet(target, false) },
+        restSeconds = 120,
+        repsInReserve = 1,
+        intensity = Intensity.HARD,
+    )
+    return WorkoutRun("preview", PlannedSession(listOf(plan)), startedAtEpochMillis = 0)
+}
+
+@PreviewTest
+@Preview(name = "17 Hold timer", widthDp = 390, heightDp = 844)
+@Composable
+fun HoldTimerScreenshot() {
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(
+                timedRun("vertical_pull.dead_hang", target = 30),
+                bodyweightKg = 75.6,
+                bands = emptyList(),
+                timer = SetTimer(TimerKind.HOLD, startsAtElapsedMillis = 0),
+            ),
+            // 18 seconds into the hold.
+            now = { 18_400L },
+            actions = noWorkoutActions,
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "18 Negative timer", widthDp = 390, heightDp = 844)
+@Composable
+fun NegativeTimerScreenshot() {
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(
+                timedRun("vertical_pull.negative", target = 5),
+                bodyweightKg = 75.6,
+                bands = emptyList(),
+                timer = SetTimer(TimerKind.NEGATIVE, startsAtElapsedMillis = 0, lowerMillis = 5_000, reps = 5),
+            ),
+            // Rep 2, about three seconds into the lowering.
+            now = { 9_000L + 4_000L + 2_500L },
+            actions = noWorkoutActions,
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "19 Session summary", widthDp = 390, heightDp = 1100)
+@Composable
+fun SessionSummaryScreenshot() {
+    fun sets(vararg pairs: Pair<Int, Int?>) =
+        pairs.map { (value, left) -> LoggedSet(value, left, isBestEffort = false) }
+    val report = SessionReport(
+        sets = 11,
+        minutes = 48,
+        kgMoved = 8_940,
+        bests = listOf(
+            ReportBest("Strict pull-up", GateMeasure.REPS, value = 8, was = 7),
+            ReportBest("Tuck front lever", GateMeasure.HOLD_SECONDS, value = 8, was = 6),
+        ),
+        exercises = listOf(
+            ReportExercise("Tuck front lever", GateMeasure.HOLD_SECONDS, sets(8 to null, 7 to null, 6 to null)),
+            ReportExercise("Strict pull-up", GateMeasure.REPS, sets(8 to 2, 8 to 1, 7 to 1)),
+            ReportExercise("Feet-up push-up", GateMeasure.REPS, sets(12 to 3, 12 to 2)),
+            ReportExercise("Hollow body hold", GateMeasure.HOLD_SECONDS, sets(30 to null, 22 to null, 30 to null)),
+        ),
+        changes = listOf(
+            ReportChange.Target("Strict pull-up", GateMeasure.REPS, from = 8, to = 9),
+            ReportChange.MovedUp("Feet-up push-up", next = "Box-elevated push-up"),
+            ReportChange.Held("Hollow body hold", GateMeasure.HOLD_SECONDS, target = 30),
+        ),
+    )
+    LevitxTheme {
+        WorkoutScreen(uiState = WorkoutUiState.Finished(report), now = { 0L }, actions = noWorkoutActions)
     }
 }

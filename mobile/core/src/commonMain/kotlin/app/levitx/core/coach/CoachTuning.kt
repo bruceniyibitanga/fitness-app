@@ -111,6 +111,13 @@ public object CoachTuning {
     /** Hold targets move in steps of this many seconds. Rep targets move one rep at a time. */
     public const val HOLD_STEP_SECONDS: Int = 5
 
+    /**
+     * Seconds each slow negative should take to lower. Coaching sources for
+     * beginner negatives agree on 3 to 5 seconds down; we aim for the top of
+     * that, and the phone's timer paces each rep to it.
+     */
+    public const val NEGATIVE_LOWER_SECONDS: Int = 5
+
     // Learning the person
 
     /** Sessions on an exercise during which the coach is still finding the person's level. */
