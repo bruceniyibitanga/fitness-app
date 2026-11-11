@@ -52,6 +52,7 @@ import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.kitName
+import app.levitx.phone.ui.pathPhoto
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 
@@ -73,12 +74,6 @@ private val KitOrder = listOf(
 /** Kit choices side by side. Two fit the longest name at any font size. */
 private const val KIT_PER_ROW = 2
 
-/** A photo for each skill path that has one. */
-private val GoalPhotos = mapOf(
-    "first_pull_up" to R.drawable.photo_goal_first_pull_up,
-    "muscle_up" to R.drawable.photo_goal_muscle_up,
-)
-
 /** What they are training for: a skill, as photo tiles, or general fitness. */
 @Composable
 internal fun GoalStep(state: OnboardingUiState, actions: OnboardingActions) {
@@ -88,7 +83,7 @@ internal fun GoalStep(state: OnboardingUiState, actions: OnboardingActions) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 pair.forEach { path ->
                     PhotoTile(
-                        photo = GoalPhotos[path.id] ?: R.drawable.photo_goal_first_pull_up,
+                        photo = pathPhoto(path.id),
                         title = path.name,
                         caption = pluralStringResource(R.plurals.goal_skill_gates, path.gates.size, path.gates.size),
                         selected = state.goalChosen && state.goalPathId == path.id,

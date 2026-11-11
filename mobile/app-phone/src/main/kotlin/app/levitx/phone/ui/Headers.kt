@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,8 +28,8 @@ import app.levitx.design.LevitxType
 import app.levitx.phone.R
 
 /*
- * The tops of screens from the design: the Levitx wordmark, the back button,
- * and a flow step's "2 / 4" header with its progress line.
+ * The tops of screens from the design: the Levitx wordmark, a tab's header,
+ * the back button, and a flow step's "2 / 4" header with its progress line.
  */
 
 private const val WORDMARK_TRACKING = 2.4f
@@ -37,10 +38,37 @@ private val ProgressHeight = 2.dp
 /** The Levitx mark and wordmark, as in the top-left of the design. */
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
+    MarkLabel(stringResource(R.string.app_name), modifier)
+}
+
+/**
+ * The top of a tab: the mark and the tab's name, 56 dp tall, with a rule
+ * under it. [trailing] sits on the right, for a tab that has an action there.
+ */
+@Composable
+fun TabHeader(title: String, modifier: Modifier = Modifier, trailing: @Composable () -> Unit = {}) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(BarHeight)
+                .padding(start = ScreenPadding, end = 8.dp),
+        ) {
+            MarkLabel(title, Modifier.weight(1f).semantics { heading() })
+            trailing()
+        }
+        Rule()
+    }
+}
+
+/** The orange mark beside a name in wide-spaced capitals. */
+@Composable
+private fun MarkLabel(text: String, modifier: Modifier = Modifier) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         Image(painter = painterResource(R.drawable.ic_mark), contentDescription = null)
         Text(
-            text = stringResource(R.string.app_name).uppercase(),
+            text = text.uppercase(),
             style = LevitxType.Caption,
             fontWeight = FontWeight.Medium,
             letterSpacing = WORDMARK_TRACKING.sp,

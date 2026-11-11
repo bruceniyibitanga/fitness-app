@@ -1,28 +1,22 @@
 package app.levitx.phone.train
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -32,15 +26,15 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.WorkoutFocus
 import app.levitx.design.LevitxColors
-import app.levitx.design.LevitxSpacing
-import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
-import app.levitx.phone.ui.SectionLabel
-
-private val ProgramCardWidth = 220.dp
-private val WorkoutRowHeight = 68.dp
+import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.Rule
+import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.TabHeader
 
 /**
  * Train tab: connects [TrainViewModel] to [TrainScreen].
@@ -58,7 +52,11 @@ fun TrainRoute(
     TrainScreen(uiState, onOpenWorkout, onOpenProgram)
 }
 
-/** Skill programs to make the plan, and a workout for each part of the body to do now. */
+/**
+ * The Train tab, laid out as the Train artboard: a row of body-focus chips,
+ * skill programs as photo cards, and a single workout for each part of the
+ * body as photo rows. A chip narrows the workouts to that focus.
+ */
 @Composable
 fun TrainScreen(
     uiState: TrainUiState,
@@ -66,127 +64,82 @@ fun TrainScreen(
     onOpenProgram: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = LevitxSpacing.Large),
-    ) {
+    // Survives rotation and coming back from a workout. Null is "All".
+    var focus by rememberSaveable { mutableStateOf<WorkoutFocus?>(null) }
+    Column(modifier = modifier.fillMaxSize().background(LevitxColors.Background)) {
+        TabHeader(stringResource(R.string.train_label))
         Column(
-            verticalArrangement = Arrangement.spacedBy(LevitxSpacing.Small),
-            modifier = Modifier.padding(horizontal = LevitxSpacing.Medium),
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp),
         ) {
-            SectionLabel(stringResource(R.string.train_label), color = LevitxColors.Accent)
-            Text(stringResource(R.string.train_title), style = LevitxType.Display)
-            Text(
-                text = stringResource(R.string.train_body),
-                style = MaterialTheme.typography.bodyLarge,
-                color = LevitxColors.TextSoft,
-            )
-        }
-        when (uiState) {
-            TrainUiState.Loading -> Unit
+            when (uiState) {
+                TrainUiState.Loading -> Unit
 
-            TrainUiState.Unavailable -> Text(
-                text = stringResource(R.string.data_unavailable),
-                modifier = Modifier.padding(LevitxSpacing.Medium),
-            )
+                TrainUiState.Unavailable -> Lede(
+                    text = stringResource(R.string.data_unavailable),
+                    modifier = Modifier.padding(ScreenPadding),
+                )
 
-            is TrainUiState.Ready -> {
-                Programs(uiState.programs, onOpenProgram)
-                Workouts(uiState.workouts, onOpenWorkout)
+                is TrainUiState.Ready -> {
+                    FocusChips(selected = focus, onSelect = { focus = it })
+                    Programs(uiState.programs, onOpenProgram)
+                    Workouts(uiState.workouts.filter { focus == null || it.focus == focus }, onOpenWorkout)
+                }
             }
         }
     }
 }
 
+/** "BODY FOCUS" and a chip for All and each focus, scrolling sideways. */
 @Composable
-private fun Programs(programs: List<ProgramSummary>, onOpen: (String) -> Unit) {
-    SectionLabel(
-        text = stringResource(R.string.train_programs),
-        modifier = Modifier.padding(
-            start = LevitxSpacing.Medium,
-            top = LevitxSpacing.Large,
-            bottom = LevitxSpacing.Small,
-        ),
+private fun FocusChips(selected: WorkoutFocus?, onSelect: (WorkoutFocus?) -> Unit) {
+    Caption(
+        stringResource(R.string.train_body_focus),
+        modifier = Modifier.padding(start = ScreenPadding, top = 16.dp, bottom = 10.dp),
     )
     Row(
-        horizontalArrangement = Arrangement.spacedBy(LevitxSpacing.Small),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = LevitxSpacing.Medium),
+            .padding(horizontal = ScreenPadding)
+            .selectableGroup(),
     ) {
-        programs.forEach { program ->
-            Column(
-                verticalArrangement = Arrangement.spacedBy(LevitxSpacing.XSmall),
-                modifier = Modifier
-                    .width(ProgramCardWidth)
-                    .background(LevitxColors.Surface)
-                    .clickable(role = Role.Button) { onOpen(program.path.id) }
-                    .padding(LevitxSpacing.Medium),
-            ) {
-                if (program.isCurrent) {
-                    SectionLabel(stringResource(R.string.train_current_program), color = LevitxColors.Accent)
-                }
-                Text(program.path.name, style = MaterialTheme.typography.titleMedium)
-                SectionLabel(
-                    pluralStringResource(
-                        R.plurals.train_program_gates,
-                        program.path.gates.size,
-                        program.path.gates.size,
-                        program.passed,
-                    ),
-                )
-            }
+        FocusChip(stringResource(R.string.train_all), selected = selected == null, onClick = { onSelect(null) })
+        WorkoutFocus.entries.forEach { focus ->
+            FocusChip(focusName(focus), selected = selected == focus, onClick = { onSelect(focus) })
         }
     }
 }
 
+/** The programs heading and the cards, scrolling sideways. */
+@Composable
+private fun Programs(programs: List<ProgramSummary>, onOpen: (String) -> Unit) {
+    Caption(
+        stringResource(R.string.train_programs),
+        modifier = Modifier.padding(start = ScreenPadding, top = 20.dp, bottom = 10.dp),
+    )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = ScreenPadding),
+    ) {
+        programs.forEach { program -> ProgramCard(program, onClick = { onOpen(program.path.id) }) }
+    }
+}
+
+/** The single workouts heading and a row for each. */
 @Composable
 private fun Workouts(workouts: List<WorkoutSummary>, onOpen: (String) -> Unit) {
-    SectionLabel(
-        text = stringResource(R.string.train_workouts),
-        modifier = Modifier.padding(
-            start = LevitxSpacing.Medium,
-            top = LevitxSpacing.Large,
-            bottom = LevitxSpacing.Small,
-        ),
+    Caption(
+        stringResource(R.string.train_workouts),
+        modifier = Modifier.padding(start = ScreenPadding, top = 20.dp, bottom = 4.dp),
     )
-    HorizontalDivider(color = LevitxColors.Line)
     workouts.forEach { workout ->
-        val session = workout.session
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = WorkoutRowHeight)
-                .clickable(role = Role.Button) { onOpen(workout.focus.name) }
-                .padding(horizontal = LevitxSpacing.Medium, vertical = LevitxSpacing.Small),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(LevitxSpacing.XSmall), modifier = Modifier.weight(1f)) {
-                Text(focusName(workout.focus), style = MaterialTheme.typography.titleMedium)
-                if (session == null) {
-                    Text(
-                        text = stringResource(R.string.train_nothing_safe),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = LevitxColors.TextMuted,
-                    )
-                } else {
-                    SectionLabel(
-                        pluralStringResource(
-                            R.plurals.train_workout_meta,
-                            session.plans.size,
-                            session.estimatedMinutes,
-                            session.plans.size,
-                        ),
-                    )
-                }
-            }
-            if (session != null && session.plans.any { !it.isHard }) {
-                SectionLabel(stringResource(R.string.train_some_light), color = LevitxColors.Ice)
-            }
-        }
-        HorizontalDivider(color = LevitxColors.Line)
+        WorkoutRow(workout, onClick = { onOpen(workout.focus.name) })
+        Rule()
     }
 }
 

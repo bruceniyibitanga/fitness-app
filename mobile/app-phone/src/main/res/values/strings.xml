@@ -249,8 +249,9 @@
 
     <!-- Train -->
     <string name="train_label">TRAIN</string>
-    <string name="train_title">Pick your own</string>
-    <string name="train_body">Every workout here uses your own exercises and targets. Anything you trained too recently comes back light.</string>
+    <string name="train_body_focus">BODY FOCUS</string>
+    <string name="train_all">All</string>
+    <string name="train_tag_skill">SKILL</string>
     <string name="train_programs">PROGRAMS</string>
     <string name="train_workouts">SINGLE WORKOUTS</string>
     <string name="train_current_program">YOUR PLAN</string>
@@ -262,8 +263,8 @@
         <item quantity="one">%1$d MIN · %2$d MOVE</item>
         <item quantity="other">%1$d MIN · %2$d MOVES</item>
     </plurals>
-    <string name="train_some_light">SOME LIGHT TODAY</string>
-    <string name="train_nothing_safe">Nothing in this one can be trained safely today.</string>
+    <string name="train_some_light">SOME LIGHT</string>
+    <string name="train_nothing_safe">NOTHING SAFE TODAY</string>
     <string name="focus_full_body">Full body</string>
     <string name="focus_upper">Upper body</string>
     <string name="focus_pull">Pull</string>

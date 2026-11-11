@@ -7,6 +7,9 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.WorkoutFocus
+import app.levitx.core.coach.WorkoutRun
+import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.main.MainScreen
 import app.levitx.phone.main.MainTab
 import app.levitx.phone.onboarding.OnboardingActions
@@ -17,6 +20,13 @@ import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.today.TodayActions
 import app.levitx.phone.today.TodayScreen
 import app.levitx.phone.today.TodayUiState
+import app.levitx.phone.train.ProgramSummary
+import app.levitx.phone.train.TrainScreen
+import app.levitx.phone.train.TrainUiState
+import app.levitx.phone.train.WorkoutSummary
+import app.levitx.phone.workout.WorkoutActions
+import app.levitx.phone.workout.WorkoutScreen
+import app.levitx.phone.workout.WorkoutUiState
 import com.android.tools.screenshot.PreviewTest
 
 /*
@@ -32,6 +42,12 @@ private val noTodayActions =
 /** Someone after a muscle-up who can do a pull-up and has a bar. */
 private fun muscleUp(kit: Set<Equipment> = setOf(Equipment.PULL_UP_BAR)) =
     AthleteModel.starting(CoachProfile("muscle_up", equipment = kit), PullUpAnswer.YES)
+
+private val noWorkoutActions = WorkoutActions({ _, _, _, _ -> }, {}, {}, {}, {})
+
+/** The first session the coach gives [muscleUp], about to start. */
+private fun firstRun(): WorkoutRun =
+    WorkoutRun("preview", checkNotNull(Coach().recommend(muscleUp(), 0).session), startedAtEpochMillis = 0)
 
 private fun onboarding(state: OnboardingUiState): @Composable () -> Unit = {
     LevitxTheme { OnboardingScreen(state, noOnboardingActions) }
@@ -123,5 +139,49 @@ fun TodayNoKitScreenshot() {
                 actions = noTodayActions,
             )
         }
+    }
+}
+
+@PreviewTest
+@Preview(name = "08 Train", widthDp = 390, heightDp = 844)
+@Composable
+fun TrainScreenshot() {
+    val model = muscleUp()
+    val programs = SkillCatalogue.all.map { path ->
+        ProgramSummary(path, passed = if (path.id == "muscle_up") 1 else 0, isCurrent = path.id == "muscle_up")
+    }
+    val workouts = WorkoutFocus.entries.map { WorkoutSummary(it, Coach().workout(model, it, 0)) }
+    LevitxTheme {
+        MainScreen(selected = MainTab.TRAIN, onSelect = {}) {
+            TrainScreen(TrainUiState.Ready(programs, workouts), onOpenWorkout = {}, onOpenProgram = {})
+        }
+    }
+}
+
+@PreviewTest
+@Preview(name = "09 Live set", widthDp = 390, heightDp = 844)
+@Composable
+fun LiveSetScreenshot() {
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(firstRun(), bodyweightKg = 75.6, bands = emptyList()),
+            now = { 0L },
+            actions = noWorkoutActions,
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "10 Rest", widthDp = 390, heightDp = 844)
+@Composable
+fun RestScreenshot() {
+    val run = firstRun()
+    val resting = run.logSet(checkNotNull(run.nextSet).target, repsInReserve = 2, nowElapsedMillis = 0)
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(resting, bodyweightKg = 75.6, bands = emptyList()),
+            now = { 0L },
+            actions = noWorkoutActions,
+        )
     }
 }
