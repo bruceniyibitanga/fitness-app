@@ -82,8 +82,10 @@ class OnboardingViewModel @Inject constructor(
     /** Picks the time per session. */
     fun chooseMinutes(minutes: Int) = state.update { it.copy(minutes = minutes) }
 
-    /** Adds or removes a piece of kit. */
-    fun toggleEquipment(equipment: Equipment) = state.update { it.copy(equipment = it.equipment.toggled(equipment)) }
+    /** Adds or removes a piece of kit, or with null, says they have none and clears anything picked. */
+    fun chooseEquipment(equipment: Equipment?) = state.update {
+        it.copy(equipment = if (equipment == null) emptySet() else it.equipment.toggled(equipment))
+    }
 
     /**
      * Saves the answers and sets up the coach. Bodyweight, when given, goes to

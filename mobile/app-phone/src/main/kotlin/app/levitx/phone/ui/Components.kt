@@ -1,6 +1,8 @@
 package app.levitx.phone.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,9 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,10 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
@@ -57,31 +59,16 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier, color: Color = Lev
     Text(text = text, style = LevitxType.Label, color = color, modifier = modifier)
 }
 
-/** The one main action on a screen: full width, accent, square. */
+/** The one main action on a screen. Kept for older screens; it is an [AccentBar]. */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = PrimaryButtonHeight),
-    ) {
-        Text(text = text, style = MaterialTheme.typography.titleMedium)
-    }
+    AccentBar(text = text, onClick = onClick, modifier = modifier, enabled = enabled)
 }
 
-/** A secondary action next to a [PrimaryButton]. */
+/** A secondary action next to a [PrimaryButton]. It is a [QuietBar]. */
 @Composable
 fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = PrimaryButtonHeight),
-    ) {
-        Text(text = text, style = MaterialTheme.typography.titleMedium)
-    }
+    QuietBar(text = text, onClick = onClick, modifier = modifier)
 }
 
 /**
@@ -89,13 +76,13 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
  * progress bar with its percentage.
  */
 @Composable
-fun FlatProgressBar(fraction: Float, modifier: Modifier = Modifier) {
+fun FlatProgressBar(fraction: Float, modifier: Modifier = Modifier, height: Dp = ProgressBarHeight) {
     val clamped = fraction.coerceIn(0f, 1f)
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(ProgressBarHeight)
-            .background(LevitxColors.Track)
+            .height(height)
+            .background(LevitxColors.Line)
             .semantics { progressBarRangeInfo = ProgressBarRangeInfo(clamped, 0f..1f) },
     ) {
         Box(
@@ -125,12 +112,7 @@ fun NumberInput(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(top = LevitxSpacing.Small),
         ) {
-            OutlinedButton(
-                onClick = { onValueChange((value - 1).coerceAtLeast(0)) },
-                modifier = Modifier
-                    .width(StepperButtonWidth)
-                    .heightIn(min = PrimaryButtonHeight),
-            ) { Text(stringResource(R.string.decrease), style = MaterialTheme.typography.titleLarge) }
+            StepperButton(stringResource(R.string.decrease)) { onValueChange((value - 1).coerceAtLeast(0)) }
             OutlinedTextField(
                 value = value.toString(),
                 onValueChange = { text ->
@@ -145,12 +127,7 @@ fun NumberInput(
                     .padding(horizontal = LevitxSpacing.Small)
                     .width(NumberFieldWidth),
             )
-            OutlinedButton(
-                onClick = { onValueChange((value + 1).coerceAtMost(max)) },
-                modifier = Modifier
-                    .width(StepperButtonWidth)
-                    .heightIn(min = PrimaryButtonHeight),
-            ) { Text(stringResource(R.string.increase), style = MaterialTheme.typography.titleLarge) }
+            StepperButton(stringResource(R.string.increase)) { onValueChange((value + 1).coerceAtMost(max)) }
         }
     }
 }
@@ -181,12 +158,7 @@ fun DecimalInput(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(top = LevitxSpacing.Small),
         ) {
-            OutlinedButton(
-                onClick = { onValueChange((value - step).coerceIn(0.0, max)) },
-                modifier = Modifier
-                    .width(StepperButtonWidth)
-                    .heightIn(min = PrimaryButtonHeight),
-            ) { Text(stringResource(R.string.decrease), style = MaterialTheme.typography.titleLarge) }
+            StepperButton(stringResource(R.string.decrease)) { onValueChange((value - step).coerceIn(0.0, max)) }
             OutlinedTextField(
                 value = text,
                 onValueChange = { typed ->
@@ -200,14 +172,22 @@ fun DecimalInput(
                     .padding(horizontal = LevitxSpacing.Small)
                     .width(NumberFieldWidth),
             )
-            OutlinedButton(
-                onClick = { onValueChange((value + step).coerceIn(0.0, max)) },
-                modifier = Modifier
-                    .width(StepperButtonWidth)
-                    .heightIn(min = PrimaryButtonHeight),
-            ) { Text(stringResource(R.string.increase), style = MaterialTheme.typography.titleLarge) }
+            StepperButton(stringResource(R.string.increase)) { onValueChange((value + step).coerceIn(0.0, max)) }
         }
     }
+}
+
+/** A square − or + button beside a number field. */
+@Composable
+private fun StepperButton(symbol: String, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .width(StepperButtonWidth)
+            .heightIn(min = PrimaryButtonHeight)
+            .border(1.dp, LevitxColors.Tick)
+            .clickable(role = Role.Button, onClick = onClick),
+    ) { Text(symbol, style = MaterialTheme.typography.titleLarge, color = LevitxColors.Text) }
 }
 
 /** Reads "72.5" or "72,5" (comma decimal locales). Null for anything that isn't a non-negative number. */

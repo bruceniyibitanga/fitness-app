@@ -30,6 +30,9 @@ object LevitxColors {
     /** Scale ticks and other fine marks. */
     val Tick = Color(0xFF3A3833)
 
+    /** Outlines of unselected choices and future steps. A graphic, never text. */
+    val Outline = Color(0xFF5A574F)
+
     /** Primary text. */
     val Text = Color(0xFFF2EFE8)
 

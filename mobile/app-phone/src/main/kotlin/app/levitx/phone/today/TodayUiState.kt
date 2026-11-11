@@ -17,11 +17,15 @@ sealed interface TodayUiState {
      * @property recommendation The session, why, and any offer to ease off.
      * @property bodyweightKg Bodyweight for kilograms per rep, or null when none is recorded.
      * @property hasWorkoutInProgress True when a workout was started and not finished.
+     * @property sessionsLastWeek Sessions finished in the last seven days.
+     * @property sessionsPerWeek Sessions a week the person said they'd train.
      */
     data class Ready(
         val nowEpochMillis: Long,
         val recommendation: Recommendation,
         val bodyweightKg: Double?,
         val hasWorkoutInProgress: Boolean,
+        val sessionsLastWeek: Int = 0,
+        val sessionsPerWeek: Int = 0,
     ) : TodayUiState
 }

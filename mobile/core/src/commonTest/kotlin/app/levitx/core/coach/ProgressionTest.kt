@@ -82,6 +82,23 @@ class ProgressionTest {
     }
 
     @Test
+    fun withoutABoxTheBoxRungsAreSkipped() {
+        val noBox = newcomer(pullUpProfile(equipment = setOf(Equipment.PULL_UP_BAR)))
+        val knees = exercise("horizontal_push.knees")
+        val ladder = ExerciseCatalogue.ladder(MovementPattern.HORIZONTAL_PUSH)
+        val kneesRung = ladder.rungs.indexOfFirst { knees in it.options }
+        val top = knees.range.last
+        val model = noBox.copy(
+            rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to kneesRung),
+            exercises = mapOf(knees.id to ExerciseState(target = top, best = top, timesTrained = 5)),
+        )
+        val plan = hardPlan(knees, top, bestEffort = false)
+        val after = coach.record(model, finished(0, ExerciseResult(plan, plan.sets.map { LoggedSet(top, 2, false) })))
+        // Hands on a 30 cm box is next on the ladder, but needs a box: straight to the push-up.
+        assertEquals(pushUpRung, after.rung(MovementPattern.HORIZONTAL_PUSH))
+    }
+
+    @Test
     fun fallingBelowTheRangeMovesDownARung() {
         val bottom = pushUp.range.first
         val after = settled(bottom).after(day = 0, target = bottom, reps = 3).after(day = 2, target = bottom, reps = 3)
@@ -90,8 +107,8 @@ class ProgressionTest {
 
     @Test
     fun aStrongBestEffortSetWhileCalibratingJumpsRungs() {
-        val box = exercise("horizontal_push.hands_61cm")
-        val plan = hardPlan(box, box.range.first, bestEffort = true)
+        val wall = exercise("horizontal_push.wall")
+        val plan = hardPlan(wall, wall.range.first, bestEffort = true)
         val sets = plan.sets.map { LoggedSet(if (it.isBestEffort) 25 else it.target, 2, it.isBestEffort) }
         val after = coach.record(newcomer(), finished(0, ExerciseResult(plan, sets)))
         assertEquals(CoachTuning.MAX_CALIBRATION_JUMP, after.rung(MovementPattern.HORIZONTAL_PUSH))

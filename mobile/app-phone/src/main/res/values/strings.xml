@@ -17,6 +17,14 @@
     <string name="input_reps_done">REPS DONE</string>
     <string name="input_seconds_held">SECONDS HELD</string>
     <string name="kg_per_rep">%1$s kg</string>
+    <string name="percent">%1$d%%</string>
+    <string name="step_of">%1$d / %2$d</string>
+    <string name="figure_kg_per_rep">KG PER REP</string>
+    <string name="figure_of_bodyweight">OF BODYWEIGHT</string>
+    <string name="figure_hold">HOLD</string>
+    <string name="plan_detail_tagged">%1$s · %2$s</string>
+    <string name="plan_tag_skill">skill work</string>
+    <string name="plan_tag_light">light</string>
     <string name="continue_button">Continue</string>
 
     <!-- Movement patterns -->
@@ -29,11 +37,14 @@
     <string name="pattern_core">Core</string>
 
     <!-- Kit -->
-    <string name="kit_pull_up_bar">Pull-up bar</string>
+    <string name="kit_pull_up_bar">Pull-up bar or a park</string>
     <string name="kit_low_bar">Low bar or sturdy table</string>
     <string name="kit_dip_bars">Dip bars</string>
     <string name="kit_rings">Rings</string>
     <string name="kit_band">Bands</string>
+    <string name="kit_box">Box or step</string>
+    <string name="kit_none">Nothing yet</string>
+    <string name="kg">KG</string>
 
     <!-- Tabs -->
     <string name="tab_today">TODAY</string>
@@ -48,9 +59,17 @@
     <string name="welcome_title">Earn the skill.\nSee every step.</string>
     <string name="welcome_body">A coach that plans every session for you. Every rep shows its load in kg, and every skill has a gate you can see and pass.</string>
     <string name="welcome_start">Build my plan</string>
+    <string name="welcome_minutes">2 MIN</string>
+    <string name="welcome_photo_description">Someone hanging from an outdoor pull-up bar</string>
+    <string name="welcome_fact_kg">kg</string>
+    <string name="welcome_fact_kg_caption">PER REP</string>
+    <string name="welcome_fact_gates">Gates</string>
+    <string name="welcome_fact_gates_caption">NOT DAYS</string>
+    <string name="welcome_fact_watch">Watch</string>
+    <string name="welcome_fact_watch_caption">LOGS SETS</string>
     <string name="welcome_private">Your answers stay on this phone.</string>
     <string name="goal_title">What are you training for?</string>
-    <string name="goal_body">Pick one. You can change it later.</string>
+    <string name="goal_body">Pick one main goal. You can change it later.</string>
     <string name="goal_skill_label">A SKILL</string>
     <string name="goal_general_label">OR GENERAL FITNESS</string>
     <plurals name="goal_skill_gates">
@@ -59,38 +78,51 @@
     </plurals>
     <string name="goal_general">Get stronger all round</string>
     <string name="goal_general_detail">Every movement, evenly</string>
+    <string name="goal_general_tag">EVERY MOVEMENT</string>
     <string name="goal_more_coming">Handstand, front lever and pistol squat paths are on the way.</string>
     <string name="how_title">How should we build it?</string>
-    <string name="how_plan_label">YOUR PLAN</string>
+    <string name="how_plan_label">Your plan</string>
     <string name="how_all_round">All-round</string>
     <string name="how_all_round_body">Your skill first each session, then the rest of your body. Stronger and fitter overall.</string>
     <string name="how_focused">Focused</string>
     <string name="how_focused_body">More skill work. Everything else gets just enough to hold steady.</string>
     <string name="how_suggested">SUGGESTED</string>
-    <string name="how_pull_up_label">CAN YOU DO A STRICT PULL-UP?</string>
+    <string name="how_pull_up_label">Can you do a strict pull-up?</string>
     <string name="how_pull_up_yes">Yes</string>
     <string name="how_pull_up_not_yet">Not yet</string>
     <string name="how_pull_up_not_sure">Not sure</string>
     <string name="how_pull_up_note">Your first sessions measure the rest, so there\'s nothing else to guess.</string>
-    <string name="how_bodyweight_label">BODYWEIGHT, KG (OPTIONAL)</string>
+    <string name="how_bodyweight_label">Bodyweight</string>
+    <string name="how_optional">OPTIONAL</string>
+    <string name="how_bodyweight_description">Bodyweight in kilograms</string>
     <string name="how_bodyweight_hint">e.g. 74.2</string>
     <string name="how_bodyweight_note">Turns every rep into kg. Encrypted on this phone, never sent to your watch.</string>
     <string name="how_bodyweight_invalid">Enter a weight between 20 and 350 kg, or leave it empty.</string>
     <string name="week_title">When will you train?</string>
     <string name="week_body">We\'ll remind you on these days. Miss one and your plan just moves to the next session. Nothing breaks.</string>
-    <string name="week_days_label">DAYS</string>
+    <string name="week_days_label">Days</string>
     <plurals name="week_days_count">
         <item quantity="one">%1$d A WEEK</item>
         <item quantity="other">%1$d A WEEK</item>
     </plurals>
-    <string name="week_minutes_label">TIME PER SESSION</string>
-    <string name="week_kit_label">WHAT CAN YOU USE?</string>
-    <string name="week_kit_note">A floor and something to step on are assumed. Pick any of these you have.</string>
+    <string name="week_minutes_label">Time per session</string>
+    <string name="week_kit_label">What do you have?</string>
+    <string name="week_kit_note">Pick everything you can use. A wall, a chair and the floor are all you need to start.</string>
+    <string name="week_kit_missing">%1$s needs %2$s. Until you add it under Body, your plan trains everything else and leaves the skill work out.</string>
     <string name="week_build">Build my plan</string>
-    <string name="ready_label">YOUR PLAN IS READY</string>
+    <string name="ready_label">YOUR PLAN IS READY · %1$s</string>
     <string name="ready_general">Stronger all round</string>
     <string name="ready_style_all_round">ALL-ROUND</string>
     <string name="ready_style_focused">FOCUSED</string>
+    <string name="ready_style_general">GENERAL</string>
+    <string name="ready_gates">GATES</string>
+    <string name="ready_times">%1$d×</string>
+    <plurals name="ready_gates_to_skill">
+        <item quantity="one">%1$d GATE TO THE SKILL</item>
+        <item quantity="other">%1$d GATES TO THE SKILL</item>
+    </plurals>
+    <string name="ready_pass_to_move_on">PASS TO MOVE ON</string>
+    <string name="ready_first_gate">First gate: %1$s</string>
     <string name="ready_per_week">PER WEEK</string>
     <string name="ready_minutes">MIN EACH</string>
     <string name="ready_first_session">FIRST SESSION</string>
@@ -109,6 +141,22 @@
     <string name="today_light">LIGHT</string>
     <string name="today_skill">SKILL</string>
     <string name="today_start">Start session</string>
+    <string name="no_value">None</string>
+    <string name="today_body_kg">BODY KG</string>
+    <string name="today_week_count">%1$d/%2$d</string>
+    <string name="today_last_seven_days">LAST 7 DAYS</string>
+    <string name="today_session_length">THIS SESSION</string>
+    <string name="today_lead_skill">SKILL WORK · %1$s</string>
+    <string name="today_lead_first">FIRST UP · %1$s</string>
+    <string name="today_hero">%1$d×%2$d</string>
+    <string name="seconds_unit">s</string>
+    <string name="today_lead_note_hold">Hold steady, and stop before your form breaks.</string>
+    <plurals name="today_lead_note_reps">
+        <item quantity="one">Stop with about %1$d rep left in the tank.</item>
+        <item quantity="other">Stop with about %1$d reps left in the tank.</item>
+    </plurals>
+    <string name="today_lead_note_best">The last set is a best effort.</string>
+    <string name="today_rest_label">TODAY</string>
     <string name="today_start_minutes">Start session · %1$d min</string>
     <string name="today_resume">Resume session</string>
     <string name="today_minutes">%1$d MIN</string>

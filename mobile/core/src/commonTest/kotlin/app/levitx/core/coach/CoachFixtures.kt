@@ -4,7 +4,7 @@ import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
 
 /** Kit that lets every pattern be trained, so tests about other things aren't about kit. */
-internal val fullKit: Set<Equipment> = setOf(Equipment.PULL_UP_BAR, Equipment.LOW_BAR)
+internal val fullKit: Set<Equipment> = setOf(Equipment.PULL_UP_BAR, Equipment.LOW_BAR, Equipment.BOX)
 
 /** A first pull-up plan with the usual answers. */
 internal fun pullUpProfile(

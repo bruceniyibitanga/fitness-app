@@ -163,3 +163,42 @@ jobs:
         if: failure()
         # The result file names contain spaces, so each file is handled on its own.
         run: find data/build/outputs/androidTest-results -name '*.xml' -exec sh -c 'grep -q "<failure" "$1" && cat "$1"' _ {} \;
+
+  screenshots:
+    # Renders every screen's preview to an image with Compose Preview
+    # Screenshot Testing, so a screen can be checked against its design
+    # artboard without a device. The images are uploaded as an artifact;
+    # nothing fails on them yet.
+    name: Render screen previews
+    needs: wrapper
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Render
+        run: ./gradlew :app-phone:updateScreenshotTestDefaultDebugTestSuite --stacktrace
+
+      - name: Upload the images
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: phone-screens
+          path: mobile/app-phone/src/screenshotTest*/reference/
+          if-no-files-found: warn
+          retention-days: 14

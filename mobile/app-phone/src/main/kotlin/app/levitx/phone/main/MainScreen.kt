@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -33,7 +31,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.levitx.design.LevitxColors
-import app.levitx.design.LevitxSpacing
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.equipment.EquipmentRoute
@@ -45,7 +42,6 @@ import app.levitx.phone.train.TrainRoute
 
 /** Material's minimum touch target, so every tab is easy to hit. */
 private val TabHeight = 56.dp
-private val IndicatorWidth = 24.dp
 private val IndicatorHeight = 2.dp
 
 /**
@@ -141,9 +137,9 @@ fun MainScreen(
 }
 
 /**
- * Text tabs in the app's label style, with a short accent bar under the
- * chosen one. Each is a selectable item in one group, so screen readers
- * announce "tab, selected, 1 of 5".
+ * Text tabs in mono caps, as on the artboards: the chosen one in full white
+ * with a 2 dp accent line along its top edge. Each is a selectable item in one
+ * group, so screen readers announce "tab, selected, 1 of 5".
  */
 @Composable
 private fun TabBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
@@ -156,25 +152,26 @@ private fun TabBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
         Row(modifier = Modifier.fillMaxWidth().selectableGroup()) {
             MainTab.entries.forEach { tab ->
                 val isSelected = tab == selected
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = TabHeight)
-                        .selectable(selected = isSelected, onClick = { onSelect(tab) }, role = Role.Tab)
-                        .padding(top = LevitxSpacing.Medium),
+                        .selectable(selected = isSelected, onClick = { onSelect(tab) }, role = Role.Tab),
                 ) {
+                    if (isSelected) {
+                        Box(
+                            Modifier
+                                .align(Alignment.TopCenter)
+                                .fillMaxWidth()
+                                .height(IndicatorHeight)
+                                .background(LevitxColors.Accent),
+                        )
+                    }
                     Text(
                         text = stringResource(tab.label),
-                        style = LevitxType.Label,
-                        color = if (isSelected) LevitxColors.Text else LevitxColors.TextFaint,
-                    )
-                    Spacer(Modifier.height(LevitxSpacing.Small))
-                    Box(
-                        Modifier
-                            .width(IndicatorWidth)
-                            .height(IndicatorHeight)
-                            .background(if (isSelected) LevitxColors.Accent else LevitxColors.Background),
+                        style = LevitxType.Micro,
+                        color = if (isSelected) LevitxColors.Text else LevitxColors.TextMuted,
                     )
                 }
             }

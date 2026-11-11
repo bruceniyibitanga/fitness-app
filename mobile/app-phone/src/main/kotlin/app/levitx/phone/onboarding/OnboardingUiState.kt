@@ -5,7 +5,9 @@ import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.SkillTraining
 import app.levitx.core.load.LoadLimits
+import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.ui.parseKg
 import java.time.DayOfWeek
 
@@ -41,7 +43,7 @@ val SessionLengths: List<Int> = listOf(20, 30, 45, 60)
  * @property bodyweightText Bodyweight as typed. Optional.
  * @property days Training days.
  * @property minutes Time per session.
- * @property equipment Kit they have.
+ * @property equipment Kit they have. Empty until they pick some: nothing is assumed.
  * @property firstSession The coach's first session, worked out for the last step.
  * @property saving True while the answers are being saved.
  * @property unavailable True when the data couldn't be saved on this device.
@@ -55,7 +57,7 @@ data class OnboardingUiState(
     val bodyweightText: String = "",
     val days: Set<DayOfWeek> = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
     val minutes: Int = CoachProfile.DEFAULT_SESSION_MINUTES,
-    val equipment: Set<Equipment> = setOf(Equipment.PULL_UP_BAR),
+    val equipment: Set<Equipment> = emptySet(),
     val firstSession: PlannedSession? = null,
     val saving: Boolean = false,
     val unavailable: Boolean = false,
@@ -76,6 +78,17 @@ data class OnboardingUiState(
             OnboardingStep.HOW -> pullUp != null && !bodyweightInvalid
             OnboardingStep.WEEK -> days.isNotEmpty()
         }
+
+    /**
+     * Kit the chosen skill's gates need that isn't picked yet. Setup says so,
+     * so nobody finds out from a plan that quietly leaves their goal out.
+     */
+    val missingGoalKit: Set<Equipment>
+        get() = goalPathId?.let(SkillCatalogue::byId)?.gates
+            ?.flatMap { gate -> SkillTraining.exerciseFor(gate)?.equipment.orEmpty() }
+            ?.toSet()
+            ?.minus(equipment)
+            .orEmpty()
 
     /** The profile these answers describe. */
     val profile: CoachProfile

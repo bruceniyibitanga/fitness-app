@@ -23,6 +23,20 @@ android {
         versionCode = 1
         versionName = "0.1.0"
     }
+
+    testOptions {
+        // Renders the previews in src/screenshotTest to images (Compose
+        // Preview Screenshot Testing on AGP test suites). CI uploads them so
+        // each screen can be compared with its design artboard.
+        screenshotTests.create("screenshotTest") {
+            engineVersion = libs.versions.screenshot.get()
+            targetVariants.add("debug")
+            dependencies {
+                implementation(libs.compose.ui.tooling)
+                implementation(libs.screenshot.validation.api)
+            }
+        }
+    }
 }
 
 dependencies {

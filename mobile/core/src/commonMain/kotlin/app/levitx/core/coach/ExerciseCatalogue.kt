@@ -1,6 +1,7 @@
 package app.levitx.core.coach
 
 import app.levitx.core.coach.Equipment.BAND
+import app.levitx.core.coach.Equipment.BOX
 import app.levitx.core.coach.Equipment.DIP_BARS
 import app.levitx.core.coach.Equipment.LOW_BAR
 import app.levitx.core.coach.Equipment.PULL_UP_BAR
@@ -108,9 +109,12 @@ public object ExerciseCatalogue {
     private val horizontalPush = Ladder(
         HORIZONTAL_PUSH,
         listOf(
-            Rung(listOf(pushUp("horizontal_push.hands_61cm", LoadCatalogue.pushUpHandsOn61cmBox))),
+            // Nothing is assumed: the first rung needs only a wall. The box rungs
+            // fill in between for people who have one and are skipped by those who don't.
+            Rung(listOf(reps("horizontal_push.wall", "Wall push-up", HORIZONTAL_PUSH, PUSH_UP_RANGE))),
+            Rung(listOf(pushUp("horizontal_push.hands_61cm", LoadCatalogue.pushUpHandsOn61cmBox).needing(BOX))),
             Rung(listOf(pushUp("horizontal_push.knees", LoadCatalogue.pushUpKnees))),
-            Rung(listOf(pushUp("horizontal_push.hands_30cm", LoadCatalogue.pushUpHandsOn30cmBox))),
+            Rung(listOf(pushUp("horizontal_push.hands_30cm", LoadCatalogue.pushUpHandsOn30cmBox).needing(BOX))),
             Rung(
                 listOf(
                     pushUp("horizontal_push.push_up", LoadCatalogue.pushUp),
@@ -118,8 +122,8 @@ public object ExerciseCatalogue {
                         .alsoTraining(VERTICAL_PUSH),
                 ),
             ),
-            Rung(listOf(pushUp("horizontal_push.feet_30cm", LoadCatalogue.pushUpFeetOn30cmBox))),
-            Rung(listOf(pushUp("horizontal_push.feet_61cm", LoadCatalogue.pushUpFeetOn61cmBox))),
+            Rung(listOf(pushUp("horizontal_push.feet_30cm", LoadCatalogue.pushUpFeetOn30cmBox).needing(BOX))),
+            Rung(listOf(pushUp("horizontal_push.feet_61cm", LoadCatalogue.pushUpFeetOn61cmBox).needing(BOX))),
         ),
     )
 
@@ -137,7 +141,7 @@ public object ExerciseCatalogue {
             Rung(
                 listOf(
                     reps("squat.bulgarian", "Bulgarian split squat", SQUAT, 6..12).perSide(),
-                    reps("squat.step_up", "High step-up", SQUAT, 6..12).perSide(),
+                    reps("squat.step_up", "High step-up", SQUAT, 6..12, setOf(BOX)).perSide(),
                 ),
             ),
             Rung(listOf(reps("squat.pistol_to_chair", "Pistol squat to a chair", SQUAT, 4..8).perSide())),

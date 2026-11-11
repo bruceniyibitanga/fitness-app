@@ -5,13 +5,13 @@ comments:
   # Every public class, function and property must say what it is for.
   UndocumentedPublicClass:
     active: true
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
   UndocumentedPublicFunction:
     active: true
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
   UndocumentedPublicProperty:
     active: true
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
 
 complexity:
   LongParameterList:
@@ -32,7 +32,7 @@ style:
     # are written that way.
     ignorePropertyDeclaration: true
     # Tests are full of literal expected values; that is the point of them.
-    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/commonTest/**', '**/androidTest/**', '**/screenshotTest/**']
     ignoreAnnotated: ['Preview', 'WearPreviewDevices']
   UnusedPrivateMember:
     # Previews are private and only called by Android Studio.

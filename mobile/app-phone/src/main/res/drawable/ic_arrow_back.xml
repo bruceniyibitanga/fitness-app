@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The back arrow at the top of a step, from the design's 18-unit icon grid. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="18"
+    android:viewportHeight="18">
+    <path
+        android:pathData="M15,9H3M8,4L3,9l5,5"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="square" />
+</vector>
