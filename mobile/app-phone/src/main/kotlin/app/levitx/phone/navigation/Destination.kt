@@ -8,32 +8,20 @@ import kotlinx.serialization.Serializable
  * back stack.
  *
  * Keys are @Serializable so the back stack can be saved and restored after
- * the system kills the app in the background. Destinations that need input
- * carry it as properties (an id, never a whole object, and never health data,
- * because saved state is written to disk).
+ * the system kills the app in the background. They never carry health data,
+ * because saved state is written to disk. Screens read what they need from
+ * the encrypted database instead.
  */
 sealed interface Destination : NavKey {
-    /** Choose what to work toward. */
+    /** Setup: the goal, how to train and the week, then the first plan. */
     @Serializable
-    data object GoalPicker : Destination
+    data object Onboarding : Destination
 
-    /** Short test of each gate on the active goal, to find the starting point. */
+    /** The tabs: Today, Train, Plan, Skills and Body. */
     @Serializable
-    data object StartingTest : Destination
+    data object Main : Destination
 
-    /** The person's path and today's training. */
+    /** The workout in progress. It is read from the saved draft, so this key needs nothing else. */
     @Serializable
-    data object Home : Destination
-
-    /** A live session: sets, reps in reserve and rest. */
-    @Serializable
-    data object Session : Destination
-
-    /** Every gate on the path, with bests. */
-    @Serializable
-    data object Path : Destination
-
-    /** Bodyweight and bands. */
-    @Serializable
-    data object Equipment : Destination
+    data object Workout : Destination
 }

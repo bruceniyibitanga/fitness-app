@@ -11,13 +11,10 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import app.levitx.phone.equipment.EquipmentRoute
-import app.levitx.phone.goal.GoalPickerRoute
-import app.levitx.phone.home.HomeRoute
 import app.levitx.phone.launch.LaunchViewModel
-import app.levitx.phone.path.PathRoute
-import app.levitx.phone.session.SessionRoute
-import app.levitx.phone.startingtest.StartingTestRoute
+import app.levitx.phone.main.MainRoute
+import app.levitx.phone.onboarding.OnboardingRoute
+import app.levitx.phone.workout.WorkoutRoute
 
 /**
  * The phone app's navigation, built on Navigation 3.
@@ -31,7 +28,7 @@ import app.levitx.phone.startingtest.StartingTestRoute
  */
 @Composable
 fun LevitxNavDisplay(modifier: Modifier = Modifier, launchViewModel: LaunchViewModel = hiltViewModel()) {
-    // Reading the goal takes milliseconds; until then draw nothing rather than flash a screen.
+    // Reading the coach's state takes milliseconds; until then draw nothing rather than flash a screen.
     val start by launchViewModel.startDestination.collectAsStateWithLifecycle()
     start?.let { LevitxNavDisplay(start = it, modifier = modifier) }
 }
@@ -48,28 +45,14 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            entry<Destination.GoalPicker> {
-                GoalPickerRoute(onGoalChosen = { backStack.add(Destination.StartingTest) })
+            entry<Destination.Onboarding> {
+                OnboardingRoute(onFinished = { backStack.replaceAllWith(Destination.Main) })
             }
-            entry<Destination.StartingTest> {
-                StartingTestRoute(onFinished = { backStack.replaceAllWith(Destination.Home) })
+            entry<Destination.Main> {
+                MainRoute(onOpenWorkout = { backStack.add(Destination.Workout) })
             }
-            entry<Destination.Home> {
-                HomeRoute(
-                    onStartSession = { backStack.add(Destination.Session) },
-                    onViewPath = { backStack.add(Destination.Path) },
-                    onChooseGoal = { backStack.add(Destination.GoalPicker) },
-                    onOpenEquipment = { backStack.add(Destination.Equipment) },
-                )
-            }
-            entry<Destination.Session> {
-                SessionRoute(onDone = { backStack.removeLastOrNull() })
-            }
-            entry<Destination.Path> {
-                PathRoute(onBack = { backStack.removeLastOrNull() })
-            }
-            entry<Destination.Equipment> {
-                EquipmentRoute(onBack = { backStack.removeLastOrNull() })
+            entry<Destination.Workout> {
+                WorkoutRoute(onDone = { backStack.removeLastOrNull() })
             }
         },
     )

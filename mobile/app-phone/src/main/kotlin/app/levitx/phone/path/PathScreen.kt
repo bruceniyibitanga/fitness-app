@@ -13,7 +13,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -38,25 +37,33 @@ private val GateNumberWidth = 40.dp
 
 /** Path destination: connects [PathViewModel] to [PathScreen]. */
 @Composable
-fun PathRoute(onBack: () -> Unit, viewModel: PathViewModel = hiltViewModel()) {
+fun PathRoute(viewModel: PathViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PathScreen(uiState, onBack)
+    PathScreen(uiState)
 }
 
 /** Every gate on the path: passed, current or still to come, with the person's best. */
 @Composable
-fun PathScreen(uiState: PathUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun PathScreen(uiState: PathUiState, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(horizontal = LevitxSpacing.Medium),
         ) {
-            item { TextButton(onClick = onBack) { Text(stringResource(R.string.back)) } }
             when (uiState) {
                 PathUiState.Loading -> Unit
 
                 PathUiState.Unavailable -> item { Text(stringResource(R.string.data_unavailable)) }
+
+                PathUiState.NoGoal -> item {
+                    Text(
+                        text = stringResource(R.string.path_no_goal),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = LevitxColors.TextSoft,
+                        modifier = Modifier.padding(vertical = LevitxSpacing.Large),
+                    )
+                }
 
                 is PathUiState.Ready -> {
                     item {
@@ -143,7 +150,6 @@ private fun PathScreenPreview() {
                     path.gates[2].id to 7,
                 ),
             ),
-            onBack = {},
         )
     }
 }

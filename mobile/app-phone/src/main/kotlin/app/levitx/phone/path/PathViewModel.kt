@@ -19,8 +19,11 @@ sealed interface PathUiState {
     /** Loading. */
     data object Loading : PathUiState
 
-    /** Data couldn't be unlocked, or there is no goal. */
+    /** Data couldn't be unlocked. */
     data object Unavailable : PathUiState
+
+    /** No skill goal: general fitness. */
+    data object NoGoal : PathUiState
 
     /**
      * The whole path.
@@ -40,7 +43,7 @@ class PathViewModel @Inject constructor(goalRepository: GoalRepository, progress
     val uiState: StateFlow<PathUiState> =
         combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->
             if (path == null) {
-                PathUiState.Unavailable
+                PathUiState.NoGoal
             } else {
                 PathUiState.Ready(path, path.progressFor(bests).currentIndex, bests)
             }
