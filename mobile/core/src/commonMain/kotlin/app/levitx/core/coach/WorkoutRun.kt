@@ -131,6 +131,49 @@ public data class WorkoutRun(
     public fun endRest(): WorkoutRun = copy(restEndsAtElapsedMillis = null)
 
     /**
+     * Makes the current rest longer or shorter by [byMillis]. Shortening it
+     * past now ends it on now, so the screen shows it as done rather than
+     * jumping into the next set. Does nothing when not resting.
+     *
+     * @param nowElapsedMillis The elapsed clock now.
+     */
+    public fun adjustRest(byMillis: Long, nowElapsedMillis: Long): WorkoutRun {
+        val endsAt = restEndsAtElapsedMillis ?: return this
+        return copy(restEndsAtElapsedMillis = maxOf(endsAt + byMillis, nowElapsedMillis))
+    }
+
+    /**
+     * Takes back the set just logged, for a mistap. Only works during the
+     * rest that set started, which is the only time the set just logged is
+     * unambiguous: the run goes back to before it, with the same load.
+     */
+    public fun undoLastSet(): WorkoutRun {
+        // A set that finished its exercise moved the run on to the next one.
+        val index = if (logged.getOrNull(exerciseIndex).isNullOrEmpty()) exerciseIndex - 1 else exerciseIndex
+        val sets = logged.getOrNull(index).orEmpty()
+        if (!isResting || sets.isEmpty() || index in skipped) return this
+        val last = sets.last()
+        return copy(
+            logged = logged.replacing(index, sets.dropLast(1)),
+            exerciseIndex = index,
+            restEndsAtElapsedMillis = null,
+            load = SetLoad(addedKg = last.addedKg, assistanceKg = last.assistanceKg),
+        )
+    }
+
+    /**
+     * Puts off today's gate attempt: the attempt moves to the end, as an
+     * ordinary best-effort set, and the work sets come first. Only before the
+     * exercise has started, since a set already done can't be reordered.
+     */
+    public fun deferAttempt(): WorkoutRun {
+        val plan = current?.takeIf { it.isGateAttempt && logged[exerciseIndex].isEmpty() && !isResting }
+            ?: return this
+        val deferred = plan.copy(sets = plan.sets.drop(1) + plan.sets.first(), isGateAttempt = false)
+        return copy(session = session.copy(plans = session.plans.replacing(exerciseIndex, deferred)))
+    }
+
+    /**
      * This run with any impossible rest ended. Rest is timed on the clock that
      * counts from boot, which starts again after a restart, so a saved rest
      * could look hours long. No rest is longer than the longest in the plan,

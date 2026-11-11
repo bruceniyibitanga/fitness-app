@@ -37,7 +37,7 @@ public object ExerciseCatalogue {
             Rung(listOf(reps("vertical_pull.scapular_pull_up", "Scapular pull-up", VERTICAL_PULL, 5..10, bar))),
             Rung(
                 listOf(
-                    pull("vertical_pull.negative", "Slow negative pull-up", 3..5),
+                    pull("vertical_pull.negative", "Slow negative pull-up", 3..5).lowering(),
                     pull("vertical_pull.band_pull_up", "Band-assisted pull-up", 5..8).needing(BAND),
                 ),
             ),
@@ -92,12 +92,14 @@ public object ExerciseCatalogue {
                 listOf(
                     reps("vertical_push.pike_feet_raised", "Pike push-up, feet raised", VERTICAL_PUSH, 5..10),
                     reps("vertical_push.negative_dip", "Slow negative dip", VERTICAL_PUSH, 3..5, setOf(DIP_BARS))
-                        .alsoTraining(HORIZONTAL_PUSH),
+                        .alsoTraining(HORIZONTAL_PUSH)
+                        .lowering(),
                 ),
             ),
             Rung(
                 listOf(
-                    reps("vertical_push.wall_negative", "Wall handstand push-up negative", VERTICAL_PUSH, 3..5),
+                    reps("vertical_push.wall_negative", "Wall handstand push-up negative", VERTICAL_PUSH, 3..5)
+                        .lowering(),
                     reps("vertical_push.dip", "Dip", VERTICAL_PUSH, 5..10, setOf(DIP_BARS))
                         .alsoTraining(HORIZONTAL_PUSH)
                         .moving(LoadCatalogue.dip),
@@ -161,7 +163,7 @@ public object ExerciseCatalogue {
             ),
             Rung(listOf(reps("hinge.single_leg_deadlift", "Single-leg deadlift", HINGE, 8..12).perSide())),
             Rung(listOf(reps("hinge.sliding_curl", "Sliding leg curl", HINGE, 6..12))),
-            Rung(listOf(reps("hinge.nordic_negative", "Nordic curl negative", HINGE, 3..6))),
+            Rung(listOf(reps("hinge.nordic_negative", "Nordic curl negative", HINGE, 3..6).lowering())),
         ),
     )
 
@@ -254,3 +256,6 @@ private fun Exercise.moving(profile: LoadProfile): Exercise = copy(loadProfile =
 private fun Exercise.needing(kit: Equipment): Exercise = copy(equipment = equipment + kit)
 
 private fun Exercise.perSide(): Exercise = copy(isPerSide = true)
+
+/** A slow negative: each rep is a timed lowering. */
+private fun Exercise.lowering(): Exercise = copy(lowerSeconds = CoachTuning.NEGATIVE_LOWER_SECONDS)

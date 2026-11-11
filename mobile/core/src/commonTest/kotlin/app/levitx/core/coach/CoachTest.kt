@@ -6,6 +6,7 @@ import app.levitx.core.pain.PainReason
 import app.levitx.core.skills.SkillCatalogue
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -224,5 +225,22 @@ class CoachTest {
         val passedAll = model.copy(gateBests = path.gates.associate { it.id to it.target })
         assertNull(passedAll.currentGate())
         assertNull(passedAll.currentGatePattern())
+    }
+
+    @Test
+    fun closeToTheGateTheSkillWorkStartsWithAnAttemptWhileFresh() {
+        val hang = SkillCatalogue.firstPullUp.gates.first()
+        val close = newcomer().copy(gateBests = mapOf(hang.id to hang.target - 4))
+        val skill = first(close).plans.first()
+        assertEquals(hang.id, skill.gateId)
+        assertTrue(skill.isGateAttempt)
+        assertEquals(hang.target, skill.sets.first().target)
+        assertFalse(first(newcomer()).plans.first().isGateAttempt)
+    }
+
+    @Test
+    fun gateNegativesArePacedLikeAnyOtherNegatives() {
+        val gate = checkNotNull(SkillCatalogue.gateById("first_pull_up.negatives"))
+        assertEquals(CoachTuning.NEGATIVE_LOWER_SECONDS, SkillTraining.exerciseFor(gate)?.lowerSeconds)
     }
 }
