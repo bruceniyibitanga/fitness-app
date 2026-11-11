@@ -9,7 +9,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
-import app.levitx.core.session.SessionRun
+import app.levitx.core.coach.WorkoutRun
 import app.levitx.wear.MainActivity
 import app.levitx.wear.R
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,11 +39,17 @@ class WorkoutNotifications @Inject constructor(@param:ApplicationContext private
     fun starting(): Notification = build(context.getString(R.string.workout_status_starting))
 
     /** The notification for where [run] is up to. */
-    fun forRun(run: SessionRun): Notification = build(
+    fun forRun(run: WorkoutRun): Notification = build(
         if (run.isResting) {
             context.getString(R.string.workout_status_rest)
         } else {
-            context.getString(R.string.workout_status_set, run.nextSetIndex + 1, run.plan.sets.size)
+            context.getString(
+                R.string.workout_status_exercise,
+                run.exerciseIndex + 1,
+                run.session.plans.size,
+                run.nextSetIndex + 1,
+                run.current?.sets?.size ?: 0,
+            )
         },
     )
 

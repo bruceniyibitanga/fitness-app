@@ -10,4 +10,7 @@ interface GoalRepository {
 
     /** Makes [path] the active goal, replacing any previous one. Bests are kept. */
     suspend fun setActiveGoal(path: SkillPath)
+
+    /** Clears the goal, for general fitness. Bests are kept. */
+    suspend fun clearActiveGoal()
 }

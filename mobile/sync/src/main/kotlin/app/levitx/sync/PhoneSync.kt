@@ -24,9 +24,9 @@ class PhoneSync @Inject internal constructor(
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     /**
-     * Starts publishing the goal, bests and bands whenever they change, and
-     * picks up any sessions that arrived while the app wasn't running. Call
-     * once, when the app process starts.
+     * Starts publishing the goal, bests, bands and next session whenever they
+     * change, and picks up any workouts that arrived while the app wasn't
+     * running. Call once, when the app process starts.
      */
     fun start() {
         scope.launch {
@@ -36,28 +36,29 @@ class PhoneSync @Inject internal constructor(
                 .catch { error -> if (error !is DataUnavailableException) throw error }
                 .collect { state -> engine.publish(state).log("phone publish") }
         }
-        scope.launch { receiveSessions() }
+        scope.launch { receive() }
     }
 
     /**
-     * Stores and confirms sessions the watch has sent. Call when the system
-     * reports that session data items changed. Returns when the pass is done.
+     * Records and confirms workouts the watch has sent. Call when the system
+     * reports that workout or session data items changed. Returns when the
+     * pass is done.
      */
-    suspend fun receiveSessions() {
-        engine.receiveSessions().log("phone receive")
-        // A new session can raise a best, which the watch should hear about before this returns.
+    suspend fun receive() {
+        engine.receive().log("phone receive")
+        // A new workout changes the next session and can raise a best, which the watch should hear about now.
         engine.publishCurrent().log("phone publish")
     }
 
     /**
-     * [receiveSessions] for a `WearableListenerService` callback.
+     * [receive] for a `WearableListenerService` callback.
      *
      * The system may stop a listener service as soon as its callback returns,
      * so the pass has to finish inside it. The callback already runs on a
      * background thread, which is why blocking it is fine here (and only here).
      * The time limit keeps a stuck pass from holding the service open.
      */
-    fun receiveSessionsBlocking() {
-        runBlocking { withTimeoutOrNull(LISTENER_TIMEOUT_MILLIS) { receiveSessions() } }
+    fun receiveBlocking() {
+        runBlocking { withTimeoutOrNull(LISTENER_TIMEOUT_MILLIS) { receive() } }
     }
 }

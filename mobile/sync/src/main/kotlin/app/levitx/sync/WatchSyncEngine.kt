@@ -1,9 +1,7 @@
 package app.levitx.sync
 
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.equipment.EquipmentRepository
-import app.levitx.data.goal.GoalRepository
-import app.levitx.data.progress.ProgressRepository
+import app.levitx.data.coach.WorkoutOutbox
 import app.levitx.data.session.SessionOutbox
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,34 +12,31 @@ import kotlinx.coroutines.sync.withLock
 /**
  * The watch's side of sync.
  *
- * - **In:** the phone's goal, bests and bands are copied into the watch's own
- *   database, so the watch plans and runs sessions with the phone out of reach.
- * - **Out:** every queued session is put on the Data Layer and stays queued
+ * - **In:** the phone's state is copied into the watch's own database by
+ *   [PhoneStateApplier].
+ * - **Out:** every queued workout is put on the Data Layer and stays queued
  *   until the phone's confirmation arrives. Only then is it taken off the
- *   queue and its data item deleted.
+ *   queue and its data item deleted. Sessions queued by an older version of
+ *   the app go the same way.
  *
- * None of this can lose or double-count anything, whatever order things
- * happen in:
- * - The goal belongs to the phone. The watch only ever copies it.
- * - A best only ever goes up, so applying bests twice or late changes nothing.
- * - A session has a unique id and is stored once per device.
+ * A workout has a unique id and is recorded once per device, so nothing here
+ * can lose or double-count anything, whatever order things happen in.
  */
 @Singleton
 internal class WatchSyncEngine @Inject constructor(
     private val dataLayer: DataLayer,
-    private val goalRepository: GoalRepository,
-    private val progressRepository: ProgressRepository,
-    private val equipmentRepository: EquipmentRepository,
+    private val applier: PhoneStateApplier,
     private val outbox: SessionOutbox,
+    private val workoutOutbox: WorkoutOutbox,
 ) {
     // One pass at a time: the listener service and the app can both ask for one.
     private val mutex = Mutex()
 
-    /** Runs one full pass: take in the phone's state, then send and confirm sessions. */
+    /** Runs one full pass: take in the phone's state, then send and confirm workouts. */
     suspend fun sync(): SyncReport = mutex.withLock {
         try {
             val stateResult = applyPhoneState()
-            val delivered = sendSessions()
+            val delivered = sendQueued()
             SyncReport(
                 outcome = SyncOutcome.DONE,
                 delivered = delivered,
@@ -59,59 +54,62 @@ internal class WatchSyncEngine @Inject constructor(
         val item = dataLayer.list(SyncPaths.STATE).firstOrNull { it.path == SyncPaths.STATE }
         return when (val decoded = item?.let { SyncCodec.decodeState(it.payload) }) {
             null -> StateResult.NONE
-            is Decoded.Ok -> if (apply(decoded.value)) StateResult.APPLIED else StateResult.NONE
+            is Decoded.Ok -> if (applier.applyState(decoded.value)) StateResult.APPLIED else StateResult.NONE
             else -> StateResult.SKIPPED
         }
     }
 
-    /** @return True when anything on the watch changed. */
-    private suspend fun apply(state: PhoneState): Boolean {
-        var changed = false
-        if (goalRepository.observeActiveGoal().first() != state.path) {
-            goalRepository.setActiveGoal(state.path)
-            changed = true
-        }
-        val bests = progressRepository.observeBests().first()
-        state.bests.filter { (gateId, best) -> best > (bests[gateId] ?: 0) }.forEach { (gateId, best) ->
-            // recordBest keeps the higher value, so a best set on the watch is never lowered.
-            progressRepository.recordBest(gateId, best)
-            changed = true
-        }
-        if (equipmentRepository.observeBands().first() != state.bands) {
-            equipmentRepository.replaceBands(state.bands)
-            changed = true
-        }
-        return changed
-    }
-
-    /** @return How many sessions the phone confirmed in this pass. */
-    private suspend fun sendSessions(): Int {
-        val queued = outbox.observeQueued().first()
-        val confirmedIds = dataLayer.list(SyncPaths.ACKS_PREFIX)
-            .map { it.path.removePrefix(SyncPaths.ACKS_PREFIX) }
-            .toSet()
-        var delivered = 0
-        for (stored in queued) {
-            if (stored.id in confirmedIds) {
-                // Off the queue first. If the delete below doesn't happen, the
-                // leftover item is cleaned up on the next pass.
-                outbox.markDelivered(stored.id)
-                dataLayer.delete(SyncPaths.session(stored.id))
-                delivered++
-            } else {
-                dataLayer.put(SyncPaths.session(stored.id), SyncCodec.encodeSession(stored))
-            }
-        }
-        removeLeftoverSessionItems(stillQueuedPaths = queued.map { SyncPaths.session(it.id) }.toSet())
-        return delivered
+    /** @return How many workouts (and sessions from an older version of the app) the phone confirmed. */
+    private suspend fun sendQueued(): Int {
+        val confirmed = confirmedIds()
+        val workouts = workoutOutbox.observeQueued().first()
+            .associate { workout -> workout.run.id to { SyncCodec.encodeWorkout(workout) } }
+        val sessions = outbox.observeQueued().first()
+            .associate { stored -> stored.id to { SyncCodec.encodeSession(stored) } }
+        return send(SyncPaths.WORKOUTS_PREFIX, workouts, confirmed, workoutOutbox::markDelivered) +
+            send(SyncPaths.SESSIONS_PREFIX, sessions, confirmed, outbox::markDelivered)
     }
 
     /**
-     * Deletes this watch's session items that are no longer queued. Items
-     * from another watch are left alone: they are that watch's to delete.
+     * Puts each of [queued] (id to payload) on the Data Layer under [prefix],
+     * or, once the phone has [confirmed] it, takes it off the queue with
+     * [markDelivered] and deletes its item.
+     *
+     * @return How many the phone confirmed.
      */
-    private suspend fun removeLeftoverSessionItems(stillQueuedPaths: Set<String>) {
-        dataLayer.list(SyncPaths.SESSIONS_PREFIX)
+    private suspend fun send(
+        prefix: String,
+        queued: Map<String, () -> ByteArray>,
+        confirmed: Set<String>,
+        markDelivered: suspend (String) -> Unit,
+    ): Int {
+        var delivered = 0
+        for ((id, payload) in queued) {
+            if (id in confirmed) {
+                // Off the queue first. If the delete below doesn't happen, the
+                // leftover item is cleaned up on the next pass.
+                markDelivered(id)
+                dataLayer.delete(prefix + id)
+                delivered++
+            } else {
+                dataLayer.put(prefix + id, payload())
+            }
+        }
+        removeLeftoverItems(prefix, stillQueuedPaths = queued.keys.map { prefix + it }.toSet())
+        return delivered
+    }
+
+    /** Ids the phone has confirmed, workouts and sessions alike. */
+    private suspend fun confirmedIds(): Set<String> = dataLayer.list(SyncPaths.ACKS_PREFIX)
+        .map { it.path.removePrefix(SyncPaths.ACKS_PREFIX) }
+        .toSet()
+
+    /**
+     * Deletes this watch's items under [prefix] that are no longer queued.
+     * Items from another watch are left alone: they are that watch's to delete.
+     */
+    private suspend fun removeLeftoverItems(prefix: String, stillQueuedPaths: Set<String>) {
+        dataLayer.list(prefix)
             .filter { item -> item.isOwn && item.path !in stillQueuedPaths }
             .forEach { item -> dataLayer.delete(item.path) }
     }

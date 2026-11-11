@@ -3,9 +3,9 @@ package app.levitx.phone.skills
 import app.levitx.core.coach.ExerciseCatalogue
 import app.levitx.core.coach.MovementPattern
 import app.levitx.phone.MainDispatcherRule
-import app.levitx.phone.coachState
-import app.levitx.phone.newcomer
 import app.levitx.testing.FakeCoachRepository
+import app.levitx.testing.coachState
+import app.levitx.testing.newcomer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

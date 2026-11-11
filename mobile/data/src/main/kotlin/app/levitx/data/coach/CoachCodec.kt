@@ -32,6 +32,12 @@ internal object CoachCodec {
     fun decodeWorkoutOrNull(text: String): WorkoutDocument? =
         decodeOrNull(text, WorkoutDocument.serializer())?.takeIf { it.v <= WORKOUT_DOCUMENT_VERSION }
 
+    fun encode(document: PlanDocument): String = json.encodeToString(PlanDocument.serializer(), document)
+
+    /** Reads a plan document, or null when it can't be read. */
+    fun decodePlanOrNull(text: String): PlanDocument? =
+        decodeOrNull(text, PlanDocument.serializer())?.takeIf { it.v <= PLAN_DOCUMENT_VERSION }
+
     /**
      * The decoded value, or null for anything that isn't valid JSON of the right
      * shape. The error is dropped, text and all.

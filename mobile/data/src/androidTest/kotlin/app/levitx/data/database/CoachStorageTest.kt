@@ -68,4 +68,30 @@ class CoachStorageTest {
         assertEquals(listOf(80.5, 80.0), database.equipmentDao().bodyweightSince(10).map { it.kg })
         assertEquals(listOf(80.5, 80.0), database.equipmentDao().observeBodyweightSince(10).first().map { it.kg })
     }
+
+    @Test
+    fun theWatchKeepsOneNextSessionAndWhatItWaitsFor() = runTest {
+        val dao = database.watchWorkoutDao()
+        assertNull(dao.observeNext().first())
+        dao.replaceNext(NextSessionEntity(json = "a"))
+        dao.replaceNext(NextSessionEntity(json = "b"))
+        assertEquals("b", dao.observeNext().first()?.json)
+        // After a workout: no plan, waiting for the phone to record it.
+        dao.replaceNext(NextSessionEntity(json = null, awaitingWorkoutId = "w1"))
+        val waiting = dao.observeNext().first()
+        assertNull(waiting?.json)
+        assertEquals("w1", waiting?.awaitingWorkoutId)
+    }
+
+    @Test
+    fun finishedWorkoutsQueueOnceInOrderUntilConfirmed() = runTest {
+        val dao = database.watchWorkoutDao()
+        dao.queue(WorkoutOutboxEntity("w2", "two", finishedAtEpochMillis = 20, queuedAtEpochMillis = 2))
+        dao.queue(WorkoutOutboxEntity("w1", "one", finishedAtEpochMillis = 10, queuedAtEpochMillis = 1))
+        // Queuing the same workout again, after a crash say, changes nothing.
+        dao.queue(WorkoutOutboxEntity("w1", "changed", finishedAtEpochMillis = 99, queuedAtEpochMillis = 9))
+        assertEquals(listOf("one", "two"), dao.observeQueued().first().map { it.json })
+        dao.remove("w1")
+        assertEquals(listOf("w2"), dao.observeQueued().first().map { it.id })
+    }
 }

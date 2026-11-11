@@ -79,7 +79,7 @@ Turn wireless debugging off when you're not installing, since it uses battery.
 ## If something goes wrong
 
 - **"App not installed" on the phone, or `INSTALL_FAILED_UPDATE_INCOMPATIBLE` from adb:** the installed copy was signed with a different key, usually a build from before the secrets were added. Uninstall it, then install again. This wipes that device's Levitx data.
-- **The watch never shows your goal:** check both builds have the same fingerprint on their run pages, and that the phone and watch are paired. Then follow the sync checks in the Levitx device test checklist.
+- **The watch never shows your next session:** open Levitx on the phone once (it sends the plan when it starts), then check both builds have the same fingerprint on their run pages, and that the phone and watch are paired. Then follow the sync checks in the Levitx device test checklist.
 - **`adb` can't find the watch:** make sure both are on the same Wi-Fi, wireless debugging is still on, and you're using the address from the main Wireless debugging screen, not the pairing one.
 
 ## What these builds are

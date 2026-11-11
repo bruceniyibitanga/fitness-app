@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -61,16 +62,7 @@ internal fun Rest(state: SessionUiState.Resting, now: () -> Long, onEndRest: () 
             )
         }
         if (state.heartRate != null) item { HeartRateText(state.heartRate) }
-        item {
-            CenteredText(
-                stringResource(
-                    R.string.session_rest_next,
-                    state.nextSetNumber,
-                    state.setCount,
-                    measureText(state.measure, state.nextTarget),
-                ),
-            )
-        }
+        item { CenteredText(nextText(state)) }
         item {
             Button(
                 onClick = onEndRest,
@@ -107,24 +99,35 @@ private fun remainingRestMillis(endsAt: Long, now: () -> Long, buzz: Boolean, on
     return remainingMillis
 }
 
+/** "Next: Squat, 12 reps" at a new exercise, else "Next: set 2 of 3, 12 reps". */
+@Composable
+private fun nextText(state: SessionUiState.Resting): String {
+    val target = measureText(state.measure, state.nextTarget)
+    return if (state.isNewExercise) {
+        stringResource(R.string.session_rest_next_exercise, state.nextExerciseName, target)
+    } else {
+        stringResource(R.string.session_rest_next, state.nextSetNumber, state.setCount, target)
+    }
+}
+
 @Composable
 internal fun Finished(state: SessionUiState.Finished, onDone: () -> Unit) {
-    val best = measureText(state.measure, state.sessionBest)
     SessionList {
         item { SectionLabel(stringResource(R.string.session_summary_label)) }
         item {
             Text(
-                text = stringResource(
-                    if (state.isNewBest) R.string.session_new_best else R.string.session_best_today,
-                    best,
-                ),
+                text = pluralStringResource(R.plurals.session_sets_done, state.sets, state.sets),
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
             )
         }
-        if (state.passedGate) {
-            item { CenteredText(stringResource(R.string.session_gate_passed, state.gateTitle)) }
+        state.newBest?.let { best ->
+            item { CenteredText(stringResource(R.string.session_new_best, measureText(best.measure, best.value))) }
+            item {
+                val line = if (best.passedGate) R.string.session_gate_passed else R.string.session_gate_working_on
+                CenteredText(stringResource(line, best.gateTitle), color = LevitxColors.TextMuted)
+            }
         }
         if (state.usedBand) {
             item { CenteredText(stringResource(R.string.band_note)) }

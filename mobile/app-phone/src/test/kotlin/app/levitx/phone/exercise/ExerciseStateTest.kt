@@ -1,7 +1,7 @@
 package app.levitx.phone.exercise
 
 import app.levitx.core.coach.MovementPattern
-import app.levitx.phone.newcomer
+import app.levitx.testing.newcomer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull

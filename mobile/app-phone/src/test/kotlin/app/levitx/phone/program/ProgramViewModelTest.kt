@@ -1,8 +1,8 @@
 package app.levitx.phone.program
 
 import app.levitx.phone.MainDispatcherRule
-import app.levitx.phone.coachState
 import app.levitx.testing.FakeCoachRepository
+import app.levitx.testing.coachState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

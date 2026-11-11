@@ -47,10 +47,10 @@ data class LoadUiState(
 }
 
 /**
- * Chooses the vest, belt or band for the next session.
+ * Chooses the vest, belt or band for the next session's skill work.
  *
  * The choice is kept by the [WorkoutController], which stamps it on every set
- * of the session. Bands are set up and calibrated on the phone and arrive
+ * of the skill work. Bands are set up and calibrated on the phone and arrive
  * here through sync.
  */
 @HiltViewModel
@@ -74,7 +74,7 @@ class LoadViewModel @Inject constructor(
     /** One step less added weight. */
     fun decreaseAdded() = changeAddedBy(-ADDED_KG_STEP)
 
-    /** Chooses [band] for the next session, or no band when null. */
+    /** Chooses [band] for the next session's skill work, or no band when null. */
     fun chooseBand(band: Band?) {
         val current = uiState.value
         controller.setLoad(SetLoad(addedKg = current.addedKg, assistanceKg = band?.assistanceKg ?: 0.0))

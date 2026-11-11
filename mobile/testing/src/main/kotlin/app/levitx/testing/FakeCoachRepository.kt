@@ -9,10 +9,13 @@ import app.levitx.core.coach.SessionResult
 import app.levitx.core.pain.PainAssessment
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.CoachState
+import app.levitx.data.coach.RECENT_WORKOUTS
 import java.time.DayOfWeek
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
 /**
  * In-memory [CoachRepository] that learns through the real `Coach`, so tests
@@ -24,7 +27,9 @@ class FakeCoachRepository(
     private val coach: Coach = Coach(),
 ) : CoachRepository {
     private val state = MutableStateFlow(initial)
-    private val recorded = mutableSetOf<String>()
+
+    // Newest last, like the order workouts are recorded in.
+    private val recorded = MutableStateFlow<List<String>>(emptyList())
 
     /** The current state, for assertions. */
     val current: CoachState?
@@ -32,7 +37,7 @@ class FakeCoachRepository(
 
     /** Workouts recorded so far, by id. */
     val recordedWorkouts: Set<String>
-        get() = recorded
+        get() = recorded.value.toSet()
 
     override fun observeState(): Flow<CoachState?> = state.asStateFlow()
 
@@ -45,11 +50,14 @@ class FakeCoachRepository(
     }
 
     override suspend fun recordWorkout(workoutId: String, result: SessionResult): Boolean {
-        if (!recorded.add(workoutId)) return false
+        if (workoutId in recorded.value) return false
+        recorded.update { it + workoutId }
         update { coach.record(it, result) }
         drafts?.discard()
         return true
     }
+
+    override fun observeRecentWorkoutIds(): Flow<List<String>> = recorded.map { it.reversed().take(RECENT_WORKOUTS) }
 
     override suspend fun recordRest(nowEpochMillis: Long) = update { coach.recordRest(it, nowEpochMillis) }
 

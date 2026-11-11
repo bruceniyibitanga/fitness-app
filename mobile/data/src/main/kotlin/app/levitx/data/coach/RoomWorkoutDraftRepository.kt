@@ -18,11 +18,11 @@ internal class RoomWorkoutDraftRepository @Inject constructor(private val databa
     override fun observeDraft(): Flow<WorkoutRun?> = flow {
         emitAll(databaseProvider.database().coachDao().observeDraft())
     }
-        .map { row -> row?.let { CoachCodec.decodeWorkoutOrNull(it.json)?.toRunOrNull() } }
+        .map { row -> row?.let { WorkoutCodec.decodeRunOrNull(it.json) } }
         .distinctUntilChanged()
 
     override suspend fun save(run: WorkoutRun) {
-        val json = CoachCodec.encode(workoutDocumentOf(run))
+        val json = WorkoutCodec.encodeRun(run)
         databaseProvider.database().coachDao().replaceDraft(WorkoutDraftEntity(json = json))
     }
 

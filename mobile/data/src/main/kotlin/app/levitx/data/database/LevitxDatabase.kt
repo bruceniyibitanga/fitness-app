@@ -23,8 +23,10 @@ import androidx.room.RoomDatabase
         SessionDraftSetEntity::class,
         CoachStateEntity::class,
         WorkoutDraftEntity::class,
+        NextSessionEntity::class,
+        WorkoutOutboxEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         // Version 2 only adds tables, which Room can migrate by itself.
@@ -35,6 +37,8 @@ import androidx.room.RoomDatabase
         AutoMigration(from = 3, to = 4),
         // Version 5 adds the coach's tables and a nullable column, which Room can migrate by itself.
         AutoMigration(from = 4, to = 5),
+        // Version 6 only adds the watch's tables for the coach's sessions.
+        AutoMigration(from = 5, to = 6),
     ],
 )
 internal abstract class LevitxDatabase : RoomDatabase() {
@@ -58,4 +62,7 @@ internal abstract class LevitxDatabase : RoomDatabase() {
 
     /** Access to the coach's state and the workout in progress. */
     abstract fun coachDao(): CoachDao
+
+    /** Access to the watch's next session and its finished workouts on their way to the phone. */
+    abstract fun watchWorkoutDao(): WatchWorkoutDao
 }

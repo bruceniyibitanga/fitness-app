@@ -1,16 +1,10 @@
 package app.levitx.wear.session
 
-import app.levitx.core.session.SessionPlanner
 import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
-import app.levitx.testing.FakeGoalRepository
-import app.levitx.testing.FakeProgressRepository
-import app.levitx.testing.FakeSessionDraftRepository
-import app.levitx.testing.FakeSessionRepository
-import app.levitx.testing.FakeTrainingClock
 import app.levitx.wear.MainDispatcherRule
+import app.levitx.wear.WatchFakes
 import app.levitx.wear.workout.FakeWorkoutMonitor
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -28,33 +22,29 @@ class SessionViewModelTest {
     @get:Rule
     val mainDispatcher = MainDispatcherRule()
 
-    private val path = SkillCatalogue.muscleUp
-    private val dips = path.gates[1]
-    private val clock = FakeTrainingClock()
-    private val progress = FakeProgressRepository(mapOf(path.gates[0].id to 30, dips.id to 6))
-    private val controller = WorkoutController(
-        FakeGoalRepository(path),
-        progress,
-        FakeSessionDraftRepository(),
-        FakeSessionRepository(progress),
-        clock,
-        CoroutineScope(UnconfinedTestDispatcher()),
-    )
+    private val dips = SkillCatalogue.muscleUp.gates[1]
+    private val fakes = WatchFakes()
+    private val clock = fakes.clock
+    private val session = checkNotNull(fakes.next.current)
+    private val controller = fakes.controller()
     private val monitor = FakeWorkoutMonitor()
     private val viewModel by lazy { SessionViewModel(controller, clock, monitor) }
 
     @Test
-    fun withNoSessionTheScreenClosesItself() = runTest {
+    fun withNoWorkoutTheScreenClosesItself() = runTest {
         assertEquals(SessionUiState.NoSession, currentState())
     }
 
     @Test
-    fun showsTheSetToDo() = runTest {
+    fun showsTheExerciseAndSetToDo() = runTest {
         controller.start()
-        val plan = SessionPlanner.planFor(dips, best = 6)
+        val plan = session.plans.first()
 
         val state = currentState() as SessionUiState.Working
 
+        assertEquals(plan.exercise.name, state.exerciseName)
+        assertEquals(1, state.exerciseNumber)
+        assertEquals(session.plans.size, state.exerciseCount)
         assertEquals(1, state.setNumber)
         assertEquals(plan.sets.size, state.setCount)
         assertEquals(plan.sets.first().target, state.target)
@@ -69,13 +59,38 @@ class SessionViewModelTest {
         viewModel.logSet(4)
 
         val resting = currentState() as SessionUiState.Resting
-        assertEquals(clock.elapsed + SessionPlanner.REST_SECONDS_REPS * 1_000L, resting.restEndsAtElapsedMillis)
+        assertEquals(clock.elapsed + session.plans.first().restSeconds * 1_000L, resting.restEndsAtElapsedMillis)
         assertEquals(2, resting.nextSetNumber)
+        assertFalse(resting.isNewExercise)
 
         viewModel.endRest()
         val working = currentState() as SessionUiState.Working
         assertEquals(2, working.setNumber)
         assertTrue(working.canSaveEarly)
+    }
+
+    @Test
+    fun restBeforeANewExerciseNamesItAndLastsAsLongAsTheExerciseBefore() = runTest {
+        controller.start()
+        repeat(session.plans.first().sets.size) {
+            viewModel.logSet(4)
+            if (it < session.plans.first().sets.size - 1) viewModel.endRest()
+        }
+
+        val resting = currentState() as SessionUiState.Resting
+        assertTrue(resting.isNewExercise)
+        assertEquals(session.plans[1].exercise.name, resting.nextExerciseName)
+        assertEquals(session.plans.first().restSeconds, resting.restSeconds)
+    }
+
+    @Test
+    fun skippingAnExerciseShowsTheNextOne() = runTest {
+        controller.start()
+        viewModel.skipExercise()
+
+        val working = currentState() as SessionUiState.Working
+        assertEquals(2, working.exerciseNumber)
+        assertEquals(session.plans[1].exercise.name, working.exerciseName)
     }
 
     @Test
@@ -85,22 +100,20 @@ class SessionViewModelTest {
         viewModel.finishEarly()
 
         val finished = currentState() as SessionUiState.Finished
-        assertEquals(dips.title, finished.gateTitle)
-        assertEquals(8, finished.sessionBest)
-        assertTrue(finished.isNewBest)
-        assertFalse(finished.passedGate)
+        assertEquals(1, finished.sets)
+        assertEquals(GateBest(dips.title, GateMeasure.REPS, 8, passedGate = false), finished.newBest)
 
         viewModel.dismissSummary()
         assertEquals(SessionUiState.NoSession, currentState())
     }
 
     @Test
-    fun asksAboutHeartRateOnceBeforeTheFirstSession() = runTest {
+    fun asksAboutHeartRateOnceBeforeTheFirstWorkout() = runTest {
         monitor.permissionGranted = false
         controller.start()
         assertEquals(SessionUiState.AskTracking, currentState())
 
-        // "Not now": the session carries on, and the question isn't asked again.
+        // "Not now": the workout carries on, and the question isn't asked again.
         viewModel.onTrackingAnswered()
 
         val working = currentState() as SessionUiState.Working

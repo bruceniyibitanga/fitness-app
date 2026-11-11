@@ -2,19 +2,19 @@ package app.levitx.wear.session
 
 import app.levitx.core.skills.GateMeasure
 
-/** What the watch session screen shows. */
+/** What the watch workout screen shows. */
 sealed interface SessionUiState {
-    /** The session is being loaded, planned or saved. */
+    /** The workout is being loaded, set up or saved. */
     data object Loading : SessionUiState
 
     /** Data couldn't be unlocked. */
     data object Unavailable : SessionUiState
 
-    /** There is no session in progress. The screen closes itself. */
+    /** There is no workout in progress. The screen closes itself. */
     data object NoSession : SessionUiState
 
     /**
-     * A session is ready, and the person hasn't yet been asked whether the
+     * A workout is ready, and the person hasn't yet been asked whether the
      * watch may read their heart rate. Asked once, at the moment it is needed.
      */
     data object AskTracking : SessionUiState
@@ -22,20 +22,28 @@ sealed interface SessionUiState {
     /**
      * A set to do now.
      *
-     * @property setNumber 1-based number of this set.
-     * @property setCount Sets in the session.
+     * @property exerciseName What to do.
+     * @property exerciseNumber 1-based position of the exercise in the workout.
+     * @property exerciseCount Exercises in the workout.
+     * @property setNumber 1-based number of this set within the exercise.
+     * @property setCount Sets of this exercise.
      * @property measure Whether the set counts reps or seconds.
      * @property target Reps or seconds to aim for.
-     * @property isBestEffort True for the last, all-out set.
+     * @property isPerSide True when the set is done once on each side.
+     * @property isBestEffort True for an all-out set.
      * @property repsInReserve Reps to leave in the tank on work sets.
      * @property canSaveEarly True once a set is logged, so ending now saves something.
      * @property heartRate Heart rate in beats per minute, or null when it isn't being read.
      */
     data class Working(
+        val exerciseName: String,
+        val exerciseNumber: Int,
+        val exerciseCount: Int,
         val setNumber: Int,
         val setCount: Int,
         val measure: GateMeasure,
         val target: Int,
+        val isPerSide: Boolean,
         val isBestEffort: Boolean,
         val repsInReserve: Int,
         val canSaveEarly: Boolean,
@@ -47,8 +55,10 @@ sealed interface SessionUiState {
      *
      * @property restEndsAtElapsedMillis When rest ends, on the device's elapsed (since boot) clock.
      * @property restSeconds The full length of the rest, for the progress ring.
-     * @property nextSetNumber 1-based number of the set that follows.
-     * @property setCount Sets in the session.
+     * @property nextExerciseName The exercise the next set belongs to.
+     * @property isNewExercise True when the next set starts a new exercise.
+     * @property nextSetNumber 1-based number of the next set within its exercise.
+     * @property setCount Sets of that exercise.
      * @property measure Whether the next set counts reps or seconds.
      * @property nextTarget Reps or seconds to aim for next.
      * @property heartRate Heart rate in beats per minute, or null when it isn't being read.
@@ -58,6 +68,8 @@ sealed interface SessionUiState {
     data class Resting(
         val restEndsAtElapsedMillis: Long,
         val restSeconds: Int,
+        val nextExerciseName: String,
+        val isNewExercise: Boolean,
         val nextSetNumber: Int,
         val setCount: Int,
         val measure: GateMeasure,
@@ -67,21 +79,11 @@ sealed interface SessionUiState {
     ) : SessionUiState
 
     /**
-     * The session is saved.
+     * The workout is saved.
      *
-     * @property gateTitle The gate trained.
-     * @property measure Whether the gate counts reps or seconds.
-     * @property sessionBest Best set that counts toward the gate.
-     * @property isNewBest True when this session set a new best.
-     * @property passedGate True when this session passed the gate.
+     * @property sets Sets done.
+     * @property newBest The biggest new best on a skill gate, if there was one.
      * @property usedBand True if any set was band-assisted.
      */
-    data class Finished(
-        val gateTitle: String,
-        val measure: GateMeasure,
-        val sessionBest: Int,
-        val isNewBest: Boolean,
-        val passedGate: Boolean,
-        val usedBand: Boolean,
-    ) : SessionUiState
+    data class Finished(val sets: Int, val newBest: GateBest? = null, val usedBand: Boolean = false) : SessionUiState
 }

@@ -36,7 +36,7 @@ fun LoadRoute(viewModel: LoadViewModel = hiltViewModel()) {
 }
 
 /**
- * Chooses added weight and a band for the next session. Changes apply as
+ * Chooses added weight and a band for the next session's skill work. Changes apply as
  * they are made; swiping back returns to home.
  */
 @Composable

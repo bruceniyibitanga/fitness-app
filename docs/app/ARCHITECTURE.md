@@ -22,7 +22,7 @@ mobile/
 
 Each app module is split by feature (`onboarding/`, `main/`, `today/`, `workout/`, `train/`, `exercise/`, `program/`, `path/`, `skills/`, `equipment/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
 
-Training logic lives in `:core`, not in ViewModels. On the phone the coach plans every session and `WorkoutRun` holds the rules for moving through one (log a set, rest, skip, finish). The watch still runs a single gate with `SessionRun` and `SkillPath.trainingDay(bests)` until it moves over to the coach. ViewModels only combine flows and map the result to UI state.
+Training logic lives in `:core`, not in ViewModels. The coach plans every session on the phone, and `WorkoutRun` holds the rules for moving through one (log a set, rest, skip, finish). The phone and the watch both run sessions with it. ViewModels only combine flows and map the result to UI state.
 
 ### The coach
 
@@ -51,7 +51,7 @@ Inside, each concern has one home:
 
 The phone stores the coach through `CoachRepository` in `:data`. What the coach has learned is one JSON document in the `coach_state` table, with its own format version. It is a separate type from `AthleteModel` (`CoachDocument`), so the stored format only changes on purpose. Bests and bodyweight aren't in it: they stay in their own tables, which the path screen, the bodyweight screen and the watch sync already read, and the repository fills them into the model when it reads it. Every change is a read, a call to `Coach` and a write in one transaction. A finished workout is stored as one `training_session` row per exercise, sharing a `workoutId`, so it can't be recorded twice.
 
-`WorkoutRun` in `:core` runs a planned session exercise by exercise, the way `SessionRun` runs one gate. The workout in progress is saved after every change in `workout_draft`, so it survives the app being killed. `SessionRun` stays until the watch moves over to `WorkoutRun`.
+`WorkoutRun` in `:core` runs a planned session exercise by exercise. The workout in progress is saved after every change in `workout_draft`, so it survives the app being killed. `SessionRun`, which ran one gate at a time, is only kept so the watch can save a gate session an older version left in progress, and so the phone can read gate sessions from a watch that hasn't been updated.
 
 ### The phone app
 
@@ -109,26 +109,30 @@ The main thread only draws. It never waits on I/O or heavy work.
 
 ## Phone and watch
 
-- **Who does what.** The watch can run a whole session on its own, which [Google recommends for Wear OS apps](https://developer.android.com/training/wearables/apps/standalone-apps). The phone is where planning, history and settings live.
+- **Who does what.** The coach runs on the phone, where the person's history is. The watch runs the session the coach planned, on its own once it has it, which [Google recommends for Wear OS apps](https://developer.android.com/training/wearables/apps/standalone-apps). The phone is where planning, history and settings live.
 - **Link.** Phone and watch talk over the [Wearable Data Layer](https://developer.android.com/training/wearables/data/overview), through the `:sync` module. See [ADR 0003](adr/0003-phone-watch-communication.md).
 - **Requirements.** Both apps use the application id `app.levitx` and must be signed with the same key.
-- **Phone to watch.** The goal, bests and bands go to the watch as one data item. The watch copies them into its own database.
-- **Watch to phone.** Each finished session is saved and queued on the watch in one transaction, sent as its own data item, and kept in the queue until the phone confirms it. Session ids are unique and stored once, so retries are harmless.
+- **Phone to watch.** The goal, bests, bands, the next session the coach planned and the ids of the last workouts the coach recorded go to the watch as one data item (`PhoneStateSource` puts it together). The watch copies it into its own database (`PhoneStateApplier`). Only the plan crosses; the coach's model stays on the phone.
+- **Watch to phone.** Finishing a workout on the watch is one transaction: it is queued, the watch's copy of the bests is raised, the draft is cleared, and the plan is set aside while the watch waits for the phone. Each workout is sent as its own data item and kept in the queue until the phone confirms it. The phone records it with the coach (`CoachRepository.recordWorkout`), which stores a workout id once, so retries are harmless. With no coach set up yet, the phone leaves workouts unconfirmed so none are lost.
+- **No session twice.** After a workout, the watch doesn't take a plan until the phone's recent workout ids include it. A plan made before the phone had the workout could be the very session just done.
+- **Older apps.** Gate sessions queued by an older watch app are still sent and received on their old path, so updating one device before the other loses nothing. The wire format is at version 2; the state is only read by a phone and watch that both have it.
 - **`:sync` is in three layers.** `PhoneSync` and `WatchSync` are what the apps call. The engines behind them hold the rules and are plain Kotlin. `PlayServicesDataLayer` is the only class that touches Google's API.
 
 ## A session on the watch
 
+- **It is the coach's session,** exercise by exercise, run by the same `WorkoutRun` as the phone. The watch shows the exercise, the set and the target, times rest, and lets the person skip an exercise or end early. It doesn't offer the coach's "Lighter" choice: that is made on the phone, which then sends the lighter plan.
+- **The load chosen on the watch is for the skill work,** as it was when the watch ran one gate. Other exercises are logged at bodyweight; their loads are set on the phone.
 - **`WorkoutController` owns the session,** not a screen. It lives as long as the app process, so swiping back to the watch face mid-rest and returning lands on the same set. This follows the [Wear OS workout guidance](https://developer.android.com/health-and-fitness/health-services/active-data), which keeps workout state out of the activity.
 - **Every change is saved as a draft** in the encrypted database, so a session survives the app being killed or crashing between sets.
-- **The session id is made at the start.** If the app dies between the last set and the save, the restart saves it once, not twice.
+- **The workout id is made at the start.** If the app dies between the last set and the save, the restart saves it once, not twice.
 - **Screens only watch and tap.** `SessionViewModel` maps the controller's state to UI state and passes actions on.
 - **`WorkoutService` runs alongside,** a foreground service of type `health`. It reads heart rate through Health Services, shows the ongoing activity, and buzzes when rest ends. It watches the controller and stops when no session is running. The session doesn't depend on it. See [ADR 0006](adr/0006-watch-workout-service.md).
 
 ## The Tile
 
-- **`NextSessionTileService`** shows the current gate and today's sets. It builds them from the same `trainingDay` as the home screen, so the two always agree.
-- **It shows targets only,** never results or health data, because a Tile is visible to anyone who can see the watch.
-- **`TileRefresher`** asks the system to redraw it when the goal or a best changes.
+- **`NextSessionTileService`** shows the next session: the first exercise, how many exercises and roughly how long. It uses the same summary as the home screen, so the two always agree.
+- **It shows the plan only,** never results or health data, because a Tile is visible to anyone who can see the watch.
+- **`TileRefresher`** asks the system to redraw it when the plan changes.
 
 ## Errors
 
@@ -163,5 +167,5 @@ All run in CI on every push that touches `mobile/`, and all fail the build:
 - Migrations: an emulator test upgrades a version 1 database to the latest and checks nothing was lost.
 - Encryption: on an emulator, a test checks the database file doesn't start with SQLite's plain-text header, and that a tampered key file refuses to unlock.
 - Sync: `:sync` unit tests run a pretend phone and a pretend watch against one in-memory Data Layer. They cover the full handshake, retries, the phone being out of reach, unreadable payloads and a second watch. Payload validation has its own tests with deliberately bad input.
-- The watch session: unit tests cover the controller, including restarts mid-session.
+- The watch session: unit tests cover the controller, including restarts mid-session, skipping, the load, and a gate session left by an older version.
 - Not covered by automated tests: the real Data Layer between a real phone and watch, and the workout service (Health Services, the ongoing activity and the rest alert) on a real watch. Both need a manual check on devices before release.

@@ -4,9 +4,9 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.MainDispatcherRule
-import app.levitx.phone.coachState
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeTrainingClock
+import app.levitx.testing.coachState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

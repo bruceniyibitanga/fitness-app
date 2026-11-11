@@ -140,13 +140,9 @@ class WorkoutViewModel @Inject constructor(
         }
     }
 
-    /** The biggest step past a gate's previous best in [result], if there was one. */
-    private fun newBest(result: SessionResult): NewBest? = result.results
-        .mapNotNull { exercise ->
-            val gate = exercise.plan.gateId?.let(SkillCatalogue::gateById) ?: return@mapNotNull null
-            val best = exercise.sets.filter { it.countsTowardGate }.maxOfOrNull { it.value } ?: 0
-            NewBest(gate.title, gate.measure, best).takeIf { best > (gateBestsBefore[gate.id] ?: 0) }
-        }
+    /** The biggest new best on a skill gate in [result], if there was one. */
+    private fun newBest(result: SessionResult): NewBest? = result.newGateBests(gateBestsBefore)
+        .mapNotNull { (gateId, best) -> SkillCatalogue.gateById(gateId)?.let { NewBest(it.title, it.measure, best) } }
         .maxByOrNull { it.value }
 }
 
