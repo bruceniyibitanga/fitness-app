@@ -33,7 +33,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.core.coach.CoachPhrases
-import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.skills.SkillCatalogue
@@ -45,13 +44,13 @@ import app.levitx.phone.ui.ChoiceBar
 import app.levitx.phone.ui.ChoiceRow
 import app.levitx.phone.ui.ChoiceStyle
 import app.levitx.phone.ui.Help
+import app.levitx.phone.ui.KitPicker
 import app.levitx.phone.ui.PhotoTile
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
-import app.levitx.phone.ui.kitName
 import app.levitx.phone.ui.pathPhoto
 import java.time.DayOfWeek
 import java.time.format.TextStyle
@@ -60,19 +59,6 @@ import java.time.format.TextStyle
  * The setup steps after the welcome, each laid out as its artboard in
  * "Levitx App Design" (OnbGoal, OnbLevel, OnbSchedule, OnbPlan).
  */
-
-/** Kit in the order setup offers it: the most useful first. */
-private val KitOrder = listOf(
-    Equipment.PULL_UP_BAR,
-    Equipment.DIP_BARS,
-    Equipment.RINGS,
-    Equipment.LOW_BAR,
-    Equipment.BAND,
-    Equipment.BOX,
-)
-
-/** Kit choices side by side. Two fit the longest name at any font size. */
-private const val KIT_PER_ROW = 2
 
 /** What they are training for: a skill, as photo tiles, or general fitness. */
 @Composable
@@ -303,25 +289,7 @@ internal fun WeekStep(state: OnboardingUiState, actions: OnboardingActions) {
 @Composable
 private fun KitQuestion(state: OnboardingUiState, actions: OnboardingActions) {
     Question(stringResource(R.string.week_kit_label), help = stringResource(R.string.week_kit_note)) {
-        ChoiceRow {
-            ChoiceBar(
-                text = stringResource(R.string.kit_none),
-                selected = state.equipment.isEmpty(),
-                onClick = actions.onChooseNoEquipment,
-            )
-        }
-        KitOrder.chunked(KIT_PER_ROW).forEach { row ->
-            ChoiceRow {
-                row.forEach { kit ->
-                    ChoiceBar(
-                        text = kitName(kit),
-                        selected = kit in state.equipment,
-                        onClick = { actions.onToggleEquipment(kit) },
-                        multiple = true,
-                    )
-                }
-            }
-        }
+        KitPicker(state.equipment, onChooseNone = actions.onChooseNoEquipment, onToggle = actions.onToggleEquipment)
     }
     val missing = state.missingGoalKit
     val path = state.goalPathId?.let(SkillCatalogue::byId)

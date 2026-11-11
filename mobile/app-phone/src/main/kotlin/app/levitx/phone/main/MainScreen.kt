@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
-import app.levitx.phone.equipment.EquipmentRoute
+import app.levitx.phone.body.BodyRoute
 import app.levitx.phone.path.PathRoute
 import app.levitx.phone.skills.SkillsRoute
 import app.levitx.phone.theme.LevitxTheme
@@ -62,7 +62,7 @@ enum class MainTab(@param:StringRes val label: Int) {
     /** Every movement's ladder and where the person is on it. */
     SKILLS(R.string.tab_skills),
 
-    /** Bodyweight and bands. */
+    /** Bodyweight, load per rep, kit and bands. */
     BODY(R.string.tab_body),
 }
 
@@ -94,7 +94,7 @@ fun MainRoute(navigation: MainNavigation) {
 
             MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
 
-            MainTab.BODY -> EquipmentRoute()
+            MainTab.BODY -> BodyRoute()
         }
     }
 }

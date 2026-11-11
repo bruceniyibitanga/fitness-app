@@ -7,9 +7,16 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.coach.WorkoutRun
+import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.skills.SkillCatalogue
+import app.levitx.data.equipment.Band
+import app.levitx.phone.body.BarLoad
+import app.levitx.phone.body.BodyActions
+import app.levitx.phone.body.BodyScreen
+import app.levitx.phone.body.BodyUiState
 import app.levitx.phone.main.MainScreen
 import app.levitx.phone.main.MainTab
 import app.levitx.phone.onboarding.OnboardingActions
@@ -183,5 +190,35 @@ fun RestScreenshot() {
             now = { 0L },
             actions = noWorkoutActions,
         )
+    }
+}
+
+@PreviewTest
+@Preview(name = "11 Body", widthDp = 390, heightDp = 1100)
+@Composable
+fun BodyScreenshot() {
+    val day = 24L * 60 * 60 * 1_000
+    val now = 40 * day
+    val weighIns = listOf(76.4, 76.1, 76.2, 75.8, 75.9, 75.5, 75.6, 75.2, 75.3, 74.9)
+        .mapIndexed { i, kg -> WeighIn(now - (36 - i * 4) * day, kg) }
+    val trend = checkNotNull(bodyweightTrend(weighIns, now))
+    val change = checkNotNull(trend.weeklyChange) * trend.currentKg
+    val loads = listOf("Strict pull-up" to 0.95, "Push-up" to 0.64).map { (name, share) ->
+        BarLoad(name, name, share, measured = share < 0.9, trend.currentKg * share, change * share)
+    }
+    LevitxTheme {
+        MainScreen(selected = MainTab.BODY, onSelect = {}) {
+            BodyScreen(
+                uiState = BodyUiState.Ready(
+                    nowEpochMillis = now,
+                    weighIns = weighIns,
+                    trend = trend,
+                    onTheBar = loads,
+                    equipment = setOf(Equipment.PULL_UP_BAR, Equipment.BAND),
+                    bands = listOf(Band("1", "Red", 22.5)),
+                ),
+                actions = BodyActions({}, {}, { _, _ -> }, {}),
+            )
+        }
     }
 }
