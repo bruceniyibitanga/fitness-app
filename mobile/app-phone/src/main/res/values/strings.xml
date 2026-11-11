@@ -207,10 +207,10 @@
 
     <!-- A single workout -->
     <string name="focus_workout_label">SINGLE WORKOUT</string>
-    <string name="focus_workout_note">A one-off workout. It counts toward this week's training, and your targets move up when you hit them, but your next planned session is still waiting on Today.</string>
+    <string name="focus_workout_note">A one-off workout. It counts toward this week\'s training, and your targets move up when you hit them, but your next planned session is still waiting on Today.</string>
     <string name="focus_workout_start">Start workout</string>
     <string name="focus_workout_resume">Resume the workout in progress</string>
-    <string name="focus_workout_not_found">This workout isn't in the app any more.</string>
+    <string name="focus_workout_not_found">This workout isn\'t in the app any more.</string>
     <string name="focus_workout_in_progress">You already have a workout in progress. Finish or end it first.</string>
     <string name="open_exercise">Open %1$s</string>
 
@@ -226,17 +226,17 @@
     <string name="exercise_rung_current">YOU ARE HERE</string>
     <string name="exercise_rung_later">LATER</string>
     <string name="exercise_or">%1$s or %2$s</string>
-    <string name="exercise_skill">Part of a skill path. It's passed by a strict set at the gate's target.</string>
-    <string name="exercise_not_found">This exercise isn't in the app any more.</string>
+    <string name="exercise_skill">Part of a skill path. It\'s passed by a strict set at the gate\'s target.</string>
+    <string name="exercise_not_found">This exercise isn\'t in the app any more.</string>
 
     <!-- Program -->
     <string name="program_label">SKILL PROGRAM</string>
-    <string name="program_body">You move on when you pass a gate, so there's no deadline. The rest of your body keeps training around it.</string>
+    <string name="program_body">You move on when you pass a gate, so there\'s no deadline. The rest of your body keeps training around it.</string>
     <string name="program_gates">GATES</string>
     <string name="program_make_plan">Make this my plan</string>
     <string name="program_switch_note">Your workouts, bests and bodyweight all stay. Only the goal your sessions are built around changes.</string>
     <string name="program_is_plan">This is your plan.</string>
-    <string name="program_not_found">This program isn't in the app any more.</string>
+    <string name="program_not_found">This program isn\'t in the app any more.</string>
 
     <!-- Path -->
     <string name="path_label">THE WHOLE PATH</string>
