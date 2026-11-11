@@ -24,6 +24,32 @@ Each app module is split by feature (`goal/`, `startingtest/`, `home/`, `session
 
 Training logic that both apps need lives in `:core`, not in ViewModels. `SkillPath.trainingDay(bests)` works out the current gate and today's plan, and `SessionRun` holds the rules for moving through a session (log a set, rest, finish). Both apps' session ViewModels run on `SessionRun`; they differ only in where they keep it between sets (saved state on the phone, an encrypted draft on the watch). ViewModels only combine flows and map the result to UI state.
 
+### The coach
+
+`app.levitx.core.coach` plans every session and learns from what was done ([ADR 0007](adr/0007-adaptive-coach.md), [COACH-ENGINE.md](COACH-ENGINE.md)). Its whole public surface is three calls on `Coach`:
+
+- `recommend(model, now)` returns the next session, the reason for it, and an offer to ease off when there is one.
+- `record(model, result)` returns the model after a finished session.
+- `recordRest(model, now)` returns the model after the person chose to rest.
+
+`Coach` holds no state. `AthleteModel` is immutable plain data that the app stores and passes back in, so the same model at the same time always gives the same answer. Both calls are pure calculation with no I/O. They take well under a millisecond, but ViewModels still call them off the main thread with everything else that isn't drawing.
+
+Inside, each concern has one home:
+
+| File | Owns |
+|---|---|
+| `CoachTuning` | Every number the coach decides with. Nothing else holds a threshold. |
+| `ExerciseCatalogue`, `SkillTraining` | The exercises: one ladder per movement, and how each skill gate is trained. |
+| `SessionBuilder` | The candidate sessions. It knows nothing about safety. |
+| `HardRules` | The safety rules, and the repair that eases or cuts a session until it passes them. |
+| `Scoring` | The six scoring terms and the scorer. |
+| `Readiness` | The signals and the Keep / Lighter / Rest suggestion. |
+| `Progression`, `LadderProgression`, `BlockKeeper` | How the model changes after a session: targets and rungs, gate bests, blocks. |
+| `BodyweightTrend` | The weight trend and the fast-loss check. |
+| `CoachReason`, `CoachPhrases` | Why a session was chosen, as data, and the English for it. |
+
+A new safety rule is one object added to `HardRules.all`, and a new scoring term is one object added to `ScoringTerms.all`. Neither means changing the code that uses them. The rules and terms are `internal`, so the apps can't reach around `Coach`.
+
 ## Layers
 
 We follow Android's [guide to app architecture](https://developer.android.com/topic/architecture):
