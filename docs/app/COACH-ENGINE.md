@@ -238,13 +238,15 @@ Built, in `:core`:
 - reasons and their wording
 - the tests and simulation above
 - `WorkoutRun`, which runs a planned session exercise by exercise
+- workouts picked from the Train tab (`Coach.workout`), built and made safe the same way as the coach's own sessions
+- form cues and set-up notes for every exercise (`ExerciseGuides`)
 - storage in the encrypted database (`CoachRepository`), with the workout in progress saved after every set
 
 Not built yet:
 
 - **Feeding watch sessions to the coach.** A session done on the watch raises the gate's best, which the coach sees, but isn't yet in its history, so it doesn't count toward recovery or the week's volume. That comes when the watch moves to `WorkoutRun`.
 - **Health Connect.** The engine takes weigh-ins; nothing reads them from Health Connect yet.
-- **Some screens.** Setup, Today, the suggestion card, the workout and Skills are built on the phone. The weigh-in prompt, the week review and the Train library are designed but not built.
+- **Some screens.** Setup, Today, the suggestion card, the workout, Skills and the Train library are built on the phone. The weigh-in prompt and the week review are designed but not built.
 - **Offering to trim sessions** that keep finishing early. The model records how long each session took; nothing acts on it yet.
 - **More goals.** Only the first pull-up and muscle-up paths exist. Handstand, front lever, pistol squat and push-up paths need their gates written. The general goals (stronger, muscle, lean, mobility) all get the same even plan for now.
 - **Conditioning and mobility.** The engine plans strength and skill work. Cardio and mobility sessions are in the Train tab design but not in the engine.
@@ -350,8 +352,8 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 
 - **Seated band row** has no source. It stays as the row option for people with only a band, because otherwise they'd have no horizontal pull at all.
 - **Close-grip push-up** is a bit harder than a regular push-up, and the RR puts diamond push-ups one level up. It stays as an alternative on the push-up rung for now, because its target is learned separately, so a harder exercise just gets a lower target. Moving it to its own rung would shift everyone's stored rung, which needs a migration.
-- **Nordic curl negatives** need something to hook the feet under, like a heavy couch. The kit list doesn't have that yet, so the exercise detail screen has to say it.
-- **Tuck L-sit on the floor** is much harder than on dip bars or parallettes. It should say so, or ask about the kit.
+- **Nordic curl negatives** need something to hook the feet under, like a heavy couch. The kit list doesn't have that, so the exercise guide says it.
+- **Tuck L-sit on the floor** is much harder than on dip bars or parallettes. The exercise guide says so; asking about the kit would be better.
 - **Plank and hollow hold ranges** (20 to 45 s and 15 to 40 s) aren't from the RR, which uses 10 to 30 s for holds. They're reasonable, but unsourced.
 
 ## References

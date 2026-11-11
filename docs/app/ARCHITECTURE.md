@@ -20,17 +20,18 @@ mobile/
   app-wear/                  Wear OS app (Compose for Wear OS, Navigation 3)
 ```
 
-Each app module is split by feature (`onboarding/`, `main/`, `today/`, `workout/`, `train/`, `path/`, `skills/`, `equipment/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
+Each app module is split by feature (`onboarding/`, `main/`, `today/`, `workout/`, `train/`, `exercise/`, `program/`, `path/`, `skills/`, `equipment/` on the phone; `home/`, `session/`, `load/` on the watch), plus `navigation/`, `theme/`, `sync/` and shared `ui/` components. A feature folder holds its screen, ViewModel and UI state.
 
 Training logic lives in `:core`, not in ViewModels. On the phone the coach plans every session and `WorkoutRun` holds the rules for moving through one (log a set, rest, skip, finish). The watch still runs a single gate with `SessionRun` and `SkillPath.trainingDay(bests)` until it moves over to the coach. ViewModels only combine flows and map the result to UI state.
 
 ### The coach
 
-`app.levitx.core.coach` plans every session and learns from what was done ([ADR 0007](adr/0007-adaptive-coach.md), [COACH-ENGINE.md](COACH-ENGINE.md)). Its whole public surface is three calls on `Coach`:
+`app.levitx.core.coach` plans every session and learns from what was done ([ADR 0007](adr/0007-adaptive-coach.md), [COACH-ENGINE.md](COACH-ENGINE.md)). Its whole public surface is four calls on `Coach`:
 
 - `recommend(model, now)` returns the next session, the reason for it, and an offer to ease off when there is one.
 - `record(model, result)` returns the model after a finished session.
 - `recordRest(model, now)` returns the model after the person chose to rest.
+- `workout(model, focus, now)` returns a workout the person picked from the Train tab (full body, upper, pull, push, legs or core). It is built by the same builder and passes the same hard rules as the coach's own sessions, so a movement trained too recently comes back light.
 
 `Coach` holds no state. `AthleteModel` is immutable plain data that the app stores and passes back in, so the same model at the same time always gives the same answer. Both calls are pure calculation with no I/O. They take well under a millisecond, but ViewModels still call them off the main thread with everything else that isn't drawing.
 
@@ -61,7 +62,8 @@ The phone has three destinations on its Navigation 3 back stack: setup, the tabs
 - **Today** asks `Coach.recommend` for the next session and shows the reason and the Keep / Lighter / Rest offer. Starting saves a `WorkoutRun` as the draft before the workout screen opens, so the draft is the one place the workout in progress lives. Starting again resumes it.
 - **The workout** reads the draft, saves it after every change, and hands the finished run to `CoachRepository.recordWorkout`. Draft writes go through one lock, in order, and recording waits behind them, so an older write can't bring a finished workout back.
 - **Skills** shows where the person is on every ladder, read straight from the coach's model through `currentExercise` and `currentGatePattern`, so it can't disagree with what Today plans.
-- **Train** is a placeholder until the workout library lands.
+- **Train** lists the skill programs and one workout per focus. A program can be made the plan, which changes only the goal. A workout opens a detail screen and starts through `WorkoutStarter`, the same path Today uses, so a workout in progress is never replaced.
+- **Exercise detail** opens from Today, a workout or Skills: form cues and set-up notes from `ExerciseGuides` in `:core`, the person's target, best and load per rep, and the exercise's ladder with their place on it.
 
 A new safety rule is one object added to `HardRules.all`, and a new scoring term is one object added to `ScoringTerms.all`. Neither means changing the code that uses them. The rules and terms are `internal`, so the apps can't reach around `Coach`.
 

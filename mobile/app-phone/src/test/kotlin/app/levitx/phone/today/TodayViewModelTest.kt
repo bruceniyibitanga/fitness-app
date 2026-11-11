@@ -3,6 +3,7 @@ package app.levitx.phone.today
 import app.levitx.core.coach.Coach
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.phone.coachState
+import app.levitx.phone.workout.WorkoutStarter
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
@@ -28,7 +29,9 @@ class TodayViewModelTest {
     private val clock = FakeTrainingClock()
 
     // Lazy, so it is built after the rule has swapped in the test main dispatcher.
-    private val viewModel by lazy { TodayViewModel(coachRepository, drafts, Coach(), clock) }
+    private val viewModel by lazy {
+        TodayViewModel(coachRepository, drafts, Coach(), clock, WorkoutStarter(drafts, clock))
+    }
 
     private val ready: TodayUiState.Ready
         get() = viewModel.uiState.value as TodayUiState.Ready

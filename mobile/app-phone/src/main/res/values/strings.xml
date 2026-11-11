@@ -183,8 +183,60 @@
 
     <!-- Train -->
     <string name="train_label">TRAIN</string>
-    <string name="train_title">Pick your own workout</string>
-    <string name="train_body">Body focus, programs and single workouts are coming in the next update. Until then, Today always has the session your coach planned.</string>
+    <string name="train_title">Pick your own</string>
+    <string name="train_body">Every workout here uses your own exercises and targets. Anything you trained too recently comes back light.</string>
+    <string name="train_programs">PROGRAMS</string>
+    <string name="train_workouts">SINGLE WORKOUTS</string>
+    <string name="train_current_program">YOUR PLAN</string>
+    <plurals name="train_program_gates">
+        <item quantity="one">%1$d GATE · %2$d PASSED</item>
+        <item quantity="other">%1$d GATES · %2$d PASSED</item>
+    </plurals>
+    <plurals name="train_workout_meta">
+        <item quantity="one">%1$d MIN · %2$d MOVE</item>
+        <item quantity="other">%1$d MIN · %2$d MOVES</item>
+    </plurals>
+    <string name="train_some_light">SOME LIGHT TODAY</string>
+    <string name="train_nothing_safe">Nothing in this one can be trained safely today.</string>
+    <string name="focus_full_body">Full body</string>
+    <string name="focus_upper">Upper body</string>
+    <string name="focus_pull">Pull</string>
+    <string name="focus_push">Push</string>
+    <string name="focus_legs">Legs and glutes</string>
+    <string name="focus_core">Core</string>
+
+    <!-- A single workout -->
+    <string name="focus_workout_label">SINGLE WORKOUT</string>
+    <string name="focus_workout_note">A one-off workout. It counts toward this week\'s training, and your targets move up when you hit them, but your next planned session is still waiting on Today.</string>
+    <string name="focus_workout_start">Start workout</string>
+    <string name="focus_workout_resume">Resume the workout in progress</string>
+    <string name="focus_workout_not_found">This workout isn\'t in the app any more.</string>
+    <string name="focus_workout_in_progress">You already have a workout in progress. Finish or end it first.</string>
+    <string name="open_exercise">Open %1$s</string>
+
+    <!-- Exercise -->
+    <string name="exercise_kg_per_rep">KG / REP</string>
+    <string name="exercise_share_measured">%1$s%% BW · MEASURED</string>
+    <string name="exercise_share_estimate">~%1$s%% BW · ESTIMATE</string>
+    <string name="exercise_target">YOUR TARGET</string>
+    <string name="exercise_best">YOUR BEST</string>
+    <string name="exercise_cues">HOW TO DO IT</string>
+    <string name="exercise_ladder">THE LADDER</string>
+    <string name="exercise_rung_done">BELOW YOU</string>
+    <string name="exercise_rung_current">YOU ARE HERE</string>
+    <string name="exercise_rung_later">LATER</string>
+    <string name="exercise_or">%1$s or %2$s</string>
+    <string name="exercise_skill">Part of a skill path. It\'s passed by a strict set at the gate\'s target.</string>
+    <string name="exercise_not_found">This exercise isn\'t in the app any more.</string>
+
+    <!-- Program -->
+    <string name="program_label">SKILL PROGRAM</string>
+    <string name="program_body">You move on when you pass a gate, so there\'s no deadline. The rest of your body keeps training around it.</string>
+    <string name="program_gates">GATES</string>
+    <string name="program_make_plan">Make this my plan</string>
+    <string name="program_switch_note">Your workouts, bests and bodyweight all stay. Only the goal your sessions are built around changes.</string>
+    <string name="program_is_plan">This is your plan.</string>
+    <string name="program_not_found">This program isn\'t in the app any more.</string>
 
     <!-- Path -->
     <string name="path_label">THE WHOLE PATH</string>

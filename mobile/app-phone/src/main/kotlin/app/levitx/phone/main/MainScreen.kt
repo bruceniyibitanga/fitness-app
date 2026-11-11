@@ -41,7 +41,7 @@ import app.levitx.phone.path.PathRoute
 import app.levitx.phone.skills.SkillsRoute
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.today.TodayRoute
-import app.levitx.phone.train.TrainScreen
+import app.levitx.phone.train.TrainRoute
 
 /** Material's minimum touch target, so every tab is easy to hit. */
 private val TabHeight = 56.dp
@@ -77,21 +77,46 @@ enum class MainTab(@param:StringRes val label: Int) {
  * tab leaves the app, as people expect from a bottom bar. The chosen tab
  * survives rotation and process death.
  *
- * @param onOpenWorkout Opens the workout in progress, over the tabs.
+ * @param navigation Where the tabs can lead. Each opens over the tabs.
  */
 @Composable
-fun MainRoute(onOpenWorkout: () -> Unit) {
+fun MainRoute(navigation: MainNavigation) {
     var tab by rememberSaveable { mutableStateOf(MainTab.TODAY) }
     MainScreen(selected = tab, onSelect = { tab = it }) {
         when (tab) {
-            MainTab.TODAY -> TodayRoute(onOpenWorkout = onOpenWorkout)
-            MainTab.TRAIN -> TrainScreen()
+            MainTab.TODAY -> TodayRoute(
+                onOpenWorkout = navigation.onOpenWorkout,
+                onOpenExercise = navigation.onOpenExercise,
+            )
+
+            MainTab.TRAIN -> TrainRoute(
+                onOpenWorkout = navigation.onOpenFocusWorkout,
+                onOpenProgram = navigation.onOpenProgram,
+            )
+
             MainTab.PLAN -> PathRoute()
-            MainTab.SKILLS -> SkillsRoute()
+
+            MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
+
             MainTab.BODY -> EquipmentRoute()
         }
     }
 }
+
+/**
+ * Where the tabs can lead.
+ *
+ * @property onOpenWorkout Opens the workout in progress.
+ * @property onOpenFocusWorkout Opens a single workout from the Train tab, by focus name.
+ * @property onOpenExercise Opens an exercise's detail, by id.
+ * @property onOpenProgram Opens a skill program, by id.
+ */
+data class MainNavigation(
+    val onOpenWorkout: () -> Unit,
+    val onOpenFocusWorkout: (String) -> Unit,
+    val onOpenExercise: (String) -> Unit,
+    val onOpenProgram: (String) -> Unit,
+)
 
 /** The tab bar around [content]. Stateless, so it previews and tests without the tabs' data. */
 @Composable
@@ -161,6 +186,6 @@ private fun TabBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
 @Composable
 private fun MainScreenPreview() {
     LevitxTheme {
-        MainScreen(selected = MainTab.TODAY, onSelect = {}) { TrainScreen() }
+        MainScreen(selected = MainTab.PLAN, onSelect = {}) { Text(stringResource(R.string.path_no_goal)) }
     }
 }

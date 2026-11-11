@@ -72,6 +72,20 @@ public class Coach internal constructor(
     }
 
     /**
+     * A workout the person picked for [focus] from the Train tab, as of
+     * [nowEpochMillis], or null when nothing in it can be trained safely.
+     *
+     * It uses the same exercises, targets and safety rules as [recommend], so a
+     * movement trained too recently comes back light and a sore area is worked
+     * around. It doesn't change the plan: the next recommended session is
+     * still whatever comes next once this one is recorded.
+     */
+    public fun workout(model: AthleteModel, focus: WorkoutFocus, nowEpochMillis: Long): PlannedSession? {
+        val context = CoachContext(model, nowEpochMillis)
+        return builder.focused(focus, context)?.let { HardRules.repair(it, context, rules)?.session }
+    }
+
+    /**
      * The model after the person finished [result]. Call it for every session,
      * including ones started from the Train tab, so the coach knows what was
      * actually done.

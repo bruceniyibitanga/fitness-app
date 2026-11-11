@@ -1,12 +1,8 @@
 package app.levitx.phone.path
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
@@ -17,23 +13,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.levitx.core.skills.Gate
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxSpacing
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
+import app.levitx.phone.ui.GateRow
 import app.levitx.phone.ui.SectionLabel
-import app.levitx.phone.ui.measureText
-
-private val GateNumberWidth = 40.dp
+import app.levitx.phone.ui.gateStatus
 
 /** Path destination: connects [PathViewModel] to [PathScreen]. */
 @Composable
@@ -77,59 +68,11 @@ fun PathScreen(uiState: PathUiState, modifier: Modifier = Modifier) {
                             number = index + 1,
                             gate = gate,
                             best = uiState.bestByGateId[gate.id] ?: 0,
-                            status = when {
-                                uiState.currentIndex == null || index < uiState.currentIndex -> GateStatus.PASSED
-                                index == uiState.currentIndex -> GateStatus.CURRENT
-                                else -> GateStatus.LOCKED
-                            },
+                            status = gateStatus(index, uiState.currentIndex),
                         )
                         HorizontalDivider(color = LevitxColors.Line)
                     }
                 }
-            }
-        }
-    }
-}
-
-private enum class GateStatus { PASSED, CURRENT, LOCKED }
-
-@Composable
-private fun GateRow(number: Int, gate: Gate, best: Int, status: GateStatus) {
-    val statusText = stringResource(
-        when (status) {
-            GateStatus.PASSED -> R.string.path_status_passed
-            GateStatus.CURRENT -> R.string.path_status_current
-            GateStatus.LOCKED -> R.string.path_status_locked
-        },
-    )
-    val titleColor = if (status == GateStatus.LOCKED) LevitxColors.TextMuted else LevitxColors.Text
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = LevitxSpacing.Medium)
-            .semantics(mergeDescendants = true) { stateDescription = statusText },
-    ) {
-        Text(
-            text = number.toString().padStart(2, '0'),
-            style = LevitxType.Label,
-            color = if (status == GateStatus.CURRENT) LevitxColors.Accent else LevitxColors.TextFaint,
-            modifier = Modifier.width(GateNumberWidth),
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(LevitxSpacing.XSmall)) {
-            Text(gate.title, style = MaterialTheme.typography.titleMedium, color = titleColor)
-            SectionLabel(
-                text = statusText,
-                color = if (status == GateStatus.CURRENT) LevitxColors.Accent else LevitxColors.TextMuted,
-            )
-            if (status == GateStatus.CURRENT) {
-                Text(gate.trains, style = MaterialTheme.typography.bodyMedium, color = LevitxColors.TextSoft)
-            }
-            if (best > 0) {
-                Text(
-                    text = stringResource(R.string.path_best, measureText(gate.measure, best)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = LevitxColors.TextMuted,
-                )
             }
         }
     }

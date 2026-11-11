@@ -51,6 +51,7 @@ import app.levitx.phone.ui.OptionCard
 import app.levitx.phone.ui.PrimaryButton
 import app.levitx.phone.ui.SecondaryButton
 import app.levitx.phone.ui.SectionLabel
+import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.measureText
 import java.time.Instant
 import java.time.ZoneId
@@ -61,29 +62,45 @@ private val ReasonMarkSize = 6.dp
 
 /** Today tab: connects [TodayViewModel] to [TodayScreen]. */
 @Composable
-fun TodayRoute(onOpenWorkout: () -> Unit, viewModel: TodayViewModel = hiltViewModel()) {
+fun TodayRoute(
+    onOpenWorkout: () -> Unit,
+    onOpenExercise: (String) -> Unit,
+    viewModel: TodayViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     TodayScreen(
         uiState = uiState,
-        onStart = { choice -> scope.launch { if (viewModel.start(choice)) onOpenWorkout() } },
-        onRest = viewModel::rest,
-        onAcknowledgeWeightNotice = viewModel::acknowledgeWeightNotice,
+        actions = TodayActions(
+            onStart = { choice -> scope.launch { if (viewModel.start(choice)) onOpenWorkout() } },
+            onRest = viewModel::rest,
+            onAcknowledgeWeightNotice = viewModel::acknowledgeWeightNotice,
+            onOpenExercise = onOpenExercise,
+        ),
     )
 }
+
+/**
+ * Everything the person can do on Today, grouped so the screen takes one parameter for them.
+ *
+ * @property onStart Starts the session; the choice is what they picked when the coach offered an easier day.
+ * @property onRest Takes the rest day the coach offered.
+ * @property onAcknowledgeWeightNotice Marks the weight notice as read.
+ * @property onOpenExercise Opens an exercise's detail by id.
+ */
+data class TodayActions(
+    val onStart: (SuggestionChoice?) -> Unit,
+    val onRest: () -> Unit,
+    val onAcknowledgeWeightNotice: () -> Unit,
+    val onOpenExercise: (String) -> Unit,
+)
 
 /**
  * The next session as the coach planned it, the reason for it, and when the
  * coach noticed something, the choice to ease off.
  */
 @Composable
-fun TodayScreen(
-    uiState: TodayUiState,
-    onStart: (SuggestionChoice?) -> Unit,
-    onRest: () -> Unit,
-    onAcknowledgeWeightNotice: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun TodayScreen(uiState: TodayUiState, actions: TodayActions, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(LevitxSpacing.Medium),
         modifier = modifier
@@ -94,21 +111,17 @@ fun TodayScreen(
         when (uiState) {
             TodayUiState.Loading -> Unit
             TodayUiState.Unavailable -> Text(stringResource(R.string.data_unavailable))
-            is TodayUiState.Ready -> Ready(uiState, onStart, onRest, onAcknowledgeWeightNotice)
+            is TodayUiState.Ready -> Ready(uiState, actions)
         }
     }
 }
 
 @Composable
-private fun Ready(
-    state: TodayUiState.Ready,
-    onStart: (SuggestionChoice?) -> Unit,
-    onRest: () -> Unit,
-    onAcknowledgeWeightNotice: () -> Unit,
-) {
+private fun Ready(state: TodayUiState.Ready, actions: TodayActions) {
     val recommendation = state.recommendation
+    val onStart = actions.onStart
     Header(state.nowEpochMillis)
-    if (CoachNotice.FAST_WEIGHT_LOSS in recommendation.notices) WeightNotice(onAcknowledgeWeightNotice)
+    if (CoachNotice.FAST_WEIGHT_LOSS in recommendation.notices) WeightNotice(actions.onAcknowledgeWeightNotice)
     val session = recommendation.session
     if (session == null) {
         Text(stringResource(R.string.today_rest_title), style = LevitxType.Display)
@@ -125,11 +138,11 @@ private fun Ready(
     }
     val suggestion = recommendation.suggestion
     if (suggestion != null && !state.hasWorkoutInProgress) {
-        SuggestionCard(suggestion, onStart, onRest)
+        SuggestionCard(suggestion, onStart, actions.onRest)
     }
     Lead(session.plans.first())
     Reason(recommendation)
-    SessionList(session, state.bodyweightKg)
+    SessionList(session, state.bodyweightKg, onExerciseClick = actions.onOpenExercise)
     if (state.bodyweightKg == null && session.plans.any { it.exercise.loadProfile != null }) {
         Text(
             text = stringResource(R.string.today_bodyweight_prompt),
@@ -288,9 +301,7 @@ private fun TodayScreenPreview() {
                 bodyweightKg = 74.2,
                 hasWorkoutInProgress = false,
             ),
-            onStart = {},
-            onRest = {},
-            onAcknowledgeWeightNotice = {},
+            actions = TodayActions(onStart = {}, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}),
         )
     }
 }

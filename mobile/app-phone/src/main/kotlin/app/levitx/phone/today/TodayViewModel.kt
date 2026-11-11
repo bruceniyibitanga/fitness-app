@@ -4,15 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.SuggestionChoice
-import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.coach.bodyweightTrend
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
 import app.levitx.phone.isExpectedDataFailure
+import app.levitx.phone.workout.WorkoutStarter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,15 +30,16 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
 /**
  * Today: asks the coach for the next session and starts it.
  *
- * Starting saves the workout as the draft before the workout screen opens,
- * so the draft is the one place the workout in progress lives.
+ * Starting goes through [WorkoutStarter], which saves the workout as the
+ * draft before the workout screen opens.
  */
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     private val coachRepository: CoachRepository,
-    private val drafts: WorkoutDraftRepository,
+    drafts: WorkoutDraftRepository,
     private val coach: Coach,
     private val clock: TrainingClock,
+    private val starter: WorkoutStarter,
 ) : ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<TodayUiState> =
@@ -79,14 +79,7 @@ class TodayViewModel @Inject constructor(
             session == null -> false
 
             else -> handlingDataFailures(onFailure = { false }) {
-                drafts.save(
-                    WorkoutRun(
-                        id = UUID.randomUUID().toString(),
-                        session = session,
-                        startedAtEpochMillis = clock.currentTimeMillis(),
-                        choice = choice,
-                    ),
-                )
+                starter.start(session, choice)
                 true
             }
         }
