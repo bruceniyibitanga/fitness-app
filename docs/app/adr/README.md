@@ -9,5 +9,6 @@ One short file per decision that would be expensive to change later. Each says w
 | [0003](0003-phone-watch-communication.md) | Phone and watch talk over the Wearable Data Layer | Accepted |
 | [0004](0004-mvvm-and-shared-core.md) | Android's recommended architecture, plus a pure Kotlin core | Accepted |
 | [0005](0005-kotlin-compose-and-wear-compose.md) | Kotlin, Jetpack Compose and Compose for Wear OS | Accepted |
+| [0006](0006-watch-workout-service.md) | The watch workout runs in a foreground service, and the rest alert uses a short wake lock | Accepted |
 
 To add one, copy an existing file, give it the next number, and keep it under a page. When a decision changes, write a new ADR and mark the old one superseded rather than deleting it.

@@ -61,6 +61,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
+          # The MIT-licensed cache. The default ("enhanced") is a proprietary
+          # component whose terms allow future charges for private repos.
+          cache-provider: basic
           # Only builds on main write the shared cache, so a branch can't
           # poison what other branches restore.
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
@@ -89,9 +92,74 @@ jobs:
       - name: Lint, test and build
         id: build
         if: ${{ !cancelled() }}
-        run: ./gradlew check assembleDebug assembleRelease --warning-mode all
+        # --continue runs every task it can, so one run reports every failure.
+        run: ./gradlew check assembleDebug assembleRelease --continue --warning-mode all
+
+      # Room writes the database schema during the build. Each version must be
+      # committed so migrations can be written and tested against it. The new
+      # schema is printed so it can be copied in.
+      - name: Check Room schema is committed
+        # Runs even when another module failed: the schema comes from :data alone.
+        if: ${{ !cancelled() }}
+        run: |
+          changed=$(git status --porcelain --untracked-files=all -- data/schemas)
+          if [ -n "$changed" ]; then
+            echo "::error::The Room schema changed. Commit mobile/data/schemas."
+            for f in $(git ls-files --others --exclude-standard -- data/schemas) $(git diff --relative --name-only -- data/schemas); do
+              echo "==== $f"
+              cat "$f"
+            done
+            exit 1
+          fi
 
       # Gradle only prints the first lint issue. Print the full text reports.
       - name: Print lint findings
         if: failure() && steps.build.outcome == 'failure'
         run: find . -path '*lint_intermediate_text_report*' -name '*.txt' -exec cat {} +
+
+  instrumented:
+    name: Instrumented tests (emulator)
+    needs: wrapper
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # Hardware acceleration for the emulator, as the emulator runner's README describes.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # The Keystore and SQLCipher only exist on a device, so the encryption
+      # tests run on an emulator.
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          working-directory: mobile
+          script: ./gradlew :data:connectedDebugAndroidTest
+
+      # Gradle only links to the HTML report. Print the failing test results.
+      - name: Print failed instrumented tests
+        if: failure()
+        # The result file names contain spaces, so each file is handled on its own.
+        run: find data/build/outputs/androidTest-results -name '*.xml' -exec sh -c 'grep -q "<failure" "$1" && cat "$1"' _ {} \;

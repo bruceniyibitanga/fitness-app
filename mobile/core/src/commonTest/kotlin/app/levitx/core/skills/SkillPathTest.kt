@@ -49,4 +49,12 @@ class SkillPathTest {
         assertFailsWith<IllegalArgumentException> { SkillPath("x", "X", listOf(gate, gate)) }
         assertFailsWith<IllegalArgumentException> { gate.copy(target = 0) }
     }
+
+    @Test
+    fun catalogueFindsPathsByIdAndEveryGateIdIsUnique() {
+        assertEquals(SkillCatalogue.firstPullUp, SkillCatalogue.byId("first_pull_up"))
+        assertEquals(null, SkillCatalogue.byId("nope"))
+        val ids = SkillCatalogue.all.flatMap { path -> path.gates.map { it.id } }
+        assertEquals(ids.size, ids.toSet().size)
+    }
 }

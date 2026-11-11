@@ -4,7 +4,7 @@ The app ships in phases. Each phase has a clear finish line and doesn't start un
 
 Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose for Wear OS. iPhone and Apple Watch come after the Android release (see [ADR 0005](adr/0005-kotlin-compose-and-wear-compose.md)).
 
-## Phase 0: Foundation (this phase)
+## Phase 0: Foundation (done)
 
 - Gradle build in `mobile/` with a version catalog and a verified Gradle wrapper.
 - `:core`, a Kotlin Multiplatform module holding the training rules, with tests:
@@ -20,31 +20,49 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 
 ## Phase 1: Design system and app skeleton
 
-- `:design` module with the design tokens (colours, Archivo and JetBrains Mono, square edges) for phone and watch.
-- Shared Gradle settings move into a convention plugin in `build-logic/`.
-- ViewModel and UI state pattern, navigation (Navigation 3 on the phone, Wear Compose navigation on the watch) and dependency injection.
-- Encrypted Room database with its passphrase protected by the Android Keystore.
-- CI builds release app bundles for both apps.
+- `:design` module with the design tokens (colours, bundled Archivo and JetBrains Mono, brand text styles, spacing). Phone and watch themes are built from it. Done.
+- Shared Gradle settings in convention plugins in `build-logic/`. Done.
+- Hilt, Navigation 3 on both apps, and the ViewModel and UI state pattern on a first home screen. Done.
+- Encrypted Room database (SQLCipher) with its key protected by the Android Keystore, failing closed when the key is missing. Done.
+- CI runs the encryption tests on an emulator. Done.
+- Still to do: release app bundles in CI, and trying both apps on a real phone and watch.
 
 **Done when** both apps open on an emulator with the real theme and read and write the encrypted database.
 
-## Phase 2: The core loop on the phone
+## Phase 2: The core loop on the phone (done, pending a try on a real phone)
 
-- Goal picker (muscle-up first) and the starting test.
-- Today's session, live set logging with reps in reserve, and rest timer.
-- Path screen with gates.
-- Load modifiers: vest, belt and band (with band calibration).
+- Goal picker: first pull-up and muscle-up paths. Done.
+- Starting test: gate by gate, stopping at the first gate not passed. Done.
+- Today's session: work sets at about 70% of the current best with 2 reps in reserve, then one best-effort set. Live logging with reps in reserve, and a rest timer that keeps time on the device's elapsed clock. Done.
+- Path screen with every gate and the person's best. Done.
+- Load modifiers: added weight (vest or belt) and bands per set, with live kilograms per rep. Bands are calibrated on a bathroom scale in the app. Band-assisted sets build toward a gate but don't pass it. Done.
+- Bodyweight entry, kept as a log so Phase 4 can chart it. Done.
 
 **Done when** someone can pick a goal, take the test and finish a full session on the phone.
 
 ## Phase 3: The watch
 
-- Wear OS session screens: rep counter, hold timer, rest timer.
-- Health Services `ExerciseClient` for heart rate and an ongoing workout, in a `health` foreground service.
-- Phone and watch sync over the Wearable Data Layer: the plan goes to the watch, finished sets come back. Sync works offline and survives retries.
-- A Tile showing the next session.
+- Wear OS session screens: rep counter, hold timer, rest timer, and a load picker for vests, belts and bands. Done.
+- Phone and watch sync over the Wearable Data Layer: the goal, bests and bands go to the watch, finished sessions come back. Sync works offline and survives retries. Done.
+- A session on the watch survives leaving the screen and the app being killed. Done.
+- Health Services `ExerciseClient` for heart rate and an ongoing workout, in a `health` foreground service, with a rest alert that fires with the screen off. Built; not yet run on a real watch.
+- A Tile showing the next session. Built; it still needs a preview image for the tile picker, taken from a real render.
+- Still to do before calling the phase done: a full session on a real watch with the phone out of reach, then checking it arrives on the phone.
 
 **Done when** a full session runs on the watch with the phone in a bag, and the results show up on the phone afterwards.
+
+### Decisions to check on a real watch
+
+These were made without a watch to test on. Each one has the result that would change it.
+
+| Decision | Why | Change it if |
+|---|---|---|
+| The rest alert keeps the processor awake during rest with a short wake lock ([ADR 0006](adr/0006-watch-workout-service.md)). | It needs no setup from the person and always fires on time. An exact alarm needs a setting switched on from Android 14. | The buzz is late with the wrist down, or a session costs noticeably more battery than other workout apps. Then try a Health Services duration goal first, an exact alarm second. |
+| The watch app is non-standalone: it needs the phone app. | The goal is chosen and the starting test is taken on the phone. A test on a watch screen would be slow and easy to get wrong. | People ask to set up on the watch alone. Then add a goal picker and starting test to the watch and mark it standalone. |
+| The watch doesn't ask for reps in reserve. Watch sets are saved as "didn't say". | Nothing uses reps in reserve yet, and our own rule is not to ask for data a feature doesn't need. One more question between sets is friction on a small screen. | A training rule starts using reps in reserve. Then ask on the rest screen, with one optional tap, so it never holds up a set. |
+| The load is chosen once per session on the watch, in 1 kg steps. | Most people keep the same vest or band for a whole session. Per-set changes and half kilograms are on the phone. | Testing shows people change load between sets on the watch. |
+| The screen stays on while the session screen is showing. | The hold timer runs on that screen and would be late if the watch dimmed. | Battery cost is noticeable. Then move the hold timer into the workout service and let the screen dim. |
+| The Tile has no preview image for the tile picker yet. | It has to be a screenshot of the real Tile. A made-up picture would misrepresent it. | As soon as the Tile has been seen on a watch or emulator: take the screenshot, add round and square versions, and switch the lint check back on. |
 
 ## Phase 4: Body and progress
 

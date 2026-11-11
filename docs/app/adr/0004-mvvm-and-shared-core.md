@@ -11,7 +11,7 @@ We want a structure that's easy to test, easy to follow, and the same in both ap
 - **Follow the guide in both apps.** Each screen has a ViewModel that exposes one immutable UI state as a `StateFlow` and takes user actions as function calls. Composables collect the state with `collectAsStateWithLifecycle` and hold no logic.
 - **Repositories are the source of truth** for each kind of data, and expose `Flow`s and `suspend` functions. Data sources wrap one outside thing each: the database, the Keystore, the Data Layer, Health Services.
 - **Shared rules go in `:core`,** a Kotlin Multiplatform module with no Android imports and no I/O. That covers load per rep, strength estimates, pain guidance and skill paths. It is the domain layer.
-- **Dependency injection with Hilt,** Android's recommended library, added in Phase 1 once we confirm it works with AGP 9's built-in Kotlin. If it doesn't yet, we use a small hand-written container, as Android's [manual DI guide](https://developer.android.com/training/dependency-injection/manual) describes, and switch later.
+- **Dependency injection with Hilt,** Android's recommended library. Hilt 2.59 and later support AGP 9, and code generation runs through KSP. ViewModels are `@HiltViewModel` and are fetched with `hiltViewModel()` inside each Navigation 3 entry, so each one lives exactly as long as its screen.
 
 ## Consequences
 

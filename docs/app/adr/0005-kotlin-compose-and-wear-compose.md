@@ -24,4 +24,4 @@ The maintainer asked for the best result and developer experience without compro
 - **One copy of the training rules** for phone, watch and, later, Apple devices.
 - **A new language for the maintainer.** Kotlin reads closely to TypeScript and Dart, and the docs, comments and ADRs are written to make the code easy to learn from.
 - **The shared module only stays shared if it stays pure.** Anything that needs Android (storage, sensors, sync) lives in the apps, behind interfaces where `:core` needs to call it.
-- **Build config is repeated in the two app modules for now.** When a third Android module arrives (the design system module in Phase 1), the shared settings move into a Gradle convention plugin in `build-logic/`, as Android's [Now in Android](https://github.com/android/nowinandroid) sample does.
+- **Shared build settings live in convention plugins** in `build-logic/` (`levitx.android.application`, `levitx.android.library`, `levitx.hilt`), as Android's [Now in Android](https://github.com/android/nowinandroid) sample does. A module's build file only says what is different about it.

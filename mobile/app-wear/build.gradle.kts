@@ -1,72 +1,62 @@
 /*
- * The Wear OS watch app. Compose for Wear OS, built-in Kotlin from AGP 9.
+ * The Wear OS watch app, in Compose for Wear OS.
+ *
+ * Shared Android settings (SDK levels, R8, lint, Compose) come from the
+ * levitx.android.application convention plugin in build-logic/.
  *
  * Shares its application id with :app-phone. Google Play and the Wearable Data
  * Layer both require the phone and watch apps to have the same package name
  * and signing key before they can talk to each other.
  */
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.levitx.android.application)
+    alias(libs.plugins.levitx.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "app.levitx.wear"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "app.levitx"
         minSdk = libs.versions.android.minSdk.wear.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "0.1.0"
-    }
-
-    buildTypes {
-        release {
-            // Shrink, optimise and obfuscate release builds with R8.
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    buildFeatures {
-        compose = true
-    }
-
-    lint {
-        warningsAsErrors = true
-        abortOnError = true
-        // Version bumps are Dependabot's job. Lint flagging them would fail
-        // the build every time a library ships, for no code problem.
-        disable += setOf("GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable")
-    }
-}
-
-kotlin {
-    compilerOptions {
-        allWarningsAsErrors.set(true)
     }
 }
 
 dependencies {
-    implementation(project(":core"))
+    implementation(project(":design"))
+    implementation(project(":data"))
+    implementation(project(":sync"))
+    // For WearableListenerService, which each app's sync listener extends.
+    implementation(libs.play.services.wearable)
 
-    implementation(platform(libs.compose.bom))
     implementation(libs.androidx.activity.compose)
-    // Lifecycle-aware state collection for Compose. Also lifts the lifecycle
-    // libraries above the version activity-compose pulls in, whose bundled
-    // lint checks no longer load in AGP 9.5's lint.
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.compose.ui)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.wear.compose.material3)
     implementation(libs.wear.compose.foundation)
     implementation(libs.wear.compose.ui.tooling)
-    debugImplementation(libs.compose.ui.tooling)
+
+    // Navigation 3 with Wear OS swipe-to-dismiss.
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.wear.compose.navigation3)
+    implementation(libs.kotlinx.serialization.core)
+
+    // The workout: heart rate from Health Services, shown as an ongoing activity.
+    implementation(libs.health.services.client)
+    implementation(libs.wear.ongoing)
+
+    // The Tile that shows the next session.
+    implementation(libs.wear.tiles)
+    implementation(libs.wear.protolayout)
+    implementation(libs.wear.protolayout.material3)
+    implementation(libs.kotlinx.coroutines.guava)
+
+    testImplementation(project(":testing"))
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

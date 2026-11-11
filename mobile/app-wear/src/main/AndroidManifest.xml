@@ -2,14 +2,48 @@
 <!--
   Watch app manifest.
 
-  No permissions are requested yet. Body sensors and exercise permissions are
-  added in Phase 3 with the workout screen that uses them.
+  Every permission below has a comment saying which feature needs it. The two
+  that the person has to grant (heart rate and notifications) are asked for
+  when the first session starts, with a sentence on why. A session still runs
+  without them. See docs/app/SECURITY.md.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
+    <!--
+      Heart rate during a session. Shown live, never stored or sent anywhere.
+      Wear OS 6 (API 36) replaced BODY_SENSORS with a permission for heart
+      rate alone, so each is declared for the versions that use it.
+    -->
+    <uses-permission
+        android:name="android.permission.BODY_SENSORS"
+        android:maxSdkVersion="35" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+
+    <!--
+      The workout runs in a foreground service of type "health", as Wear OS 5
+      and later require for apps that record exercise. It keeps the session
+      going when the person looks away from the app.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+
+    <!-- The "workout in progress" notification that foreground service shows. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- The buzz when rest ends. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!--
+      Keeps the processor awake for the length of a rest (two minutes at most),
+      so the rest alert fires on time with the screen off. See ADR 0006.
+    -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
+        android:name=".LevitxWearApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -19,12 +53,15 @@
         android:theme="@style/Theme.Levitx">
 
         <!--
-          The watch app works without the phone nearby: workouts are recorded
-          on the watch and synced when the phone is reachable.
+          Not standalone, in Google Play's sense: the goal is chosen in the
+          phone app and copied to the watch, so the watch app needs the phone
+          app installed. Once it has a goal, the watch runs whole sessions with
+          the phone out of reach and syncs them later. Flip this to true if
+          the watch ever gets its own goal picker.
         -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
-            android:value="true" />
+            android:value="false" />
 
         <!--
           An empty task affinity keeps the app's entry in the watch's recents
@@ -39,5 +76,60 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          The Tile: the next gate and today's session, one swipe from the
+          watch face. Exported because the system's tile renderer binds to it;
+          the permission means only the system can.
+
+          TODO before release: add the preview image the tile picker shows
+          (the androidx.wear.tiles.PREVIEW meta-data, in round and square
+          versions). It has to be a screenshot of the real Tile, which needs
+          a watch or emulator, so the lint check is switched off until then
+          rather than satisfied with a made-up picture. Tracked in ROADMAP.md.
+        -->
+        <service
+            android:name=".tile.NextSessionTileService"
+            android:exported="true"
+            android:label="@string/tile_label"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER"
+            tools:ignore="TilePreviews">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+
+        <!--
+          Runs the workout while a session is in progress: heart rate from
+          Health Services, the ongoing-activity indicator and the rest alert.
+          Not exported: only this app starts it.
+        -->
+        <service
+            android:name=".workout.WorkoutService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
+
+        <!--
+          Receives the goal, bests and bands from the phone, and the phone's
+          confirmations that sessions arrived, over the Wearable Data Layer.
+          The paths must match SyncPaths in :sync.
+
+          It has to be exported for Google Play services to reach it. That is
+          safe: WearableListenerService only accepts calls from Google Play
+          services, and Play services only delivers data written by a copy of
+          this app with the same package name and signing key.
+        -->
+        <service
+            android:name=".sync.PhoneDataListenerService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/levitx/state" />
+                <data android:pathPrefix="/levitx/acks/" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
