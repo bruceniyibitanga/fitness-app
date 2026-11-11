@@ -27,7 +27,7 @@ internal data class Outcome(
             val work = done.filterNot { it.first.isBestEffort }
             val planned = result.plan.sets.count { !it.isBestEffort }
             return Outcome(
-                top = result.sets.filter { it.countsTowardGate }.maxOfOrNull { it.value } ?: 0,
+                top = result.gateTop,
                 workTop = work.maxOfOrNull { it.second.value } ?: 0,
                 hitTarget = work.size == planned && work.all { (set, logged) -> logged.value >= set.target },
                 effort = Effort.of(work.mapNotNull { it.second.repsInReserve }.minOrNull()),

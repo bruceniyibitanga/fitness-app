@@ -33,4 +33,8 @@ internal class RoomGoalRepository @Inject constructor(private val databaseProvid
             ActiveGoalEntity(pathId = path.id, chosenAtEpochMillis = System.currentTimeMillis()),
         )
     }
+
+    override suspend fun clearActiveGoal() {
+        databaseProvider.database().goalDao().clear()
+    }
 }

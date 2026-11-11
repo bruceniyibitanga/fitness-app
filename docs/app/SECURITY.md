@@ -19,7 +19,7 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | Bands and the help they give | Personal | Local database | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
 | What the coach has learned (training history, targets, latest pain advice, how suggestions went) and the workout in progress | Health | Local database, as JSON documents in two tables | Encrypted. Never synced. Reading a damaged document fails without quoting it, so none of it reaches a crash report |
-| The watch's copy of the goal, bests and bands, and its own sessions | Personal | The watch's local database | Encrypted the same way, with the watch's own Keystore key |
+| The watch's copy of the goal, bests, bands and next session, and its own workouts | Personal | The watch's local database | Encrypted the same way, with the watch's own Keystore key |
 | Heart rate | Health | Watch memory only, while a session runs | Never written to disk, never sent to the phone or anywhere else |
 | Settings | Low | Local database | Encrypted |
 | Database key | Secret | `noBackupFilesDir`, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
@@ -42,9 +42,9 @@ The database key is 256 random bits made on the device the first time the app ru
 
 - **Who can read it.** Android's docs say Data Layer traffic [may at some point use Google-owned servers](https://developer.android.com/training/wearables/data/overview), though no other app can read it. Play services only delivers data between copies of this app with the same package name and signing key.
 - **What goes over it.** Only what the watch needs to run a session, and what comes back:
-  - phone to watch: which goal is active, the best per gate, and the bands (name and kilograms of help)
-  - watch to phone: finished sessions (the gate, start and finish times, and each set's reps or seconds and load)
-- **What never goes over it.** Bodyweight, pain notes, physio documents and photos. They stay on the phone. A test checks that bodyweight is not in a session's payload.
+  - phone to watch: which goal is active, the best per gate, the bands (name and kilograms of help), the next session the coach planned (exercises, sets, targets and rest), and the ids of the last ten workouts the coach recorded
+  - watch to phone: finished workouts (the plan they ran, start and finish times, each set's reps or seconds and load, and which exercises were skipped), and gate sessions from an older watch app
+- **What never goes over it.** The coach's model (training history, pain advice, how suggestions went), bodyweight, pain notes, physio documents and photos. They stay on the phone. Only the plan the coach produced goes to the watch. Tests check that bodyweight is not in a session's payload.
 - **How payloads are handled.** Nothing that arrives is trusted:
   - Every payload has a version number and a size limit.
   - Ids, counts and values are checked against fixed limits before anything reaches the database.
@@ -71,7 +71,7 @@ The database key is 256 random bits made on the device the first time the app ru
   - heart rate (`BODY_SENSORS` up to Wear OS 5, `READ_HEART_RATE` from Wear OS 6): shown during a session. Asked for when the first session starts. A session runs without it.
   - notifications: the "session in progress" notification. Asked for at the same time.
   - foreground service (type `health`), vibrate and wake lock: granted at install. They keep the session going off-screen and give the rest alert ([ADR 0006](adr/0006-watch-workout-service.md)).
-- **The workout notification is public** (it shows on a locked watch) and only ever says "Set 2 of 4" or "Rest".
+- **The workout notification is public** (it shows on a locked watch) and only ever says "Exercise 1 of 4, set 2 of 3" or "Rest".
 - **CI.** Uses a read-only token and actions pinned to commit SHAs.
 - **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
 

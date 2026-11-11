@@ -6,7 +6,7 @@ The short version: you tell the app your goal, and it acts like a trainer. It pl
 
 Nothing in here is final until a qualified coach has reviewed the numbers. Where a number is our own conservative choice rather than something the research gives us, it says so. Every number lives in one file, `CoachTuning.kt`, so that review is one file long.
 
-**Where it stands:** the engine is built and tested in `:core` (package `app.levitx.core.coach`) and runs the phone app. The watch isn't on it yet. Section 10 lists what is and isn't done, and section 11 lists where every exercise and number comes from.
+**Where it stands:** the engine is built and tested in `:core` (package `app.levitx.core.coach`) and runs the phone app. The watch runs the sessions it plans. Section 10 lists what is and isn't done, and section 11 lists where every exercise and number comes from.
 
 ## 1. What we ask, and what we work out
 
@@ -241,10 +241,10 @@ Built, in `:core`:
 - workouts picked from the Train tab (`Coach.workout`), built and made safe the same way as the coach's own sessions
 - form cues and set-up notes for every exercise (`ExerciseGuides`)
 - storage in the encrypted database (`CoachRepository`), with the workout in progress saved after every set
+- the watch: the phone sends it the next session, the watch runs it with `WorkoutRun`, and the finished workout comes back to the coach's history like one done on the phone
 
 Not built yet:
 
-- **Feeding watch sessions to the coach.** A session done on the watch raises the gate's best, which the coach sees, but isn't yet in its history, so it doesn't count toward recovery or the week's volume. That comes when the watch moves to `WorkoutRun`.
 - **Health Connect.** The engine takes weigh-ins; nothing reads them from Health Connect yet.
 - **Some screens.** Setup, Today, the suggestion card, the workout, Skills and the Train library are built on the phone. The weigh-in prompt and the week review are designed but not built.
 - **Offering to trim sessions** that keep finishing early. The model records how long each session took; nothing acts on it yet.

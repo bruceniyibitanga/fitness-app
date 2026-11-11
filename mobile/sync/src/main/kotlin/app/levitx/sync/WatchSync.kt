@@ -2,7 +2,7 @@ package app.levitx.sync
 
 import app.levitx.data.ApplicationScope
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.session.SessionOutbox
+import app.levitx.data.coach.WorkoutOutbox
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -19,17 +19,18 @@ import kotlinx.coroutines.withTimeoutOrNull
 @Singleton
 class WatchSync @Inject internal constructor(
     private val engine: WatchSyncEngine,
-    private val outbox: SessionOutbox,
+    private val workoutOutbox: WorkoutOutbox,
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     /**
-     * Syncs now, and again whenever a session is queued. Call once, when the
+     * Syncs now, and again whenever a workout is queued. Call once, when the
      * app process starts.
      */
     fun start() {
         scope.launch {
-            outbox.observeQueued()
-                // If sessions are queued faster than passes run, one pass covers them all.
+            // The first emission also sends any sessions an older version of the app left queued.
+            workoutOutbox.observeQueued()
+                // If workouts are queued faster than passes run, one pass covers them all.
                 .conflate()
                 // Locked data is expected and already shown on screen. Anything else is a bug.
                 .catch { error -> if (error !is DataUnavailableException) throw error }

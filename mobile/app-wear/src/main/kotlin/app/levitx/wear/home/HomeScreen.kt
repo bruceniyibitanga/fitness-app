@@ -20,14 +20,12 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import app.levitx.core.load.formatKg
-import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.design.LevitxColors
 import app.levitx.wear.R
 import app.levitx.wear.theme.LevitxWearTheme
 import app.levitx.wear.ui.CenteredText
 import app.levitx.wear.ui.SectionLabel
-import app.levitx.wear.ui.measureText
 
 /** Home destination: connects [HomeViewModel] to [HomeScreen]. */
 @Composable
@@ -45,8 +43,8 @@ fun HomeRoute(onOpenSession: () -> Unit, onChooseLoad: () -> Unit, viewModel: Ho
 }
 
 /**
- * The watch home screen: the next gate, today's session and the button that
- * starts it.
+ * The watch home screen: the next session the phone's coach planned and the
+ * button that starts it.
  *
  * ScreenScaffold ties the scroll indicator to the list, and
  * TransformingLazyColumn scales items at the curved screen edges, as the
@@ -66,7 +64,6 @@ fun HomeScreen(
             when (uiState) {
                 HomeUiState.Loading -> Unit
                 HomeUiState.Unavailable -> item { CenteredText(stringResource(R.string.data_unavailable)) }
-                HomeUiState.NoGoal -> item { CenteredText(stringResource(R.string.home_no_goal)) }
                 is HomeUiState.Ready -> readyItems(uiState, onStartSession, onResumeSession, onChooseLoad)
             }
         }
@@ -79,38 +76,41 @@ private fun TransformingLazyColumnScope.readyItems(
     onResumeSession: () -> Unit,
     onChooseLoad: () -> Unit,
 ) {
-    item { ListHeader { Text(state.skillName) } }
-    val gateTitle = state.gateTitle
-    if (gateTitle == null) {
-        item { CenteredText(stringResource(R.string.home_path_complete)) }
-    } else {
-        item { SectionLabel(stringResource(R.string.home_gate_label, state.gateNumber, state.gateCount)) }
+    item { ListHeader { Text(state.goalName ?: stringResource(R.string.home_title)) } }
+    val next = state.next
+    if (next != null) {
+        item { SectionLabel(stringResource(R.string.home_next_label)) }
         item {
             Text(
-                text = gateTitle,
+                text = stringResource(R.string.home_starts_with, next.firstExercise),
                 modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
             )
         }
+        item { CenteredText(nextText(next)) }
     }
-    state.today?.let { today ->
-        item { CenteredText(todayText(today)) }
-        item {
-            if (state.isSessionRunning) {
-                Button(
-                    onClick = onResumeSession,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.home_resume_session)) },
-                )
-            } else {
-                Button(
-                    onClick = onStartSession,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.home_start_session)) },
-                )
-            }
+    when {
+        state.isSessionRunning -> item {
+            Button(
+                onClick = onResumeSession,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.home_resume_session)) },
+            )
         }
+
+        next != null -> item {
+            Button(
+                onClick = onStartSession,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.home_start_session)) },
+            )
+        }
+
+        // The plan is cleared when a workout finishes, until the phone has it and plans the next.
+        state.waitingToSync > 0 -> item { CenteredText(stringResource(R.string.home_waiting_for_plan)) }
+
+        else -> item { CenteredText(stringResource(R.string.home_no_session)) }
     }
     state.load?.let { load ->
         item {
@@ -132,14 +132,10 @@ private fun TransformingLazyColumnScope.readyItems(
     }
 }
 
-/** "3 sets of 4 reps, then a best effort". */
+/** "4 exercises, about 35 min". */
 @Composable
-private fun todayText(today: TodaySummary): String = pluralStringResource(
-    R.plurals.home_today,
-    today.workSets,
-    today.workSets,
-    measureText(today.measure, today.workTarget),
-)
+private fun nextText(next: NextSummary): String =
+    pluralStringResource(R.plurals.home_next_size, next.exerciseCount, next.exerciseCount, next.minutes)
 
 /** "Bodyweight only", "+5 kg", "Red band" or "+5 kg, Red band". */
 @Composable
@@ -157,15 +153,11 @@ private fun loadText(load: LoadSummary): String {
 @WearPreviewDevices
 @Composable
 private fun HomeScreenPreview() {
-    val path = SkillCatalogue.muscleUp
     LevitxWearTheme {
         HomeScreen(
             uiState = HomeUiState.Ready(
-                skillName = path.name,
-                gateTitle = path.gates[2].title,
-                gateNumber = 3,
-                gateCount = path.gates.size,
-                today = TodaySummary(workSets = 3, workTarget = 4, measure = GateMeasure.REPS),
+                goalName = SkillCatalogue.muscleUp.name,
+                next = NextSummary(exerciseCount = 4, minutes = 35, firstExercise = "Negative pull-up"),
                 load = LoadSummary(addedKg = 0.0, bandName = null),
                 waitingToSync = 1,
             ),

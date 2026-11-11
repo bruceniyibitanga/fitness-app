@@ -1,16 +1,15 @@
 package app.levitx.wear.session
 
-import app.levitx.core.session.SessionRun
+import app.levitx.core.coach.ExercisePlan
+import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.session.SetLoad
-import app.levitx.core.session.trainingDay
-import app.levitx.core.skills.Gate
+import app.levitx.core.skills.GateMeasure
+import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.ApplicationScope
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.goal.GoalRepository
-import app.levitx.data.progress.ProgressRepository
-import app.levitx.data.session.SessionDraftRepository
-import app.levitx.data.session.SessionOutbox
-import app.levitx.data.session.StoredSession
+import app.levitx.data.coach.NextSessionRepository
+import app.levitx.data.coach.WorkoutDraftRepository
+import app.levitx.data.coach.WorkoutOutbox
 import app.levitx.data.time.TrainingClock
 import java.util.UUID
 import javax.inject.Inject
@@ -19,67 +18,69 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-private const val MILLIS_PER_SECOND = 1_000L
-
-/** Where the watch is with a session. */
+/** Where the watch is with a workout. */
 sealed interface WorkoutState {
-    /** Checking for a session left in progress. */
+    /** Checking for a workout left in progress. */
     data object Loading : WorkoutState
 
     /** The person's data couldn't be unlocked on this device. */
     data object Unavailable : WorkoutState
 
     /**
-     * No session in progress.
+     * No workout in progress.
      *
-     * @property load The load the next session will start with.
+     * @property load The load the skill work of the next workout will use.
      */
     data class Idle(val load: SetLoad = SetLoad.None) : WorkoutState
 
-    /** A session was asked for and is being planned. */
+    /** A workout was asked for and is being set up. */
     data object Starting : WorkoutState
 
     /**
-     * A session is in progress.
+     * A workout is in progress.
      *
-     * @property run The session so far.
+     * @property run The workout so far. Never complete: a complete one is saved straight away.
      */
-    data class Running(val run: SessionRun) : WorkoutState
+    data class Running(val run: WorkoutRun) : WorkoutState
 
     /**
-     * The session is saved and queued for the phone.
+     * The workout is saved and queued for the phone.
      *
-     * @property gate The gate trained.
-     * @property previousBest Best before this session.
-     * @property sessionBest Best set in this session that counts toward the gate.
-     * @property usedBand True if any set was band-assisted. Those sets don't count toward the gate.
+     * @property sets Sets done.
+     * @property newBest The biggest new best on a skill gate, if there was one.
+     * @property usedBand True if any set was band-assisted. Those sets don't count toward a gate.
      */
-    data class Finished(val gate: Gate, val previousBest: Int, val sessionBest: Int, val usedBand: Boolean) :
-        WorkoutState {
-        /** True when this session set a new best. */
-        val isNewBest: Boolean
-            get() = sessionBest > previousBest
-
-        /** True when this session passed the gate. */
-        val passedGate: Boolean
-            get() = sessionBest >= gate.target
-    }
+    data class Finished(val sets: Int, val newBest: GateBest? = null, val usedBand: Boolean = false) : WorkoutState
 }
 
 /**
- * Owns the session in progress on the watch.
+ * A new best on a skill gate.
+ *
+ * @property gateTitle The gate, as the phone's path screen names it.
+ * @property measure Reps or seconds.
+ * @property value The new best.
+ * @property passedGate True when it reaches the gate's target.
+ */
+data class GateBest(val gateTitle: String, val measure: GateMeasure, val value: Int, val passedGate: Boolean)
+
+/**
+ * Owns the workout in progress on the watch.
+ *
+ * The workout is the one the phone's coach planned (see
+ * [NextSessionRepository]); the rules for moving through it are
+ * [WorkoutRun]'s, the same ones the phone uses. This class connects them to
+ * the screens and keeps them safe.
  *
  * It lives as long as the app process rather than one screen, which is what
  * the Wear OS workout guidance asks for: someone can swipe back to the watch
  * face mid-rest and return to the same set. Every change is also saved to the
- * encrypted database, so the session survives the app being killed or
+ * encrypted database, so the workout survives the app being killed or
  * crashing between sets.
  *
  * Actions return straight away and run one at a time on [scope], so a tap
@@ -88,38 +89,45 @@ sealed interface WorkoutState {
  */
 @Singleton
 class WorkoutController @Inject constructor(
-    private val goalRepository: GoalRepository,
-    private val progressRepository: ProgressRepository,
-    private val draftRepository: SessionDraftRepository,
-    private val outbox: SessionOutbox,
+    private val nextSessionRepository: NextSessionRepository,
+    private val drafts: WorkoutDraftRepository,
+    private val workoutOutbox: WorkoutOutbox,
+    private val leftoverGateSession: LeftoverGateSession,
     private val clock: TrainingClock,
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     private val mutableState = MutableStateFlow<WorkoutState>(WorkoutState.Loading)
     private val mutex = Mutex()
 
-    /** The load the next session starts with. Kept between sessions: most people train with the same setup. */
+    /**
+     * The load for the skill work of the next workout. Kept between workouts:
+     * most people train with the same setup.
+     */
     private var nextLoad = SetLoad.None
 
     /** What the watch is doing now. */
     val state: StateFlow<WorkoutState> = mutableState.asStateFlow()
 
+    /** The workout in progress, or null. */
+    private val running: WorkoutRun?
+        get() = (mutableState.value as? WorkoutState.Running)?.run
+
     init {
-        // Pick up a session left in progress when the app was last closed or killed.
         act {
-            val draft = draftRepository.load()
-            when {
-                draft == null -> mutableState.value = WorkoutState.Idle(nextLoad)
-
-                // Every set was logged but the app died before the session was saved.
-                draft.isComplete -> finish(draft)
-
-                else -> save(draft.withSaneRest(clock.elapsedRealtimeMillis()))
+            leftoverGateSession.save()
+            // Pick up a workout left in progress when the app was last closed or killed.
+            val draft = drafts.observeDraft().first()
+            if (draft == null) {
+                mutableState.value = WorkoutState.Idle(nextLoad)
+            } else {
+                // A complete draft means every set was logged but the app died before
+                // the workout was saved. keep() saves it now.
+                keep(draft.withSaneRest(clock.elapsedRealtimeMillis()))
             }
         }
     }
 
-    /** Sets the vest, belt or band for the next session. Ignored while a session is running. */
+    /** Sets the vest, belt or band for the next workout's skill work. Ignored while a workout is running. */
     fun setLoad(load: SetLoad) = act {
         if (mutableState.value is WorkoutState.Idle) {
             nextLoad = load
@@ -127,42 +135,59 @@ class WorkoutController @Inject constructor(
         }
     }
 
-    /** Starts today's session. If one is already in progress, it carries on instead. */
+    /** Starts the next session the coach planned. If a workout is already in progress, it carries on instead. */
     fun start() {
-        // Shown at once, so the session screen never flashes "no session" while the plan is read.
+        // Shown at once, so the workout screen never flashes "no workout" while the plan is read.
         mutableState.update { current ->
             if (current is WorkoutState.Idle || current is WorkoutState.Finished) WorkoutState.Starting else current
         }
         act {
             val current = mutableState.value
-            if (current !is WorkoutState.Running && current !is WorkoutState.Unavailable) startRun()
+            if (current is WorkoutState.Running || current is WorkoutState.Unavailable) return@act
+            val session = nextSessionRepository.observeNext().first()
+            if (session == null) {
+                mutableState.value = WorkoutState.Idle(nextLoad)
+            } else {
+                keep(
+                    WorkoutRun(UUID.randomUUID().toString(), session, startedAtEpochMillis = clock.currentTimeMillis()),
+                )
+            }
         }
     }
 
     /**
-     * Records the set just done and starts rest, or saves the session if it
+     * Records the set just done and starts rest, or saves the workout if it
      * was the last set.
      *
      * @param value Reps or seconds done.
      */
     fun logSet(value: Int) = act {
-        val running = mutableState.value as? WorkoutState.Running ?: return@act
+        val run = running ?: return@act
+        val plan = run.current ?: return@act
         // Reps in reserve aren't asked for on the watch: one more question on a
         // small screen between sets isn't worth it. Null means "didn't say".
-        val next = running.run.logSet(value, repsInReserve = null, nowElapsedMillis = clock.elapsedRealtimeMillis())
-        if (next.isComplete) finish(next) else save(next)
+        val next = run.withLoad(plan.loadWith(nextLoad))
+            .logSet(value, repsInReserve = null, nowElapsedMillis = clock.elapsedRealtimeMillis())
+        // A run that didn't change means the set wasn't accepted (during rest, say).
+        if (next.logged != run.logged) keep(next)
     }
 
     /** Ends rest early, or after it runs out. */
     fun endRest() = act {
-        val running = mutableState.value as? WorkoutState.Running ?: return@act
-        if (running.run.isResting) save(running.run.endRest())
+        val run = running ?: return@act
+        if (run.isResting) keep(run.endRest())
     }
 
-    /** Ends the session now and saves the sets done. With none done, the session is simply dropped. */
+    /** Moves on to the next exercise. Skipped if nothing was done, ended early if some was. */
+    fun skipExercise() = act {
+        val run = running ?: return@act
+        keep(run.skipExercise())
+    }
+
+    /** Ends the workout now and saves the sets done. With none done, the workout is simply dropped. */
     fun finishEarly() = act {
-        val running = mutableState.value as? WorkoutState.Running ?: return@act
-        finish(running.run)
+        val run = running ?: return@act
+        finish(run)
     }
 
     /** Leaves the summary. */
@@ -170,46 +195,30 @@ class WorkoutController @Inject constructor(
         if (mutableState.value is WorkoutState.Finished) mutableState.value = WorkoutState.Idle(nextLoad)
     }
 
-    private suspend fun startRun() {
-        val day = combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->
-            path?.trainingDay(bests)
-        }.first()
-        val plan = day?.plan
-        if (plan == null) {
-            mutableState.value = WorkoutState.Idle(nextLoad)
-            return
+    /** Saves [run] as the workout in progress, or the finished workout if it is complete. */
+    private suspend fun keep(run: WorkoutRun) {
+        if (run.isComplete) {
+            finish(run)
+        } else {
+            // The screen updates first; the write follows a moment later.
+            mutableState.value = WorkoutState.Running(run)
+            drafts.save(run)
         }
-        save(
-            SessionRun(
-                id = UUID.randomUUID().toString(),
-                plan = plan,
-                previousBest = day.currentBest,
-                startedAtEpochMillis = clock.currentTimeMillis(),
-                // Holds have no load to track, so a load chosen for another gate doesn't apply.
-                load = if (plan.gate.loadProfile != null) nextLoad else SetLoad.None,
-            ),
-        )
     }
 
-    private suspend fun save(run: SessionRun) {
-        // The screen updates first; the write follows a moment later.
-        mutableState.value = WorkoutState.Running(run)
-        draftRepository.save(run)
-    }
-
-    private suspend fun finish(run: SessionRun) {
-        val session = run.complete(finishedAtEpochMillis = clock.currentTimeMillis())
-        // Saving under the run's id means doing this twice (after a crash, say) stores one session.
-        if (session != null) outbox.saveAndQueue(StoredSession(run.id, session))
-        draftRepository.clear()
-        mutableState.value = if (session == null) {
+    private suspend fun finish(run: WorkoutRun) {
+        val finishedAt = clock.currentTimeMillis()
+        // One transaction: queued for the phone, bests raised, draft cleared.
+        // It is keyed on the run's id, so doing this twice (after a crash, say) queues one workout.
+        val raised = workoutOutbox.finishAndQueue(run, finishedAt)
+        val result = run.result(finishedAt)
+        mutableState.value = if (result == null) {
             WorkoutState.Idle(nextLoad)
         } else {
             WorkoutState.Finished(
-                gate = run.plan.gate,
-                previousBest = run.previousBest,
-                sessionBest = session.best,
-                usedBand = session.sets.any { !it.countsTowardGate },
+                sets = result.results.sumOf { it.sets.size },
+                newBest = biggestNewBest(raised),
+                usedBand = result.results.any { exercise -> exercise.sets.any { it.assistanceKg > 0.0 } },
             )
         }
     }
@@ -229,12 +238,17 @@ class WorkoutController @Inject constructor(
 }
 
 /**
- * Rest is timed on the clock that counts from boot. After a restart that
- * clock starts again, so a saved rest could look hours long. Rest can never
- * be longer than the plan's, so anything longer is ended.
+ * The load a set of this plan is logged with, given the [chosen] load. The
+ * load chosen on the watch is for the skill work, as it always was: that is
+ * what a vest or band is set up for. Other exercises are logged at
+ * bodyweight, and holds have no load to track at all.
  */
-private fun SessionRun.withSaneRest(nowElapsedMillis: Long): SessionRun {
-    val endsAt = restEndsAtElapsedMillis ?: return this
-    val longestPossible = nowElapsedMillis + plan.restSeconds * MILLIS_PER_SECOND
-    return if (endsAt > longestPossible) endRest() else this
-}
+private fun ExercisePlan.loadWith(chosen: SetLoad): SetLoad =
+    if (gateId != null && exercise.loadProfile != null) chosen else SetLoad.None
+
+/** The biggest of the [raised] gate bests, or null when none was raised. */
+private fun biggestNewBest(raised: Map<String, Int>): GateBest? = raised
+    .mapNotNull { (gateId, best) ->
+        SkillCatalogue.gateById(gateId)?.let { GateBest(it.title, it.measure, best, passedGate = best >= it.target) }
+    }
+    .maxByOrNull { it.value }

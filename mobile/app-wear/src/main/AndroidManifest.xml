@@ -110,8 +110,9 @@
             android:foregroundServiceType="health" />
 
         <!--
-          Receives the goal, bests and bands from the phone, and the phone's
-          confirmations that sessions arrived, over the Wearable Data Layer.
+          Receives the goal, bests, bands and next session from the phone,
+          and the phone's confirmations that workouts arrived, over the
+          Wearable Data Layer.
           The paths must match SyncPaths in :sync.
 
           It has to be exported for Google Play services to reach it. That is

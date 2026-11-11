@@ -12,13 +12,11 @@ import androidx.wear.protolayout.types.layoutString
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
-import app.levitx.core.session.trainingDay
-import app.levitx.core.skills.GateMeasure
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.goal.GoalRepository
-import app.levitx.data.progress.ProgressRepository
+import app.levitx.data.coach.NextSessionRepository
 import app.levitx.wear.MainActivity
 import app.levitx.wear.R
+import app.levitx.wear.home.NextSummary
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 
@@ -34,35 +31,30 @@ import kotlinx.coroutines.guava.future
 private const val RESOURCES_VERSION = "1"
 
 /**
- * How long the system may show a Tile before asking for a new one. Bests
- * change a few times a week, so a quarter of an hour is fresh enough and
- * costs almost nothing.
+ * How long the system may show a Tile before asking for a new one. The plan
+ * changes after a workout, so a quarter of an hour is fresh enough and costs
+ * almost nothing. A finished workout also asks for a refresh (TileRefresher).
  */
 private const val FRESHNESS_MILLIS = 15 * 60 * 1_000L
 
 private const val OPEN_APP_CLICK_ID = "open_app"
 
-/** Gate titles and messages may wrap, but not push the rest of the Tile off the screen. */
+/** Exercise names and messages may wrap, but not push the rest of the Tile off the screen. */
 private const val MAIN_TEXT_MAX_LINES = 3
 
 /**
- * The "Next session" Tile: the current gate and today's sets, one swipe from
- * the watch face. Tapping it opens the app.
+ * The "Next session" Tile: the session the phone's coach planned, one swipe
+ * from the watch face. Tapping it opens the app.
  *
- * It reads the same goal and bests as the home screen and builds the same
- * plan from them. It shows training targets only, never results or anything
- * about the person's health, because a Tile is visible to anyone who can see
- * the watch.
+ * It reads the same plan as the home screen. It shows what the session holds
+ * only, never results or anything about the person's health, because a Tile
+ * is visible to anyone who can see the watch.
  */
 @AndroidEntryPoint
 class NextSessionTileService : TileService() {
-    /** The active goal. Set by Hilt. */
+    /** The session the phone's coach planned. Set by Hilt. */
     @Inject
-    lateinit var goalRepository: GoalRepository
-
-    /** The person's bests. Set by Hilt. */
-    @Inject
-    lateinit var progressRepository: ProgressRepository
+    lateinit var nextSessionRepository: NextSessionRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -88,10 +80,7 @@ class NextSessionTileService : TileService() {
         scope.future { ResourceBuilders.Resources.Builder().setVersion(RESOURCES_VERSION).build() }
 
     private suspend fun loadContent(): TileContent = try {
-        val day = combine(goalRepository.observeActiveGoal(), progressRepository.observeBests()) { path, bests ->
-            path?.trainingDay(bests)
-        }.first()
-        tileContentFor(day)
+        tileContentFor(nextSessionRepository.observeNext().first())
     } catch (error: DataUnavailableException) {
         TileContent.Unavailable
     }
@@ -100,23 +89,20 @@ class NextSessionTileService : TileService() {
         materialScope(this, requestParams.deviceConfiguration) {
             when (content) {
                 is TileContent.NextSession -> primaryLayout(
-                    titleSlot = {
-                        text(getString(R.string.home_gate_label, content.gateNumber, content.gateCount).layoutString)
-                    },
-                    mainSlot = { text(content.gateTitle.layoutString, maxLines = MAIN_TEXT_MAX_LINES) },
-                    bottomSlot = { text(todayText(content).layoutString) },
-                    onClick = openApp(),
-                )
-
-                is TileContent.PathComplete -> primaryLayout(
-                    titleSlot = { text(content.skillName.layoutString) },
-                    mainSlot = { text(getString(R.string.tile_path_complete).layoutString) },
-                    onClick = openApp(),
-                )
-
-                TileContent.NoGoal -> primaryLayout(
+                    titleSlot = { text(getString(R.string.tile_label).layoutString) },
                     mainSlot = {
-                        text(getString(R.string.tile_no_goal).layoutString, maxLines = MAIN_TEXT_MAX_LINES)
+                        text(
+                            getString(R.string.home_starts_with, content.summary.firstExercise).layoutString,
+                            maxLines = MAIN_TEXT_MAX_LINES,
+                        )
+                    },
+                    bottomSlot = { text(sizeText(content.summary).layoutString) },
+                    onClick = openApp(),
+                )
+
+                TileContent.NoSession -> primaryLayout(
+                    mainSlot = {
+                        text(getString(R.string.tile_no_session).layoutString, maxLines = MAIN_TEXT_MAX_LINES)
                     },
                     onClick = openApp(),
                 )
@@ -130,14 +116,13 @@ class NextSessionTileService : TileService() {
             }
         }
 
-    /** "3 sets of 4 reps, then a best effort": the same words as the home screen. */
-    private fun todayText(content: TileContent.NextSession): String {
-        val target = when (content.measure) {
-            GateMeasure.REPS -> resources.getQuantityString(R.plurals.reps, content.workTarget, content.workTarget)
-            GateMeasure.HOLD_SECONDS -> getString(R.string.seconds_short, content.workTarget)
-        }
-        return resources.getQuantityString(R.plurals.home_today, content.workSets, content.workSets, target)
-    }
+    /** "4 exercises, about 35 min": the same words as the home screen. */
+    private fun sizeText(summary: NextSummary): String = resources.getQuantityString(
+        R.plurals.home_next_size,
+        summary.exerciseCount,
+        summary.exerciseCount,
+        summary.minutes,
+    )
 
     /** Tapping anywhere on the Tile opens the app, which is where a session starts. */
     private fun openApp(): Clickable = Clickable.Builder()

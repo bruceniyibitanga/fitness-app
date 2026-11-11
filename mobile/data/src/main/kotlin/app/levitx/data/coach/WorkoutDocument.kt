@@ -58,22 +58,27 @@ internal data class StoredSet(
     val assistanceKg: Double = 0.0,
 )
 
+/** Format of a planned session on its own, as the phone sends it to the watch. */
+internal const val PLAN_DOCUMENT_VERSION = 1
+
+/** A stored `PlannedSession`, before it is started. */
+@Serializable
+internal data class PlanDocument(val v: Int, val plans: List<StoredPlan>)
+
+/** The document for [session]. */
+internal fun planDocumentOf(session: PlannedSession): PlanDocument =
+    PlanDocument(PLAN_DOCUMENT_VERSION, session.plans.map(::storedPlanOf))
+
+/** The session this document describes, or null when it can't be rebuilt. */
+internal fun PlanDocument.toSessionOrNull(): PlannedSession? = runCatching { sessionOf(plans) }.getOrNull()
+
 /** The document for [run]. */
 internal fun workoutDocumentOf(run: WorkoutRun): WorkoutDocument = WorkoutDocument(
     v = WORKOUT_DOCUMENT_VERSION,
     id = run.id,
     startedAt = run.startedAtEpochMillis,
     choice = run.choice?.name,
-    plans = run.session.plans.map { plan ->
-        StoredPlan(
-            exerciseId = plan.exercise.id,
-            sets = plan.sets.map { StoredPlannedSet(it.target, it.isBestEffort) },
-            restSeconds = plan.restSeconds,
-            repsInReserve = plan.repsInReserve,
-            intensity = plan.intensity.name,
-            gateId = plan.gateId,
-        )
-    },
+    plans = run.session.plans.map(::storedPlanOf),
     logged = run.logged.map { sets ->
         sets.map { StoredSet(it.value, it.repsInReserve, it.isBestEffort, it.addedKg, it.assistanceKg) }
     },
@@ -89,21 +94,9 @@ internal fun workoutDocumentOf(run: WorkoutRun): WorkoutDocument = WorkoutDocume
  * exercise this version doesn't know, or values that break the run's rules.
  */
 internal fun WorkoutDocument.toRunOrNull(): WorkoutRun? = runCatching {
-    val session = PlannedSession(
-        plans.map { stored ->
-            ExercisePlan(
-                exercise = checkNotNull(ExerciseLookup.byId(stored.exerciseId)),
-                sets = stored.sets.map { PlannedSet(it.target, it.isBestEffort) },
-                restSeconds = stored.restSeconds,
-                repsInReserve = stored.repsInReserve,
-                intensity = checkNotNull(stored.intensity.toEnumOrNull<Intensity>()),
-                gateId = stored.gateId,
-            )
-        },
-    )
     WorkoutRun(
         id = id,
-        session = session,
+        session = sessionOf(plans),
         startedAtEpochMillis = startedAt,
         choice = choice?.toEnumOrNull<SuggestionChoice>(),
         logged = logged.map { sets ->
@@ -115,3 +108,31 @@ internal fun WorkoutDocument.toRunOrNull(): WorkoutRun? = runCatching {
         load = SetLoad(addedKg, assistanceKg),
     )
 }.getOrNull()
+
+private fun storedPlanOf(plan: ExercisePlan): StoredPlan = StoredPlan(
+    exerciseId = plan.exercise.id,
+    sets = plan.sets.map { StoredPlannedSet(it.target, it.isBestEffort) },
+    restSeconds = plan.restSeconds,
+    repsInReserve = plan.repsInReserve,
+    intensity = plan.intensity.name,
+    gateId = plan.gateId,
+)
+
+/**
+ * The session [plans] describe.
+ *
+ * @throws IllegalStateException for an exercise this version doesn't know, or
+ *   IllegalArgumentException for values the core types refuse.
+ */
+private fun sessionOf(plans: List<StoredPlan>): PlannedSession = PlannedSession(
+    plans.map { stored ->
+        ExercisePlan(
+            exercise = checkNotNull(ExerciseLookup.byId(stored.exerciseId)),
+            sets = stored.sets.map { PlannedSet(it.target, it.isBestEffort) },
+            restSeconds = stored.restSeconds,
+            repsInReserve = stored.repsInReserve,
+            intensity = checkNotNull(stored.intensity.toEnumOrNull<Intensity>()),
+            gateId = stored.gateId,
+        )
+    },
+)

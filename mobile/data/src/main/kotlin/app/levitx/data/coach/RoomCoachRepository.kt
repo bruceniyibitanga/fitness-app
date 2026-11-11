@@ -50,18 +50,20 @@ internal class RoomCoachRepository @Inject constructor(
 
     override suspend fun start(profile: CoachProfile, pullUp: PullUpAnswer, trainingDays: Set<DayOfWeek>) {
         val database = databaseProvider.database()
+        val now = clock.currentTimeMillis()
         database.withTransaction {
-            database.write(AthleteModel.starting(profile, pullUp), trainingDays)
-            database.writeGoal(profile.goalPathId, clock.currentTimeMillis())
+            database.write(AthleteModel.starting(profile, pullUp), trainingDays, now)
+            database.writeGoal(profile.goalPathId, now)
         }
     }
 
     override suspend fun updateProfile(profile: CoachProfile, trainingDays: Set<DayOfWeek>) {
         val database = databaseProvider.database()
+        val now = clock.currentTimeMillis()
         database.withTransaction {
-            val current = database.load() ?: error("The coach isn't set up")
-            database.write(current.model.copy(profile = profile), trainingDays)
-            database.writeGoal(profile.goalPathId, clock.currentTimeMillis())
+            val current = database.load(now) ?: error("The coach isn't set up")
+            database.write(current.model.copy(profile = profile), trainingDays, now)
+            database.writeGoal(profile.goalPathId, now)
         }
     }
 
@@ -71,16 +73,21 @@ internal class RoomCoachRepository @Inject constructor(
             if (database.sessionDao().hasWorkout(workoutId)) {
                 false
             } else {
-                val current = database.load() ?: error("The coach isn't set up")
+                val now = clock.currentTimeMillis()
+                val current = database.load(now) ?: error("The coach isn't set up")
                 val updated = coach.record(current.model, result)
                 database.storeSets(workoutId, result, current.model)
                 database.raiseBests(before = current.model, after = updated, at = result.finishedAtEpochMillis)
-                database.write(updated, current.trainingDays)
+                database.write(updated, current.trainingDays, now)
                 database.coachDao().clearDraft()
                 true
             }
         }
     }
+
+    override fun observeRecentWorkoutIds(): Flow<List<String>> = flow {
+        emitAll(databaseProvider.database().sessionDao().observeRecentWorkoutIds(RECENT_WORKOUTS))
+    }.distinctUntilChanged()
 
     override suspend fun recordRest(nowEpochMillis: Long) = update { coach.recordRest(it, nowEpochMillis) }
 
@@ -93,25 +100,27 @@ internal class RoomCoachRepository @Inject constructor(
     /** Reads the model, changes it with [change] and writes it back, in one transaction. */
     private suspend fun update(change: (AthleteModel) -> AthleteModel) {
         val database = databaseProvider.database()
+        val now = clock.currentTimeMillis()
         database.withTransaction {
-            val current = database.load() ?: error("The coach isn't set up")
-            database.write(change(current.model), current.trainingDays)
+            val current = database.load(now) ?: error("The coach isn't set up")
+            database.write(change(current.model), current.trainingDays, now)
         }
     }
+}
 
-    /** The state now, or null before setup. Call inside a transaction. */
-    private suspend fun LevitxDatabase.load(): CoachState? {
-        val row = coachDao().state() ?: return null
-        val since = clock.currentTimeMillis() - BODYWEIGHT_DAYS * MILLIS_PER_DAY
-        return assembleCoachState(
-            CoachCodec.decodeCoach(row.json),
-            gateBestDao().all(),
-            equipmentDao().bodyweightSince(since),
-        )
-    }
+/** The state at [nowEpochMillis], or null before setup. Call inside a transaction. */
+private suspend fun LevitxDatabase.load(nowEpochMillis: Long): CoachState? {
+    val row = coachDao().state() ?: return null
+    val since = nowEpochMillis - BODYWEIGHT_DAYS * MILLIS_PER_DAY
+    return assembleCoachState(
+        CoachCodec.decodeCoach(row.json),
+        gateBestDao().all(),
+        equipmentDao().bodyweightSince(since),
+    )
+}
 
-    private suspend fun LevitxDatabase.write(model: AthleteModel, trainingDays: Set<DayOfWeek>) {
-        val json = CoachCodec.encode(coachDocumentOf(model, trainingDays))
-        coachDao().replaceState(CoachStateEntity(json = json, updatedAtEpochMillis = clock.currentTimeMillis()))
-    }
+/** Writes [model] and [trainingDays] as the coach's state, stamped [nowEpochMillis]. */
+private suspend fun LevitxDatabase.write(model: AthleteModel, trainingDays: Set<DayOfWeek>, nowEpochMillis: Long) {
+    val json = CoachCodec.encode(coachDocumentOf(model, trainingDays))
+    coachDao().replaceState(CoachStateEntity(json = json, updatedAtEpochMillis = nowEpochMillis))
 }

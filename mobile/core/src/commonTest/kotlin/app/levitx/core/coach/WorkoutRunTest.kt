@@ -121,4 +121,28 @@ class WorkoutRunTest {
         planned.plans.forEach { assertEquals(it.exercise, ExerciseLookup.byId(it.exercise.id)) }
         assertNull(ExerciseLookup.byId("not.an.exercise"))
     }
+
+    @Test
+    fun restLongerThanAnyInThePlanIsEndedAfterARestart() {
+        val resting = start.logSet(8, 2, nowElapsedMillis = 50_000_000)
+        // After a restart the elapsed clock is back near zero, so this rest looks hours long.
+        assertNull(resting.withSaneRest(nowElapsedMillis = 5_000).restEndsAtElapsedMillis)
+        // Without a restart the rest is left alone.
+        assertEquals(resting, resting.withSaneRest(nowElapsedMillis = 50_010_000))
+    }
+
+    @Test
+    fun theResultReportsTheBestStrictSetPerGate() {
+        val gate = checkNotNull(newcomer().currentGate())
+        val hang = hardPlan(checkNotNull(SkillTraining.exerciseFor(gate)), 20).copy(gateId = gate.id)
+        val run =
+            WorkoutRun("w2", sessionOf(hang.trimmedTo(2), hardPlan(squat, 12).trimmedTo(1)), startedAtEpochMillis = 0)
+        val done = run.logSet(20, null, 0).endRest().logSet(25, null, 0).endRest().logSet(12, 2, 0)
+        assertEquals(mapOf(gate.id to 25), done.result(finishedAtEpochMillis = 1)?.gateBests)
+        assertEquals(emptyMap(), start.logSet(8, 2, 0).result(finishedAtEpochMillis = 1)?.gateBests)
+        // Only a step past the previous best is a new best.
+        val result = checkNotNull(done.result(finishedAtEpochMillis = 1))
+        assertEquals(mapOf(gate.id to 25), result.newGateBests(mapOf(gate.id to 24)))
+        assertEquals(emptyMap(), result.newGateBests(mapOf(gate.id to 25)))
+    }
 }

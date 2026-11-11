@@ -28,6 +28,13 @@ internal interface SessionDao {
     @Query("SELECT EXISTS(SELECT 1 FROM training_session WHERE workoutId = :workoutId)")
     suspend fun hasWorkout(workoutId: String): Boolean
 
+    /** Ids of the most recently finished workouts, newest first. Emits again when one is stored. */
+    @Query(
+        "SELECT workoutId FROM training_session WHERE workoutId IS NOT NULL " +
+            "GROUP BY workoutId ORDER BY MAX(finishedAtEpochMillis) DESC, workoutId LIMIT :limit",
+    )
+    fun observeRecentWorkoutIds(limit: Int): Flow<List<String>>
+
     /** Number of finished sessions. Used by tests and, later, the history screen. */
     @Query("SELECT COUNT(*) FROM training_session")
     suspend fun count(): Int

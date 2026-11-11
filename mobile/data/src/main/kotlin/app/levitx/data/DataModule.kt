@@ -4,9 +4,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import app.levitx.core.coach.Coach
 import app.levitx.data.coach.CoachRepository
+import app.levitx.data.coach.NextSessionRepository
 import app.levitx.data.coach.RoomCoachRepository
+import app.levitx.data.coach.RoomNextSessionRepository
 import app.levitx.data.coach.RoomWorkoutDraftRepository
+import app.levitx.data.coach.RoomWorkoutOutbox
 import app.levitx.data.coach.WorkoutDraftRepository
+import app.levitx.data.coach.WorkoutOutbox
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.equipment.RoomEquipmentRepository
 import app.levitx.data.goal.GoalRepository
@@ -62,6 +66,12 @@ internal interface DataModule {
 
     @Binds
     fun bindWorkoutDraftRepository(repository: RoomWorkoutDraftRepository): WorkoutDraftRepository
+
+    @Binds
+    fun bindNextSessionRepository(repository: RoomNextSessionRepository): NextSessionRepository
+
+    @Binds
+    fun bindWorkoutOutbox(repository: RoomWorkoutOutbox): WorkoutOutbox
 
     companion object {
         // The coach holds no state, so one instance serves the whole app.

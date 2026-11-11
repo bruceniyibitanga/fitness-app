@@ -2,12 +2,12 @@ package app.levitx.phone.workout
 
 import app.levitx.core.coach.Effort
 import app.levitx.phone.MainDispatcherRule
-import app.levitx.phone.coachState
-import app.levitx.phone.startedWorkout
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
+import app.levitx.testing.coachState
+import app.levitx.testing.startedWorkout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue

@@ -3,8 +3,10 @@ package app.levitx.sync
 import app.levitx.core.session.CompletedSession
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.skills.SkillCatalogue
+import app.levitx.data.coach.QueuedWorkout
 import app.levitx.data.equipment.Band
 import app.levitx.data.session.StoredSession
+import app.levitx.testing.startedWorkout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -22,6 +24,11 @@ class SyncCodecTest {
             sets = listOf(LoggedSet(4, 2, false, addedKg = 5.0), LoggedSet(7, null, true, assistanceKg = 12.5)),
         ),
     )
+
+    private val workoutId = "00000000-0000-4000-8000-00000000000a"
+    private val run = startedWorkout(nowEpochMillis = 1_700_000_000_000, id = workoutId).let { started ->
+        started.logSet(checkNotNull(started.nextSet).target, 2, nowElapsedMillis = 10_000)
+    }
 
     private fun session(json: String) = SyncCodec.decodeSession(json.encodeToByteArray())
 
@@ -54,13 +61,57 @@ class SyncCodecTest {
     }
 
     @Test
+    fun stateWithTheNextSessionSurvivesTheRoundTrip() {
+        val state = PhoneState(
+            path = null,
+            bests = emptyMap(),
+            bands = emptyList(),
+            next = run.session,
+            recentWorkoutIds = listOf(workoutId),
+        )
+        assertEquals(Decoded.Ok(state), SyncCodec.decodeState(SyncCodec.encodeState(state)))
+    }
+
+    @Test
+    fun aWorkoutSurvivesTheRoundTrip() {
+        val workout = QueuedWorkout(run, finishedAtEpochMillis = 2_000_000)
+        assertEquals(Decoded.Ok(workout), SyncCodec.decodeWorkout(SyncCodec.encodeWorkout(workout)))
+    }
+
+    @Test
+    fun impossibleWorkoutsAreRejected() {
+        val impossible = listOf(
+            // Nothing done.
+            QueuedWorkout(run.copy(logged = run.session.plans.map { emptyList() }), 2_000_000),
+            QueuedWorkout(run, finishedAtEpochMillis = 0),
+            QueuedWorkout(run.copy(id = "../../etc/passwd"), 2_000_000),
+            QueuedWorkout(run.copy(startedAtEpochMillis = 0), 2_000_000),
+            QueuedWorkout(run.copy(logged = run.logged.withFirst(LoggedSet(MAX_RESULT + 1, null, false))), 2_000_000),
+        )
+        impossible.forEach { workout ->
+            assertEquals(workout.toString(), Decoded.Invalid, SyncCodec.decodeWorkout(SyncCodec.encodeWorkout(workout)))
+        }
+        // A workout whose id doesn't match the id it travels with.
+        val encoded = SyncCodec.encodeWorkout(QueuedWorkout(run, 2_000_000)).decodeToString()
+        val mismatched = encoded.replaceFirst(workoutId, "00000000-0000-4000-8000-00000000000b")
+        assertEquals(Decoded.Invalid, SyncCodec.decodeWorkout(mismatched.encodeToByteArray()))
+    }
+
+    @Test
+    fun recentWorkoutIdsMustBeIds() {
+        assertEquals(Decoded.Invalid, state("""{"v":2,"recent":["not-an-id"]}"""))
+        assertEquals(Decoded.Invalid, state("""{"v":2,"next":"not a plan"}"""))
+        assertTrue(state("""{"v":2,"recent":["$workoutId"]}""") is Decoded.Ok)
+    }
+
+    @Test
     fun aValidSessionIsAccepted() {
         assertTrue(session(sessionJson()) is Decoded.Ok)
     }
 
     @Test
     fun newerVersionsAreKeptForLater() {
-        assertEquals(Decoded.NewerVersion, session(sessionJson().replace("\"v\":1", "\"v\":2")))
+        assertEquals(Decoded.NewerVersion, session(sessionJson().replace("\"v\":1", "\"v\":3")))
         assertEquals(Decoded.NewerVersion, state("""{"v":99,"somethingNew":true}"""))
     }
 
@@ -116,5 +167,15 @@ class SyncCodecTest {
     fun bestsForUnknownGatesAreLeftOut() {
         val decoded = state("""{"v":1,"pathId":"${path.id}","bests":{"${dips.id}":6,"future.gate":3}}""")
         assertEquals(mapOf(dips.id to 6), (decoded as Decoded.Ok).value.bests)
+    }
+}
+
+private fun List<List<LoggedSet>>.withFirst(set: LoggedSet) = mapIndexed { i, sets ->
+    if (i ==
+        0
+    ) {
+        listOf(set)
+    } else {
+        sets
     }
 }

@@ -50,6 +50,13 @@ interface CoachRepository {
      */
     suspend fun recordWorkout(workoutId: String, result: SessionResult): Boolean
 
+    /**
+     * Ids of the workouts recorded most recently, newest first, at most
+     * [RECENT_WORKOUTS]. The watch uses it to tell when the phone's plan
+     * already takes in a workout it finished.
+     */
+    fun observeRecentWorkoutIds(): Flow<List<String>>
+
     /** Records that the person took the rest day the coach offered, at [nowEpochMillis]. */
     suspend fun recordRest(nowEpochMillis: Long)
 
@@ -59,3 +66,6 @@ interface CoachRepository {
     /** Records that the fast weight loss notice has been shown, so it isn't shown again this spell. */
     suspend fun markWeightNoticeShown()
 }
+
+/** How many recent workout ids [CoachRepository.observeRecentWorkoutIds] reports. */
+const val RECENT_WORKOUTS = 10

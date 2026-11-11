@@ -34,3 +34,38 @@ internal data class CoachStateEntity(
  */
 @Entity(tableName = "workout_draft")
 internal data class WorkoutDraftEntity(@PrimaryKey val id: Int = COACH_ROW_ID, val json: String)
+
+/**
+ * The next session the phone's coach planned, as the watch keeps it, so the
+ * watch can run it with the phone out of reach (added in version 6). Only
+ * the plan crosses: exercises, sets and targets, no health data.
+ *
+ * @property id Always [COACH_ROW_ID].
+ * @property json The plan (see `PlanDocument` in the `coach` package), or null when there is none.
+ * @property awaitingWorkoutId A workout finished on the watch that the phone's
+ *   coach hasn't recorded yet, or null. Until it has, the phone's plan is from
+ *   before that workout, so it isn't taken.
+ */
+@Entity(tableName = "next_session")
+internal data class NextSessionEntity(
+    @PrimaryKey val id: Int = COACH_ROW_ID,
+    val json: String?,
+    val awaitingWorkoutId: String? = null,
+)
+
+/**
+ * A workout finished on this device that the other device hasn't confirmed
+ * yet (added in version 6). It is deleted once confirmed.
+ *
+ * @property id The workout's id, a random UUID.
+ * @property json The workout; see `WorkoutDocument` in the `coach` package.
+ * @property finishedAtEpochMillis When it finished, in UTC milliseconds.
+ * @property queuedAtEpochMillis When it was queued, for sending oldest first.
+ */
+@Entity(tableName = "workout_outbox")
+internal data class WorkoutOutboxEntity(
+    @PrimaryKey val id: String,
+    val json: String,
+    val finishedAtEpochMillis: Long,
+    val queuedAtEpochMillis: Long,
+)

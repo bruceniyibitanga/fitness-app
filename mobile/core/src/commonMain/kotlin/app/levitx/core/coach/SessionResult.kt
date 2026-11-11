@@ -52,7 +52,11 @@ public enum class SuggestionChoice {
  * @property sets The sets done, in order. Empty when skipped.
  * @property skipped True when the person skipped or swapped the exercise out.
  */
-public data class ExerciseResult(val plan: ExercisePlan, val sets: List<LoggedSet>, val skipped: Boolean = false)
+public data class ExerciseResult(val plan: ExercisePlan, val sets: List<LoggedSet>, val skipped: Boolean = false) {
+    /** The best set that counts toward a skill gate: unassisted. 0 when there is none. */
+    val gateTop: Int
+        get() = sets.filter { it.countsTowardGate }.maxOfOrNull { it.value } ?: 0
+}
 
 /**
  * A finished session, as the coach learns from it. Sessions started from the
@@ -73,4 +77,23 @@ public data class SessionResult(
     init {
         require(finishedAtEpochMillis >= startedAtEpochMillis) { "a session can't finish before it starts" }
     }
+
+    /**
+     * The best strict set per skill gate trained hard in this session, the
+     * same figure the coach raises a gate's best to. Gates with no strict set
+     * are left out. Light work doesn't count, as it doesn't for the coach.
+     */
+    val gateBests: Map<String, Int>
+        get() = results
+            .filter { it.plan.isHard && it.gateTop > 0 }
+            .mapNotNull { result -> result.plan.gateId?.let { it to result.gateTop } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, tops) -> tops.max() }
+
+    /**
+     * The gates this session set a new best on, with the new best, judged
+     * against the bests from [before] it.
+     */
+    public fun newGateBests(before: Map<String, Int>): Map<String, Int> =
+        gateBests.filter { (gateId, best) -> best > (before[gateId] ?: 0) }
 }

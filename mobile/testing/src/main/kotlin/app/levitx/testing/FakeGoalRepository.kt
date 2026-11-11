@@ -16,6 +16,10 @@ class FakeGoalRepository(initial: SkillPath? = null) : GoalRepository {
         goal.value = path
     }
 
+    override suspend fun clearActiveGoal() {
+        goal.value = null
+    }
+
     /** The current goal, for assertions. */
     val current: SkillPath?
         get() = goal.value

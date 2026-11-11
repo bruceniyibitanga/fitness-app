@@ -18,7 +18,9 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.wear.compose.foundation.lazy.TransformingLazyColumnScope
 import androidx.wear.compose.material3.Button
+import androidx.wear.compose.material3.FilledTonalButton
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
 import app.levitx.core.skills.GateMeasure
@@ -35,18 +37,21 @@ private const val MILLIS_PER_SECOND = 1_000L
 /** Largest number the counter goes to. No one does 999 reps in a set. */
 private const val MAX_ENTRY = 999
 
+/**
+ * What a set screen can do besides saving the set.
+ *
+ * @property onSkipExercise Moves on to the next exercise.
+ * @property onFinishEarly Ends the workout.
+ */
+internal data class SetActions(val onSkipExercise: () -> Unit, val onFinishEarly: () -> Unit)
+
 /** The counter: starts at [initial], adjusted with minus and plus, then saved. */
 @Composable
-internal fun CountEntry(
-    state: SessionUiState.Working,
-    initial: Int,
-    onLogSet: (Int) -> Unit,
-    onFinishEarly: () -> Unit,
-) {
+internal fun CountEntry(state: SessionUiState.Working, initial: Int, onLogSet: (Int) -> Unit, actions: SetActions) {
     // Starts on the expected number, so hitting the target is a single tap.
-    var count by rememberSaveable(state.setNumber, initial) { mutableIntStateOf(initial) }
+    var count by rememberSaveable(state.exerciseNumber, state.setNumber, initial) { mutableIntStateOf(initial) }
     SessionList {
-        item { SetLabel(state) }
+        setHeader(state)
         item {
             StepperRow(
                 valueText = count.toString(),
@@ -67,7 +72,7 @@ internal fun CountEntry(
                 label = { Text(stringResource(R.string.session_log_set)) },
             )
         }
-        item { EndButton(state.canSaveEarly, onFinishEarly) }
+        setFooter(state, actions)
     }
 }
 
@@ -77,19 +82,19 @@ internal fun CountEntry(
  * after a hang is rarely exact).
  */
 @Composable
-internal fun Hold(state: SessionUiState.Working, now: () -> Long, onLogSet: (Int) -> Unit, onFinishEarly: () -> Unit) {
-    var startedAtMillis by rememberSaveable(state.setNumber) { mutableStateOf<Long?>(null) }
-    var heldSeconds by rememberSaveable(state.setNumber) { mutableStateOf<Int?>(null) }
+internal fun Hold(state: SessionUiState.Working, now: () -> Long, onLogSet: (Int) -> Unit, actions: SetActions) {
+    var startedAtMillis by rememberSaveable(state.exerciseNumber, state.setNumber) { mutableStateOf<Long?>(null) }
+    var heldSeconds by rememberSaveable(state.exerciseNumber, state.setNumber) { mutableStateOf<Int?>(null) }
     val startedAt = startedAtMillis
     val held = heldSeconds
     when {
-        held != null -> CountEntry(state, held, onLogSet, onFinishEarly)
+        held != null -> CountEntry(state, held, onLogSet, actions)
 
         startedAt != null ->
             HoldRunning(state, startedAt, now, onStop = { heldSeconds = secondsSince(startedAt, now()) })
 
         else -> SessionList {
-            item { SetLabel(state) }
+            setHeader(state)
             item {
                 Text(
                     text = measureText(state.measure, state.target),
@@ -107,7 +112,7 @@ internal fun Hold(state: SessionUiState.Working, now: () -> Long, onLogSet: (Int
                     label = { Text(stringResource(R.string.session_start_hold)) },
                 )
             }
-            item { EndButton(state.canSaveEarly, onFinishEarly) }
+            setFooter(state, actions)
         }
     }
 }
@@ -132,7 +137,7 @@ private fun HoldRunning(state: SessionUiState.Working, startedAtMillis: Long, no
         }
     }
     SessionList {
-        item { SetLabel(state) }
+        setHeader(state)
         item {
             Text(
                 text = stringResource(R.string.seconds_short, seconds),
@@ -152,17 +157,45 @@ private fun HoldRunning(state: SessionUiState.Working, startedAtMillis: Long, no
     }
 }
 
-@Composable
-private fun SetLabel(state: SessionUiState.Working) {
-    SectionLabel(stringResource(R.string.session_set_label, state.setNumber, state.setCount))
+/** Which exercise this is, what it is, and which set. */
+private fun TransformingLazyColumnScope.setHeader(state: SessionUiState.Working) {
+    item {
+        SectionLabel(stringResource(R.string.session_exercise_label, state.exerciseNumber, state.exerciseCount))
+    }
+    item {
+        Text(
+            text = state.exerciseName,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
+    }
+    item { SectionLabel(stringResource(R.string.session_set_label, state.setNumber, state.setCount)) }
 }
 
-/** One line on how hard to go on this set. */
+/** Skipping the exercise and ending the workout, below everything else so neither is hit by accident. */
+private fun TransformingLazyColumnScope.setFooter(state: SessionUiState.Working, actions: SetActions) {
+    if (state.exerciseCount > 1) {
+        item {
+            FilledTonalButton(
+                onClick = actions.onSkipExercise,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.session_skip_exercise)) },
+            )
+        }
+    }
+    item { EndButton(state.canSaveEarly, actions.onFinishEarly) }
+}
+
+/** One line on how hard to go on this set, and whether it is done on each side. */
 @Composable
-private fun setHint(state: SessionUiState.Working): String = when {
-    state.isBestEffort -> stringResource(R.string.session_best_effort_hint)
-    state.measure == GateMeasure.HOLD_SECONDS -> stringResource(R.string.session_work_hint_hold)
-    else -> pluralStringResource(R.plurals.session_work_hint, state.repsInReserve, state.repsInReserve)
+private fun setHint(state: SessionUiState.Working): String {
+    val effort = when {
+        state.isBestEffort -> stringResource(R.string.session_best_effort_hint)
+        state.measure == GateMeasure.HOLD_SECONDS -> stringResource(R.string.session_work_hint_hold)
+        else -> pluralStringResource(R.plurals.session_work_hint, state.repsInReserve, state.repsInReserve)
+    }
+    return if (state.isPerSide) stringResource(R.string.session_each_side, effort) else effort
 }
 
 private fun secondsSince(startedAtMillis: Long, nowMillis: Long): Int =

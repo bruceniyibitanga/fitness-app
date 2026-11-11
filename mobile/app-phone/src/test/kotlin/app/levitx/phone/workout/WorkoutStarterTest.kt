@@ -2,9 +2,9 @@ package app.levitx.phone.workout
 
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.SuggestionChoice
-import app.levitx.phone.newcomer
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
+import app.levitx.testing.newcomer
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
