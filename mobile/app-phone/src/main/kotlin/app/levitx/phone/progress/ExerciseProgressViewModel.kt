@@ -27,7 +27,7 @@ class ExerciseProgressViewModel @AssistedInject constructor(
     @Assisted exerciseId: String,
     history: HistoryRepository,
     coachRepository: CoachRepository,
-    @param:DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<ExerciseProgressUiState> =

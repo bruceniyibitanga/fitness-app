@@ -31,7 +31,7 @@ class ProgressViewModel @Inject constructor(
     history: HistoryRepository,
     coachRepository: CoachRepository,
     private val clock: TrainingClock,
-    @param:DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val range = MutableStateFlow(ProgressRange.THREE_MONTHS)
 

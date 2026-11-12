@@ -32,7 +32,7 @@ class HistoryViewModel @Inject constructor(
     history: HistoryRepository,
     coachRepository: CoachRepository,
     private val clock: TrainingClock,
-    @param:DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     // Months and days are the person's own, so they follow the phone's time zone.
     private val zone: ZoneId = ZoneId.systemDefault()
