@@ -41,7 +41,9 @@ class HistoryViewModel @Inject constructor(
     /** The current screen state. */
     val uiState: StateFlow<HistoryUiState> =
         combine(history.observeWorkouts(), coachRepository.observeState(), month) { workouts, state, month ->
-            historyState(month, workouts, state?.trainingDays.orEmpty(), today(), zone)
+            // Typed as the screen state, so the catch below can emit Unavailable too.
+            val ready: HistoryUiState = historyState(month, workouts, state?.trainingDays.orEmpty(), today(), zone)
+            ready
         }
             .flowOn(defaultDispatcher)
             .catch { error -> if (error.isExpectedDataFailure()) emit(HistoryUiState.Unavailable) else throw error }
