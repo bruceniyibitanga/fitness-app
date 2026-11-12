@@ -1,6 +1,8 @@
 package app.levitx.core.coach
 
+import app.levitx.core.session.PlannedSet
 import app.levitx.core.session.SetLoad
+import app.levitx.core.skills.SkillCatalogue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -144,5 +146,74 @@ class WorkoutRunTest {
         val result = checkNotNull(done.result(finishedAtEpochMillis = 1))
         assertEquals(mapOf(gate.id to 25), result.newGateBests(mapOf(gate.id to 24)))
         assertEquals(emptyMap(), result.newGateBests(mapOf(gate.id to 25)))
+    }
+
+    @Test
+    fun restCanBeMadeLongerOrShorterButNeverEndsInThePast() {
+        val resting = start.logSet(8, 2, nowElapsedMillis = 0)
+        assertEquals(135_000L, resting.adjustRest(15_000, nowElapsedMillis = 10_000).restEndsAtElapsedMillis)
+        assertEquals(105_000L, resting.adjustRest(-15_000, nowElapsedMillis = 10_000).restEndsAtElapsedMillis)
+        // Taking off more than is left ends it now, still resting, so the screen shows it as done.
+        assertEquals(110_000L, resting.adjustRest(-200_000, nowElapsedMillis = 110_000).restEndsAtElapsedMillis)
+        assertEquals(start, start.adjustRest(15_000, nowElapsedMillis = 0), "nothing to adjust before a set")
+    }
+
+    @Test
+    fun undoTakesBackTheSetJustLoggedWithItsLoad() {
+        val loaded = start.withLoad(SetLoad(addedKg = 5.0))
+        val resting = loaded.logSet(8, 2, 0)
+        assertEquals(loaded, resting.undoLastSet())
+    }
+
+    @Test
+    fun undoAfterTheLastSetOfAnExerciseGoesBackToThatExercise() {
+        val first = start.logSet(8, 2, 0).endRest()
+        val movedOn = first.logSet(7, 1, 1)
+        assertEquals(squat, movedOn.current?.exercise)
+        val undone = movedOn.undoLastSet()
+        assertEquals(pushUp, undone.current?.exercise)
+        assertEquals(1, undone.nextSetIndex)
+        assertFalse(undone.isResting)
+    }
+
+    @Test
+    fun undoOnlyWorksDuringTheRestThatSetStarted() {
+        val afterRest = start.logSet(8, 2, 0).endRest()
+        assertEquals(afterRest, afterRest.undoLastSet())
+        assertEquals(start, start.undoLastSet())
+    }
+
+    private val gate = checkNotNull(SkillCatalogue.gateById("muscle_up.pull_ups"))
+    private val attempt = ExercisePlan(
+        exercise = checkNotNull(SkillTraining.exerciseFor(gate)),
+        sets = listOf(PlannedSet(10, isBestEffort = true)) + List(3) { PlannedSet(6, isBestEffort = false) },
+        restSeconds = 120,
+        repsInReserve = 2,
+        intensity = Intensity.HARD,
+        gateId = gate.id,
+        isGateAttempt = true,
+    )
+
+    @Test
+    fun puttingOffAnAttemptMovesItToTheEndAsAnOrdinaryBestEffort() {
+        val run = WorkoutRun("w", sessionOf(attempt), startedAtEpochMillis = 0)
+        val plan = checkNotNull(run.deferAttempt().current)
+        assertFalse(plan.isGateAttempt)
+        assertEquals(6, plan.sets.first().target)
+        assertEquals(PlannedSet(10, isBestEffort = true), plan.sets.last())
+    }
+
+    @Test
+    fun anAttemptCantBePutOffOnceStarted() {
+        val started = WorkoutRun("w", sessionOf(attempt), startedAtEpochMillis = 0).logSet(9, null, 0)
+        assertEquals(started, started.deferAttempt())
+        assertEquals(start, start.deferAttempt())
+    }
+
+    @Test
+    fun lightWorkNeverCarriesAnAttempt() {
+        val light = attempt.lightened()
+        assertFalse(light.isGateAttempt)
+        assertTrue(light.sets.none { it.isBestEffort })
     }
 }

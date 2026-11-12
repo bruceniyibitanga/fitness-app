@@ -42,6 +42,8 @@ internal data class StoredPlan(
     val repsInReserve: Int,
     val intensity: String,
     val gateId: String? = null,
+    // Added after version 1. Older documents read as no attempt, which is what they were.
+    val isGateAttempt: Boolean = false,
 )
 
 /** A stored `PlannedSet`. */
@@ -116,6 +118,7 @@ private fun storedPlanOf(plan: ExercisePlan): StoredPlan = StoredPlan(
     repsInReserve = plan.repsInReserve,
     intensity = plan.intensity.name,
     gateId = plan.gateId,
+    isGateAttempt = plan.isGateAttempt,
 )
 
 /**
@@ -133,6 +136,7 @@ private fun sessionOf(plans: List<StoredPlan>): PlannedSession = PlannedSession(
             repsInReserve = stored.repsInReserve,
             intensity = checkNotNull(stored.intensity.toEnumOrNull<Intensity>()),
             gateId = stored.gateId,
+            isGateAttempt = stored.isGateAttempt,
         )
     },
 )

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 /** Writes finished sessions and their sets. */
@@ -36,7 +37,15 @@ internal interface SessionDao {
     )
     fun observeRecentWorkoutIds(limit: Int): Flow<List<String>>
 
-    /** Number of finished sessions. Used by tests and, later, the history screen. */
+    /**
+     * Every finished session with its sets, newest first. Emits again when one
+     * is stored. In a transaction so the sets always match their sessions.
+     */
+    @Transaction
+    @Query("SELECT * FROM training_session ORDER BY finishedAtEpochMillis DESC")
+    fun observeAllWithSets(): Flow<List<SessionWithSets>>
+
+    /** Number of finished sessions. Used by tests. */
     @Query("SELECT COUNT(*) FROM training_session")
     suspend fun count(): Int
 }

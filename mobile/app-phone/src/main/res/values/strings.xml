@@ -22,6 +22,8 @@
     <string name="plan_detail_tagged">%1$s · %2$s</string>
     <string name="plan_tag_skill">skill work</string>
     <string name="plan_tag_light">light</string>
+    <string name="plan_open_progress">PROGRESS</string>
+    <string name="plan_detail_attempt">Gate test at %1$s, then %2$d × %3$s</string>
     <string name="continue_button">Continue</string>
 
     <!-- Movement patterns -->
@@ -139,6 +141,8 @@
     <string name="today_session_length">THIS SESSION</string>
     <string name="today_lead_skill">SKILL WORK · %1$s</string>
     <string name="today_lead_first">FIRST UP · %1$s</string>
+    <string name="today_open_progress">See progress</string>
+    <string name="today_lead_attempt">GATE TEST FIRST · %1$s</string>
     <string name="today_hero">%1$d×%2$d</string>
     <string name="seconds_unit">s</string>
     <string name="today_lead_note_hold">Hold steady, and stop before your form breaks.</string>
@@ -147,6 +151,7 @@
         <item quantity="other">Stop with about %1$d reps left in the tank.</item>
     </plurals>
     <string name="today_lead_note_best">The last set is a best effort.</string>
+    <string name="today_lead_note_attempt">It starts with a fresh go at %1$s for the gate.</string>
     <string name="today_rest_label">TODAY</string>
     <string name="today_resume">Resume session</string>
     <string name="today_minutes">%1$d MIN</string>
@@ -180,8 +185,6 @@
     <string name="workout_log_set">Log set</string>
     <string name="workout_set_short">SET %1$d/%2$d</string>
     <string name="workout_exercise_short">%1$d/%2$d</string>
-    <string name="workout_finish_short">FINISH</string>
-    <string name="workout_finish_short_sentence">Finish</string>
     <string name="workout_unit_reps">REPS DONE</string>
     <string name="workout_unit_seconds">SECONDS HELD</string>
     <string name="workout_of_target">/%1$d</string>
@@ -196,7 +199,6 @@
     <string name="workout_aim">AIM %1$s</string>
     <string name="workout_last_set">Last set of the workout</string>
     <string name="workout_rest_label">REST</string>
-    <string name="workout_rest_next">Next: %1$s, set %2$d of %3$d, %4$s</string>
     <string name="workout_skip_rest">Skip rest</string>
     <string name="workout_added_weight_label">ADDED WEIGHT (VEST OR BELT), KG</string>
     <string name="workout_band_label">BAND</string>
@@ -204,15 +206,231 @@
     <string name="workout_band_choice">%1$s · %2$s kg</string>
     <string name="workout_band_note">Band-assisted sets build toward a gate but don\'t pass it.</string>
     <string name="workout_saved_label">WORKOUT SAVED</string>
-    <plurals name="workout_saved_sets">
-        <item quantity="one">%1$d set</item>
-        <item quantity="other">%1$d sets</item>
-    </plurals>
-    <string name="workout_new_best">New best on %1$s: %2$s</string>
-    <string name="workout_saved_body">The coach has taken it in. Your next session is on Today.</string>
     <string name="workout_done">Done</string>
     <string name="workout_nothing">There\'s no workout in progress.</string>
     <string name="workout_back">Back to Today</string>
+    <string name="workout_start_hold">Start hold</string>
+    <string name="workout_start_negatives">Start negatives</string>
+    <string name="workout_count_in_hint">3 S COUNT-IN</string>
+    <string name="workout_log_short">Log</string>
+    <string name="workout_again_short">Again</string>
+    <string name="workout_negative_instructions">Take %1$s to lower each rep, in control all the way down. The timer sets the pace.</string>
+    <string name="workout_menu">Session menu</string>
+    <string name="workout_of_count">%1$d/%2$d</string>
+
+    <!-- Workout: hold and negative timers -->
+    <string name="workout_timer_stop">Stop the timer</string>
+    <string name="workout_timer_get_ready">GET IN POSITION</string>
+    <string name="workout_timer_hold_lead">The hold starts when the count ends. Leave the phone where you can see it, and tap anywhere when you let go.</string>
+    <string name="workout_timer_negative_lead">Rep 1 starts when the count ends. A beep sends you to the top, then a tick sounds each second as you lower.</string>
+    <string name="workout_timer_of_seconds">/%1$d s</string>
+    <string name="workout_timer_past">PAST YOUR TARGET · +%1$d S</string>
+    <string name="workout_timer_holding">HOLDING · %1$d S TO YOUR TARGET</string>
+    <string name="workout_timer_past_spoken">Past your target</string>
+    <string name="workout_timer_holding_spoken">Holding</string>
+    <string name="workout_timer_hold_cue">Stay tight and breathe. The time counts until you let go.</string>
+    <string name="workout_timer_hold_past_cue">Target hit. Keep going while your form holds: the time counts until you stop it.</string>
+    <string name="workout_timer_hold_sounds">BEEP EVERY %1$d S · DOUBLE BEEP AT %2$d S</string>
+    <string name="workout_timer_sounds_off">SOUNDS OFF · TURN THEM ON IN THE MENU</string>
+    <plurals name="workout_timer_hold_bar">
+        <item quantity="one">Held %1$d second of a %2$d second target.</item>
+        <item quantity="other">Held %1$d seconds of a %2$d second target.</item>
+    </plurals>
+    <string name="workout_timer_target">TARGET %1$d S</string>
+    <string name="workout_timer_start_now">Start now</string>
+    <string name="workout_timer_stop_seconds">Stop · %1$d s</string>
+    <string name="workout_timer_stop_reps">Stop · log %1$d</string>
+    <string name="workout_timer_tap_anywhere">TAP ANYWHERE</string>
+    <string name="workout_timer_skip_count">SKIP COUNT</string>
+    <string name="workout_timer_restart">Restart</string>
+    <string name="workout_timer_cancel">Cancel</string>
+    <string name="workout_timer_reps">REPS</string>
+    <string name="workout_timer_to_top">TO THE TOP · REP %1$d</string>
+    <string name="workout_timer_lowering">LOWERING · SLOWER THAN YOU THINK</string>
+    <string name="workout_timer_all_paced">ALL REPS PACED</string>
+    <string name="workout_timer_negative_cue">Beeps set the pace, so you never need to touch the phone. Tap anywhere to stop early: you can fix the count before you log it.</string>
+    <string name="workout_timer_tempo">Each rep: %1$s to get to the top, then %2$s lowering.</string>
+    <string name="workout_timer_tempo_top">TO THE TOP %1$d S</string>
+    <string name="workout_timer_tempo_lower">LOWER %1$d S</string>
+
+    <!-- Workout: rest -->
+    <string name="workout_rest_shorter">− 15 s</string>
+    <string name="workout_rest_longer">+ 15 s</string>
+    <string name="workout_start_set">Start set %1$d</string>
+    <string name="workout_rest_done">REST DONE · GO WHEN READY</string>
+    <string name="workout_rest_over">RESTED LONGER THAN PLANNED · THAT\'S FINE</string>
+    <string name="workout_rest_go">GO</string>
+    <string name="workout_rest_extra">+%1$s</string>
+    <string name="workout_rest_planned">PLANNED %1$s</string>
+    <string name="workout_rest_next_set">NEXT · SET %1$d OF %2$d</string>
+    <string name="workout_logged">Logged set %1$d: %2$s</string>
+    <string name="workout_logged_left">Logged set %1$d: %2$s, %3$s left</string>
+    <string name="workout_undo">UNDO</string>
+
+    <!-- Workout: session menu -->
+    <string name="workout_menu_back">Back to set</string>
+    <string name="workout_menu_title">What do you need?</string>
+    <string name="workout_menu_where">%1$s · SET %2$d OF %3$d</string>
+    <string name="workout_menu_skip">Skip this exercise</string>
+    <string name="workout_menu_skip_body">No penalty. The coach plans around it.</string>
+    <string name="workout_menu_next">Move to the next exercise</string>
+    <string name="workout_menu_next_body">The sets you\'ve done are kept.</string>
+    <string name="workout_menu_sounds">Sounds and buzzes</string>
+    <string name="workout_menu_sounds_on">On: beeps for timers and rest. Tap to turn them off.</string>
+    <string name="workout_menu_sounds_off">Off. Tap to turn them on.</string>
+    <string name="workout_menu_leave">Leave for now</string>
+    <string name="workout_menu_leave_body">Your workout is kept. Pick it up from Today.</string>
+    <string name="workout_menu_end_empty">End workout</string>
+    <plurals name="workout_menu_end">
+        <item quantity="one">End and save %1$d set</item>
+        <item quantity="other">End and save %1$d sets</item>
+    </plurals>
+
+    <!-- Workout: summary -->
+    <string name="workout_summary_done">SESSION DONE</string>
+    <plurals name="workout_summary_bests">
+        <item quantity="one">SESSION DONE · %1$d NEW BEST</item>
+        <item quantity="other">SESSION DONE · %1$d NEW BESTS</item>
+    </plurals>
+    <plurals name="workout_summary_sets">
+        <item quantity="one">set</item>
+        <item quantity="other">sets</item>
+    </plurals>
+    <string name="workout_summary_kg">%1$,d</string>
+    <string name="workout_summary_kg_label">KG MOVED</string>
+    <string name="workout_summary_minutes">%1$d min</string>
+    <string name="workout_summary_time_label">TIME</string>
+    <string name="workout_summary_exercises_label">EXERCISES</string>
+    <string name="workout_summary_bests_label">NEW BESTS</string>
+    <string name="workout_summary_was">WAS %1$s</string>
+    <string name="workout_summary_first">FIRST TIME</string>
+    <string name="workout_summary_gate_passed">GATE PASSED</string>
+    <string name="workout_summary_sets_label">EVERY SET · REPS LEFT UNDER</string>
+    <string name="workout_summary_seconds">%1$ds</string>
+    <string name="workout_summary_no_left">·</string>
+    <string name="workout_summary_changes_label">WHAT CHANGES NEXT TIME</string>
+    <string name="workout_change_target">target %1$s → %2$s.</string>
+    <string name="workout_change_held">stays at %1$s.</string>
+    <string name="workout_change_up">moves up to %1$s.</string>
+    <string name="workout_change_down">moves back to %1$s, to build up again.</string>
+
+    <!-- Workout: skill gates -->
+    <string name="gate_place">GATE %1$d OF %2$d · %3$s</string>
+    <string name="gate_test_label">GATE TEST</string>
+    <string name="gate_test_best">ONE SET · YOUR BEST SO FAR %1$s</string>
+    <string name="gate_test_body">One fresh set, before anything else. Reach the target and the next gate opens. Fall short and nothing is lost: it still counts as training, and the work sets follow as usual.</string>
+    <string name="gate_test_warm_up_title">WARM UP FIRST</string>
+    <string name="gate_test_warm_up">A couple of easy sets of something lighter, so the attempt is fresh, not cold.</string>
+    <string name="gate_test_ready">Warm up, then test</string>
+    <string name="gate_test_not_today">Not today</string>
+    <string name="gate_standard">THE STANDARD</string>
+    <string name="gate_standard_stop_reps">The count stops at the first rep that breaks one of these. Be honest: the next gate is harder.</string>
+    <string name="gate_standard_stop_hold">The time stops when your form breaks, not when you let go. Be honest: the next gate is harder.</string>
+    <string name="gate_check_label">THIS PASSES THE GATE · %1$s</string>
+    <string name="gate_check_title_reps">Did every rep count?</string>
+    <string name="gate_check_title_hold">Did the whole hold count?</string>
+    <string name="gate_check_no">Let me correct it</string>
+    <string name="gate_check_yes">Yes, it counts</string>
+    <string name="gate_passed_label">GATE %1$d OF %2$d · PASSED</string>
+    <string name="gate_passed_title">%1$s.\nGate passed.</string>
+    <string name="gate_passed_gain">+%1$d</string>
+    <string name="gate_passed_gain_label">ON YOUR BEST</string>
+    <string name="gate_passed_left_label">GATES TO GO</string>
+    <string name="gate_passed_next_label">NOW OPEN</string>
+    <string name="gate_passed_next_body">%1$s Your next sessions start building it.</string>
+    <string name="gate_passed_path_done_label">PATH COMPLETE</string>
+    <string name="gate_passed_path_done">That\'s the whole %1$s path.</string>
+    <string name="gate_passed_path_done_body">Every gate is passed. Pick a new goal from Train whenever you\'re ready.</string>
+    <string name="gate_passed_carry_on">Carry on with the session</string>
+
+    <!-- Progress -->
+    <string name="progress_title">Progress</string>
+    <string name="progress_range_4w">4W</string>
+    <string name="progress_range_3m">3M</string>
+    <string name="progress_range_all">ALL</string>
+    <string name="progress_empty">Your progress shows here after your first workout.</string>
+    <string name="progress_load_label">%1$s · LOAD PER REP</string>
+    <string name="progress_load_label_none">LOAD PER REP</string>
+    <string name="progress_no_load">Kilograms per rep show here once you\'ve logged your bodyweight on the Body tab and trained a movement that has a load figure.</string>
+    <string name="progress_since">KG SINCE %1$s</string>
+    <string name="progress_squares">SQUARES = NEW RUNG</string>
+    <string name="progress_today">LATEST</string>
+    <string name="progress_load_note">Each step up is a harder exercise or more reps of weight. The line is kilograms per rep at the time, so weight lost along the way shows here too.</string>
+    <plurals name="progress_chart_description">
+        <item quantity="one">Kilograms per rep: %1$s in %3$d workout.</item>
+        <item quantity="other">Kilograms per rep went from %1$s to %2$s over %3$d workouts.</item>
+    </plurals>
+    <string name="progress_moves">EVERY MOVEMENT</string>
+    <string name="progress_week_sets">HARD SETS · LAST 7 DAYS</string>
+    <string name="progress_week_limit">LIMIT %1$d</string>
+    <string name="progress_week_sets_description">%1$s: %2$s hard sets this week, %3$s planned.</string>
+    <string name="progress_week_note">The grey tick is what the coach planned for the week. The bars end at the limit of %1$d, which the coach never plans past.</string>
+    <string name="progress_weeks">WORKOUTS PER WEEK</string>
+    <plurals name="progress_weeks_total">
+        <item quantity="one">%1$d IN TOTAL</item>
+        <item quantity="other">%1$d IN TOTAL</item>
+    </plurals>
+    <string name="progress_weeks_description">Workouts per week, oldest first: %1$s.</string>
+    <plurals name="progress_weeks_ago">
+        <item quantity="one">%1$d WEEK AGO</item>
+        <item quantity="other">%1$d WEEKS AGO</item>
+    </plurals>
+    <string name="progress_gap">A GAP IS JUST A GAP</string>
+    <string name="progress_now">NOW</string>
+    <string name="progress_open_history">See every workout</string>
+    <string name="progress_gates">GATES PASSED</string>
+    <string name="progress_gates_none">No gates passed yet. Each one shows here with the day you passed it.</string>
+
+    <!-- Progress: one exercise -->
+    <string name="exercise_progress_how_to">HOW TO</string>
+    <string name="exercise_progress_none">You haven\'t done this exercise yet. Its progress shows here once you have.</string>
+    <string name="exercise_progress_best">%1$s · BEST SET</string>
+    <string name="exercise_progress_chart">BEST SET EACH WORKOUT</string>
+    <string name="exercise_progress_target_key">- - NEXT TARGET</string>
+    <plurals name="exercise_progress_chart_description">
+        <item quantity="one">Best set in the last workout: %2$s.</item>
+        <item quantity="other">Best set in each of the last %1$d workouts, oldest first: %2$s.</item>
+    </plurals>
+    <string name="exercise_progress_next_target">NEXT TARGET</string>
+    <string name="exercise_progress_workouts">WORKOUTS</string>
+    <string name="exercise_progress_records">RECORDS</string>
+    <string name="exercise_progress_record_set">Best set</string>
+    <string name="exercise_progress_record_heaviest">Heaviest rep</string>
+    <string name="exercise_progress_record_most">Most in one workout</string>
+    <string name="exercise_progress_recent">RECENT · REPS LEFT UNDER</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_previous">Previous month</string>
+    <string name="history_next">Next month</string>
+    <string name="history_key_trained">TRAINED</string>
+    <string name="history_key_planned">PLANNED</string>
+    <string name="history_day_trained">%1$d, trained</string>
+    <string name="history_day_planned">%1$d, planned</string>
+    <string name="history_day_plain">%1$d</string>
+    <string name="history_workouts">WORKOUTS</string>
+    <string name="history_time">TRAINING</string>
+    <string name="history_sets">SETS</string>
+    <string name="history_hours">%1$d h %2$02d</string>
+    <string name="history_list">WORKOUTS</string>
+    <string name="history_none">No workouts this month.</string>
+
+    <!-- A past workout -->
+    <string name="past_workout_none">This workout isn\'t here any more.</string>
+    <string name="past_workout_fallback_title">Workout</string>
+    <string name="past_workout_unknown_exercise">An exercise no longer in the app</string>
+    <plurals name="past_workout_sets">
+        <item quantity="one">%1$d set</item>
+        <item quantity="other">%1$d sets</item>
+    </plurals>
+    <string name="past_workout_moved">%1$,d KG MOVED</string>
+    <string name="past_workout_kg">%1$s KG PER REP</string>
+    <string name="past_workout_set">SET</string>
+    <string name="past_workout_done">DONE</string>
+    <string name="past_workout_left">LEFT</string>
+    <string name="past_workout_load">LOAD</string>
+    <string name="past_workout_added">+%1$s kg</string>
+    <string name="past_workout_band">%1$s kg band help</string>
 
     <!-- Skills -->
     <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>

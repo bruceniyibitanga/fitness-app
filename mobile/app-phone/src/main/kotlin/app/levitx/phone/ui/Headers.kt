@@ -107,6 +107,43 @@ fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 /**
+ * The top of a screen opened from a tab: back, the screen's name in wide
+ * capitals, and [trailing] on the right. 56 dp, with a rule under it.
+ */
+@Composable
+fun BackHeader(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    trailing: @Composable () -> Unit = {},
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(BarHeight)
+                .padding(start = 4.dp, end = ScreenPadding),
+        ) {
+            BackButton(onBack)
+            Text(
+                text = title.uppercase(),
+                style = LevitxType.Caption,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = WORDMARK_TRACKING.sp,
+                color = LevitxColors.Text,
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .weight(1f)
+                    .semantics { heading() },
+            )
+            trailing()
+        }
+        Rule()
+    }
+}
+
+/**
  * A photo across the top of a detail screen, fading into the background at
  * the bottom so the title can sit over its edge, with back in the corner.
  */

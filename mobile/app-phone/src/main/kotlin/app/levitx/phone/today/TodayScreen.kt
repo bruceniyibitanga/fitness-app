@@ -1,6 +1,7 @@
 package app.levitx.phone.today
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -23,8 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -39,13 +39,10 @@ import app.levitx.core.coach.CoachNotice
 import app.levitx.core.coach.CoachPhrases
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
-import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.Suggestion
 import app.levitx.core.coach.SuggestionChoice
-import app.levitx.core.load.calculateEffectiveLoad
 import app.levitx.core.load.formatKg
-import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -62,20 +59,17 @@ import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.Wordmark
-import app.levitx.phone.ui.patternName
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-
-private const val PERCENT = 100
 
 /** Today tab: connects [TodayViewModel] to [TodayScreen]. */
 @Composable
 fun TodayRoute(
     onOpenWorkout: () -> Unit,
     onOpenExercise: (String) -> Unit,
+    onOpenProgress: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -87,6 +81,7 @@ fun TodayRoute(
             onRest = viewModel::rest,
             onAcknowledgeWeightNotice = viewModel::acknowledgeWeightNotice,
             onOpenExercise = onOpenExercise,
+            onOpenProgress = onOpenProgress,
         ),
     )
 }
@@ -98,12 +93,14 @@ fun TodayRoute(
  * @property onRest Takes the rest day the coach offered.
  * @property onAcknowledgeWeightNotice Marks the weight notice as read.
  * @property onOpenExercise Opens an exercise's detail by id.
+ * @property onOpenProgress Opens Progress, from the figures under the first exercise.
  */
 data class TodayActions(
     val onStart: (SuggestionChoice?) -> Unit,
     val onRest: () -> Unit,
     val onAcknowledgeWeightNotice: () -> Unit,
     val onOpenExercise: (String) -> Unit,
+    val onOpenProgress: () -> Unit,
 )
 
 /**
@@ -147,20 +144,7 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
             Lead(session.plans.first(), state.bodyweightKg)
             Rule()
         }
-        StatStrip(
-            figures = listOf(
-                (state.bodyweightKg?.let(::formatKg) ?: stringResource(R.string.no_value)) to
-                    stringResource(R.string.today_body_kg),
-                stringResource(R.string.today_week_count, state.sessionsLastWeek, state.sessionsPerWeek) to
-                    stringResource(R.string.today_last_seven_days),
-                (
-                    session?.let { stringResource(R.string.minutes_short, it.estimatedMinutes) }
-                        ?: stringResource(R.string.no_value)
-                    ) to
-                    stringResource(R.string.today_session_length),
-            ),
-            modifier = Modifier.padding(start = ScreenPadding),
-        )
+        WeekFigures(state, session?.estimatedMinutes, actions.onOpenProgress)
         Rule()
         SquareNote(title = stringResource(R.string.today_why), text = CoachPhrases.describe(recommendation.reason))
         Rule()
@@ -185,6 +169,31 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
     }
 }
 
+/**
+ * Bodyweight, sessions in the last seven days and the session's length.
+ * Tapping them opens Progress: the week's figures lead on to the full picture.
+ */
+@Composable
+private fun WeekFigures(state: TodayUiState.Ready, sessionMinutes: Int?, onOpenProgress: () -> Unit) {
+    StatStrip(
+        figures = listOf(
+            (state.bodyweightKg?.let(::formatKg) ?: stringResource(R.string.no_value)) to
+                stringResource(R.string.today_body_kg),
+            stringResource(R.string.today_week_count, state.sessionsLastWeek, state.sessionsPerWeek) to
+                stringResource(R.string.today_last_seven_days),
+            (sessionMinutes?.let { stringResource(R.string.minutes_short, it) } ?: stringResource(R.string.no_value)) to
+                stringResource(R.string.today_session_length),
+        ),
+        modifier = Modifier
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(R.string.today_open_progress),
+                onClick = onOpenProgress,
+            )
+            .padding(start = ScreenPadding),
+    )
+}
+
 /** The top bar: the Levitx mark and today's date. */
 @Composable
 private fun Header(nowEpochMillis: Long) {
@@ -206,85 +215,6 @@ private fun Header(nowEpochMillis: Long) {
         Caption(date)
     }
     Rule()
-}
-
-/**
- * The first exercise, big: "3×6" and its load per rep side by side, the
- * exercise under them, and how hard to go.
- */
-@Composable
-private fun Lead(plan: ExercisePlan, bodyweightKg: Double?) {
-    val hasBestEffort = plan.sets.last().isBestEffort && plan.sets.size > 1
-    val workSets = if (hasBestEffort) plan.sets.size - 1 else plan.sets.size
-    val profile = plan.exercise.loadProfile
-    val isHold = plan.exercise.measure == GateMeasure.HOLD_SECONDS
-    Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 24.dp, bottom = 22.dp)) {
-        Caption(
-            if (plan.gateId != null) {
-                stringResource(R.string.today_lead_skill, patternName(plan.exercise.pattern))
-            } else {
-                stringResource(R.string.today_lead_first, patternName(plan.exercise.pattern))
-            },
-        )
-        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 14.dp)) {
-            Text(
-                text =
-                    stringResource(R.string.today_hero, workSets, plan.workTarget) +
-                        if (isHold) stringResource(R.string.seconds_unit) else "",
-                style = LevitxType.Hero,
-                color = LevitxColors.Text,
-                modifier = Modifier.weight(1f),
-            )
-            when {
-                profile != null && bodyweightKg != null -> LeadFigure(
-                    formatKg(calculateEffectiveLoad(bodyweightKg, profile).totalKg),
-                    stringResource(R.string.figure_kg_per_rep),
-                )
-
-                profile != null -> LeadFigure(
-                    stringResource(R.string.percent, (profile.bodyweightShare * PERCENT).roundToInt()),
-                    stringResource(R.string.figure_of_bodyweight),
-                )
-            }
-        }
-        Text(
-            text = plan.exercise.name,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = LevitxColors.Text,
-            modifier = Modifier
-                .padding(top = 18.dp)
-                .semantics { heading() },
-        )
-        Text(
-            text = when {
-                isHold -> stringResource(R.string.today_lead_note_hold)
-                else -> pluralStringResource(R.plurals.today_lead_note_reps, plan.repsInReserve, plan.repsInReserve)
-            } + if (hasBestEffort) " " + stringResource(R.string.today_lead_note_best) else "",
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-            color = LevitxColors.TextMuted,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-    }
-}
-
-/** The load per rep beside the big number, in the accent colour. */
-@Composable
-private fun LeadFigure(value: String, caption: String) {
-    Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(bottom = 4.dp)) {
-        Text(
-            text = value,
-            style = LevitxType.Figure.copy(fontSize = 34.sp, lineHeight = 34.sp),
-            color = LevitxColors.Accent,
-        )
-        Text(
-            text = caption,
-            style = LevitxType.Micro,
-            color = LevitxColors.TextMuted,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-    }
 }
 
 /** Nothing safe to train today. */
@@ -402,7 +332,8 @@ private fun TodayScreenPreview() {
                 bodyweightKg = 74.2,
                 hasWorkoutInProgress = false,
             ),
-            actions = TodayActions(onStart = {}, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}),
+            actions = TodayActions(onStart = {
+            }, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}, onOpenProgress = {}),
         )
     }
 }

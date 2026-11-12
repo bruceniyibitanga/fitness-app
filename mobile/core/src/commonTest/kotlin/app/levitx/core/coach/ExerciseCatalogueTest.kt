@@ -72,4 +72,22 @@ class ExerciseCatalogueTest {
         assertEquals(3.0, counts[MovementPattern.HORIZONTAL_PULL])
         assertEquals(1.5, counts[MovementPattern.VERTICAL_PULL])
     }
+
+    @Test
+    fun everySlowNegativeIsTimedAndNothingElseIs() {
+        val all = ExerciseCatalogue.ladders.flatMap { ladder -> ladder.rungs.flatMap { it.options } }
+        val timed = all.filter { it.lowerSeconds != null }.map { it.id }.toSet()
+        assertEquals(
+            setOf(
+                "vertical_pull.negative",
+                "vertical_push.negative_dip",
+                "vertical_push.wall_negative",
+                "hinge.nordic_negative",
+            ),
+            timed,
+        )
+        all.filter { it.id in timed }.forEach { negative ->
+            assertEquals(CoachTuning.NEGATIVE_LOWER_SECONDS, negative.lowerSeconds)
+        }
+    }
 }
