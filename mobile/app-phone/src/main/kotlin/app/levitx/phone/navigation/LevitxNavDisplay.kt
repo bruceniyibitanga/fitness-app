@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -17,6 +18,12 @@ import app.levitx.phone.main.MainNavigation
 import app.levitx.phone.main.MainRoute
 import app.levitx.phone.onboarding.OnboardingRoute
 import app.levitx.phone.program.ProgramRoute
+import app.levitx.phone.progress.ExerciseProgressNavigation
+import app.levitx.phone.progress.ExerciseProgressRoute
+import app.levitx.phone.progress.HistoryRoute
+import app.levitx.phone.progress.PastWorkoutRoute
+import app.levitx.phone.progress.ProgressNavigation
+import app.levitx.phone.progress.ProgressRoute
 import app.levitx.phone.train.FocusWorkoutNavigation
 import app.levitx.phone.train.FocusWorkoutRoute
 import app.levitx.phone.workout.WorkoutRoute
@@ -60,6 +67,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                         onOpenFocusWorkout = { backStack.add(Destination.FocusWorkout(it)) },
                         onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
                         onOpenProgram = { backStack.add(Destination.Program(it)) },
+                        onOpenProgress = { backStack.add(Destination.Progress) },
                     ),
                 )
             }
@@ -86,6 +94,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
             entry<Destination.Program> { key ->
                 ProgramRoute(pathId = key.pathId, onBack = { backStack.removeLastOrNull() })
             }
+            progressEntries(backStack)
         },
     )
 }
@@ -97,4 +106,36 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
 private fun MutableList<NavKey>.replaceAllWith(destination: Destination) {
     add(destination)
     subList(0, size - 1).clear()
+}
+
+/** Progress, an exercise's progress, History and a past workout. */
+private fun EntryProviderScope<NavKey>.progressEntries(backStack: MutableList<NavKey>) {
+    entry<Destination.Progress> {
+        ProgressRoute(
+            ProgressNavigation(
+                onBack = { backStack.removeLastOrNull() },
+                onOpenExercise = { backStack.add(Destination.ExerciseProgress(it)) },
+                onOpenHistory = { backStack.add(Destination.History) },
+            ),
+        )
+    }
+    entry<Destination.ExerciseProgress> { key ->
+        ExerciseProgressRoute(
+            exerciseId = key.exerciseId,
+            navigation = ExerciseProgressNavigation(
+                onBack = { backStack.removeLastOrNull() },
+                onOpenHowTo = { backStack.add(Destination.ExerciseDetail(it)) },
+                onOpenWorkout = { backStack.add(Destination.PastWorkout(it)) },
+            ),
+        )
+    }
+    entry<Destination.History> {
+        HistoryRoute(
+            onBack = { backStack.removeLastOrNull() },
+            onOpenWorkout = { backStack.add(Destination.PastWorkout(it)) },
+        )
+    }
+    entry<Destination.PastWorkout> { key ->
+        PastWorkoutRoute(workoutId = key.workoutId, onBack = { backStack.removeLastOrNull() })
+    }
 }

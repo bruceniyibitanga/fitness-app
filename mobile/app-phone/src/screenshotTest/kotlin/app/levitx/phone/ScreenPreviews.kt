@@ -16,6 +16,8 @@ import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.core.history.ExerciseRecord
+import app.levitx.core.history.WorkoutRecord
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.session.SetLoad
@@ -38,6 +40,17 @@ import app.levitx.phone.path.PathScreen
 import app.levitx.phone.path.PathUiState
 import app.levitx.phone.program.ProgramScreen
 import app.levitx.phone.program.ProgramUiState
+import app.levitx.phone.progress.ExerciseProgressNavigation
+import app.levitx.phone.progress.ExerciseProgressScreen
+import app.levitx.phone.progress.HistoryScreen
+import app.levitx.phone.progress.PastWorkoutScreen
+import app.levitx.phone.progress.PastWorkoutUiState
+import app.levitx.phone.progress.ProgressNavigation
+import app.levitx.phone.progress.ProgressRange
+import app.levitx.phone.progress.ProgressScreen
+import app.levitx.phone.progress.exerciseProgressState
+import app.levitx.phone.progress.historyState
+import app.levitx.phone.progress.progressState
 import app.levitx.phone.skills.SkillsScreen
 import app.levitx.phone.skills.SkillsUiState
 import app.levitx.phone.skills.standings
@@ -64,6 +77,11 @@ import app.levitx.phone.workout.WorkoutActions
 import app.levitx.phone.workout.WorkoutScreen
 import app.levitx.phone.workout.WorkoutUiState
 import com.android.tools.screenshot.PreviewTest
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneOffset
 
 /*
  * Every screen, rendered at the design's 390 × 844 artboard size, so CI can
@@ -73,7 +91,7 @@ import com.android.tools.screenshot.PreviewTest
 
 private val noOnboardingActions = OnboardingActions({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 private val noTodayActions =
-    TodayActions(onStart = {}, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {})
+    TodayActions(onStart = {}, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}, onOpenProgress = {})
 
 /** Someone after a muscle-up who can do a pull-up and has a bar. */
 private fun muscleUp(kit: Set<Equipment> = setOf(Equipment.PULL_UP_BAR)) =
@@ -260,7 +278,12 @@ fun PlanScreenshot() {
     val bests = mapOf(path.gates[0].id to 45, path.gates[1].id to 10, path.gates[2].id to 7)
     LevitxTheme {
         MainScreen(selected = MainTab.PLAN, onSelect = {}) {
-            PathScreen(PathUiState.Ready(path, currentIndex = 2, bestByGateId = bests), onTrain = {}, onChangeGoal = {})
+            PathScreen(
+                PathUiState.Ready(path, currentIndex = 2, bestByGateId = bests),
+                onTrain = {},
+                onChangeGoal = {},
+                onOpenProgress = {},
+            )
         }
     }
 }
@@ -469,5 +492,95 @@ fun GatePassedScreenshot() {
             now = { 0L },
             actions = noWorkoutActions,
         )
+    }
+}
+
+private const val PREVIEW_DAY = 24L * 60 * 60 * 1000
+
+/** Twelve weeks of made-up workouts for the progress screens, three a week with one week off. */
+private val previewWorkouts: List<WorkoutRecord> = (0 until 36).filter { it / 3 != 6 }.map { index ->
+    val day = 20_400 + index * 7 / 3
+    val pullUps = 4 + index / 6
+    val pushUp = when {
+        index < 12 -> "horizontal_push.knees"
+        index < 24 -> "horizontal_push.push_up"
+        else -> "horizontal_push.feet_30cm"
+    }
+    WorkoutRecord(
+        id = "preview-$index",
+        startedAtEpochMillis = day * PREVIEW_DAY + 17 * 3_600_000L,
+        finishedAtEpochMillis = day * PREVIEW_DAY + 17 * 3_600_000L + 46 * 60_000L,
+        exercises = listOf(
+            ExerciseRecord(
+                "vertical_pull.pull_up",
+                listOf(LoggedSet(pullUps, 2, false), LoggedSet(pullUps, 1, false), LoggedSet(pullUps - 1, 1, false)),
+                78.0 - index * 0.1,
+            ),
+            ExerciseRecord(pushUp, listOf(LoggedSet(10, 2, false), LoggedSet(9, 2, false)), 78.0 - index * 0.1),
+            ExerciseRecord("core.plank", listOf(LoggedSet(40, null, false), LoggedSet(35, null, false)), 78.0),
+        ),
+    )
+}
+
+private val previewNow = previewWorkouts.last().finishedAtEpochMillis + PREVIEW_DAY
+
+private fun previewDate(epochMillis: Long): LocalDate =
+    Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalDate()
+
+private val noProgressNavigation = ProgressNavigation(onBack = {}, onOpenExercise = {}, onOpenHistory = {})
+
+@PreviewTest
+@Preview(name = "23 Progress", widthDp = 390, heightDp = 1500)
+@Composable
+fun ProgressScreenshot() {
+    val hang = checkNotNull(SkillCatalogue.gateById("muscle_up.dead_hang"))
+    val model = muscleUp().copy(gateBests = mapOf(hang.id to hang.target))
+    LevitxTheme {
+        ProgressScreen(
+            uiState = progressState(previewWorkouts, model, ProgressRange.THREE_MONTHS, previewNow),
+            navigation = noProgressNavigation,
+            onChooseRange = {},
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "24 Exercise progress", widthDp = 390, heightDp = 1200)
+@Composable
+fun ExerciseProgressScreenshot() {
+    LevitxTheme {
+        ExerciseProgressScreen(
+            uiState = exerciseProgressState("vertical_pull.pull_up", previewWorkouts, muscleUp()),
+            navigation = ExerciseProgressNavigation(onBack = {}, onOpenHowTo = {}, onOpenWorkout = {}),
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "25 History", widthDp = 390, heightDp = 1100)
+@Composable
+fun HistoryScreenshot() {
+    LevitxTheme {
+        HistoryScreen(
+            uiState = historyState(
+                month = YearMonth.from(previewDate(previewNow)),
+                workouts = previewWorkouts,
+                trainingDays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+                today = previewDate(previewNow),
+                zone = ZoneOffset.UTC,
+            ),
+            onBack = {},
+            onOpenWorkout = {},
+            onMoveMonth = {},
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "26 Past workout", widthDp = 390, heightDp = 1000)
+@Composable
+fun PastWorkoutScreenshot() {
+    LevitxTheme {
+        PastWorkoutScreen(PastWorkoutUiState.Ready(previewWorkouts.last()), onBack = {})
     }
 }

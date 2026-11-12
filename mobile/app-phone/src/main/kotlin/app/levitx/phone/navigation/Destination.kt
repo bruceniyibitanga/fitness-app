@@ -49,4 +49,29 @@ sealed interface Destination : NavKey {
      */
     @Serializable
     data class Program(val pathId: String) : Destination
+
+    /** Progress: load over time, every movement, the week's sets, and gates passed. */
+    @Serializable
+    data object Progress : Destination
+
+    /**
+     * One exercise's progress.
+     *
+     * @property exerciseId The exercise's catalogue id. Not personal data.
+     */
+    @Serializable
+    data class ExerciseProgress(val exerciseId: String) : Destination
+
+    /** Every workout, a month at a time. */
+    @Serializable
+    data object History : Destination
+
+    /**
+     * One past workout.
+     *
+     * @property workoutId The workout's random id. It says nothing about the
+     *   person; what was done is read from the encrypted database.
+     */
+    @Serializable
+    data class PastWorkout(val workoutId: String) : Destination
 }
