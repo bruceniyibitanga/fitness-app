@@ -501,6 +501,7 @@ private const val PREVIEW_DAY = 24L * 60 * 60 * 1000
 private val previewWorkouts: List<WorkoutRecord> = (0 until 36).filter { it / 3 != 6 }.map { index ->
     val day = 20_400 + index * 7 / 3
     val pullUps = 4 + index / 6
+    val vest = if (index >= 24) 5.0 + (index - 24) / 3 * 2.5 else 0.0
     val pushUp = when {
         index < 12 -> "horizontal_push.knees"
         index < 24 -> "horizontal_push.push_up"
@@ -513,10 +514,11 @@ private val previewWorkouts: List<WorkoutRecord> = (0 until 36).filter { it / 3 
         exercises = listOf(
             ExerciseRecord(
                 "vertical_pull.pull_up",
-                listOf(LoggedSet(pullUps, 2, false), LoggedSet(pullUps, 1, false), LoggedSet(pullUps - 1, 1, false)),
-                78.0 - index * 0.1,
+                // A vest from week nine, so the load climbs as well as the reps.
+                List(3) { LoggedSet(pullUps - it / 2, 2 - it.coerceAtMost(1), false, addedKg = vest) },
+                78.0,
             ),
-            ExerciseRecord(pushUp, listOf(LoggedSet(10, 2, false), LoggedSet(9, 2, false)), 78.0 - index * 0.1),
+            ExerciseRecord(pushUp, listOf(LoggedSet(10, 2, false), LoggedSet(9, 2, false)), 78.0),
             ExerciseRecord("core.plank", listOf(LoggedSet(40, null, false), LoggedSet(35, null, false)), 78.0),
         ),
     )

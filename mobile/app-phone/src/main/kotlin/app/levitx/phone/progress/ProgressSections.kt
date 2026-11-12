@@ -131,7 +131,7 @@ private fun WeekSetsRow(row: WeekSets, limit: Double) {
             text = patternName(row.pattern),
             fontSize = 13.sp,
             color = LevitxColors.TextSoft,
-            modifier = Modifier.width(120.dp),
+            modifier = Modifier.width(140.dp),
         )
         BoxWithConstraints(
             modifier = Modifier

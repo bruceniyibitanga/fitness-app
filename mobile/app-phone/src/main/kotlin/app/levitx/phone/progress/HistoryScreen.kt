@@ -124,7 +124,7 @@ private fun MonthSwitch(state: HistoryUiState.Ready, onMoveMonth: (forward: Bool
     val locale = LocalConfiguration.current.locales[0]
     val formatter = remember(locale) { DateTimeFormatter.ofPattern("MMM yyyy", locale) }
     Row(verticalAlignment = Alignment.CenterVertically) {
-        MonthButton(stringResource(R.string.history_previous), state.canGoBack, Modifier.rotate(HALF_TURN)) {
+        MonthButton(stringResource(R.string.history_previous), state.canGoBack, pointsBack = true) {
             onMoveMonth(false)
         }
         Caption(formatter.format(state.month), color = LevitxColors.Text)
@@ -133,7 +133,7 @@ private fun MonthSwitch(state: HistoryUiState.Ready, onMoveMonth: (forward: Bool
 }
 
 @Composable
-private fun MonthButton(label: String, enabled: Boolean, iconModifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun MonthButton(label: String, enabled: Boolean, pointsBack: Boolean = false, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -145,7 +145,7 @@ private fun MonthButton(label: String, enabled: Boolean, iconModifier: Modifier 
             painterResource(R.drawable.ic_chevron_forward),
             contentDescription = null,
             tint = if (enabled) LevitxColors.Text else LevitxColors.Tick,
-            modifier = iconModifier,
+            modifier = if (pointsBack) Modifier.rotate(HALF_TURN) else Modifier,
         )
     }
 }
