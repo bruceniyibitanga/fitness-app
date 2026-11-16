@@ -2,6 +2,7 @@ package app.levitx.sync
 
 import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.WorkoutOutbox
+import app.levitx.data.privacy.PrivacyRepository
 import app.levitx.data.session.SessionOutbox
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,6 +20,10 @@ import kotlinx.coroutines.sync.withLock
  *   queue and its data item deleted. Sessions queued by an older version of
  *   the app go the same way.
  *
+ * - **Forgetting:** when the person deletes everything on the phone, the
+ *   phone puts up [SyncPaths.FORGET]. While it is there, the watch deletes
+ *   everything it holds, queued workouts included, and takes nothing new.
+ *
  * A workout has a unique id and is recorded once per device, so nothing here
  * can lose or double-count anything, whatever order things happen in.
  */
@@ -28,26 +33,53 @@ internal class WatchSyncEngine @Inject constructor(
     private val applier: PhoneStateApplier,
     private val outbox: SessionOutbox,
     private val workoutOutbox: WorkoutOutbox,
+    private val privacy: PrivacyRepository,
 ) {
     // One pass at a time: the listener service and the app can both ask for one.
     private val mutex = Mutex()
 
-    /** Runs one full pass: take in the phone's state, then send and confirm workouts. */
+    /**
+     * Runs one full pass: take in the phone's state, then send and confirm
+     * workouts. Or, if the phone asked, delete everything instead.
+     */
     suspend fun sync(): SyncReport = mutex.withLock {
         try {
-            val stateResult = applyPhoneState()
-            val delivered = sendQueued()
-            SyncReport(
-                outcome = SyncOutcome.DONE,
-                delivered = delivered,
-                skipped = if (stateResult == StateResult.SKIPPED) 1 else 0,
-                stateChanged = stateResult == StateResult.APPLIED,
-            )
+            if (phoneForgot()) forgetEverything() else exchange()
         } catch (error: DataLayerUnavailableException) {
             SyncReport(SyncOutcome.NO_LINK)
         } catch (error: DataUnavailableException) {
             SyncReport(SyncOutcome.DATA_LOCKED)
         }
+    }
+
+    private suspend fun exchange(): SyncReport {
+        val stateResult = applyPhoneState()
+        val delivered = sendQueued()
+        return SyncReport(
+            outcome = SyncOutcome.DONE,
+            delivered = delivered,
+            skipped = if (stateResult == StateResult.SKIPPED) 1 else 0,
+            stateChanged = stateResult == StateResult.APPLIED,
+        )
+    }
+
+    private suspend fun phoneForgot(): Boolean = dataLayer.list(SyncPaths.FORGET).any { it.path == SyncPaths.FORGET }
+
+    /**
+     * Deletes everything on the watch, as the person did on the phone, then
+     * removes the watch's own workout items from the Data Layer.
+     *
+     * Only deletes when there is something to delete. Deleting changes the
+     * database, which starts another pass; that pass finds nothing and stops.
+     */
+    private suspend fun forgetEverything(): SyncReport {
+        val holdsAnything = applier.holdsAnything() ||
+            workoutOutbox.observeQueued().first().isNotEmpty() ||
+            outbox.observeQueued().first().isNotEmpty()
+        if (holdsAnything) privacy.deleteEverything()
+        // The queues are empty now, so this deletes whatever the watch still had on the Data Layer.
+        sendQueued()
+        return SyncReport(SyncOutcome.DONE, stateChanged = holdsAnything)
     }
 
     private suspend fun applyPhoneState(): StateResult {

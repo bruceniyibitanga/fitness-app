@@ -45,14 +45,19 @@ internal class PhoneSyncEngine @Inject constructor(
     /** Publishes [state] for the watch. It is delivered when the watch is next reachable. */
     suspend fun publish(state: PhoneState): SyncReport = guarded {
         dataLayer.put(SyncPaths.STATE, SyncCodec.encodeState(state))
+        // The person set up again after deleting everything: the watch can keep what it gets from now on.
+        dataLayer.delete(SyncPaths.FORGET)
         SyncReport(SyncOutcome.DONE, stateChanged = true)
     }
 
     /**
-     * Takes the phone's published state off the Data Layer, after the person
-     * deletes everything, so nothing about them is offered to the watch again.
+     * After the person deletes everything: tells the watch to delete its copy
+     * too, and takes the phone's published state off the Data Layer, so
+     * nothing about them is offered to the watch again. The watch acts on it
+     * the next time it is connected, even if that is days later.
      */
     suspend fun forget(): SyncReport = guarded {
+        dataLayer.put(SyncPaths.FORGET, ByteArray(0))
         dataLayer.delete(SyncPaths.STATE)
         SyncReport(SyncOutcome.DONE, stateChanged = true)
     }

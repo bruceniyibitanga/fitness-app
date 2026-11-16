@@ -130,6 +130,7 @@
                 <data android:host="*" />
                 <data android:pathPrefix="/levitx/state" />
                 <data android:pathPrefix="/levitx/acks/" />
+                <data android:pathPrefix="/levitx/forget" />
             </intent-filter>
         </service>
     </application>

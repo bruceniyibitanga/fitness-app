@@ -474,7 +474,7 @@
     <string name="settings_delete">Delete everything</string>
     <string name="settings_delete_kind">ASKS FIRST</string>
     <string name="settings_delete_title">Delete everything?</string>
-    <string name="settings_delete_body">Your workouts, weigh-ins, kit, bands, plan and settings are deleted from this phone for good, and you start again from setup. Export first if you want a copy. Your watch keeps its copy of the plan (never your weight) until you clear Levitx on the watch.</string>
+    <string name="settings_delete_body">Your workouts, weigh-ins, kit, bands, plan and settings are deleted from this phone for good, and you start again from setup. Export first if you want a copy. Your watch deletes its copy too, the next time it\'s connected to this phone.</string>
     <string name="settings_delete_keep">Keep it</string>
     <string name="settings_delete_confirm">Delete everything</string>
     <string name="settings_deleting">Deleting…</string>

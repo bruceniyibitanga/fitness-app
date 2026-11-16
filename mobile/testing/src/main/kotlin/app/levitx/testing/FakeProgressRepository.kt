@@ -16,6 +16,11 @@ class FakeProgressRepository(initial: Map<String, Int> = emptyMap()) : ProgressR
         bests.update { current -> if (best > (current[gateId] ?: 0)) current + (gateId to best) else current }
     }
 
+    /** Forgets every best, as deleting everything does. */
+    fun clear() {
+        bests.value = emptyMap()
+    }
+
     /** The current bests, for assertions. */
     val current: Map<String, Int>
         get() = bests.value
