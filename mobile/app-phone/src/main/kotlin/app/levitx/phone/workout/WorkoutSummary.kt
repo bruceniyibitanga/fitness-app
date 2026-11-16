@@ -27,8 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.levitx.core.session.LoggedSet
-import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -36,6 +34,7 @@ import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.SetSquare
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.TabHeader
 import app.levitx.phone.ui.measureText
@@ -173,34 +172,6 @@ private fun EverySet(exercises: List<ReportExercise>) {
             }
             Rule()
         }
-    }
-}
-
-/** One set: "8" over "2" (reps left), or "30s" over a dot for a hold. */
-@Composable
-private fun SetSquare(measure: GateMeasure, set: LoggedSet) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .size(38.dp)
-            .border(1.dp, LevitxColors.Tick),
-    ) {
-        Text(
-            text = if (measure == GateMeasure.HOLD_SECONDS) {
-                stringResource(R.string.workout_summary_seconds, set.value)
-            } else {
-                set.value.toString()
-            },
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = LevitxColors.Text,
-        )
-        Text(
-            text = set.repsInReserve?.let { repsLeftLabel(it) } ?: stringResource(R.string.workout_summary_no_left),
-            style = LevitxType.Micro,
-            color = LevitxColors.TextFaint,
-        )
     }
 }
 

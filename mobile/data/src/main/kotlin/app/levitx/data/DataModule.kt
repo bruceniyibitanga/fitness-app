@@ -83,6 +83,10 @@ internal interface DataModule {
         @IoDispatcher
         fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
+        @Provides
+        @DefaultDispatcher
+        fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
         // A SupervisorJob so one failed job doesn't cancel the others sharing the scope.
         @Provides
         @Singleton

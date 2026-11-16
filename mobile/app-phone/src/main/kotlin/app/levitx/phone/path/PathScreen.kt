@@ -1,6 +1,7 @@
 package app.levitx.phone.path
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -55,9 +57,14 @@ private val PlanBarHeight = 64.dp
  * @param onChangeGoal Goes to the programs, where another goal can be picked.
  */
 @Composable
-fun PathRoute(onTrain: () -> Unit, onChangeGoal: () -> Unit, viewModel: PathViewModel = hiltViewModel()) {
+fun PathRoute(
+    onTrain: () -> Unit,
+    onChangeGoal: () -> Unit,
+    onOpenProgress: () -> Unit,
+    viewModel: PathViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PathScreen(uiState, onTrain, onChangeGoal)
+    PathScreen(uiState, onTrain, onChangeGoal, onOpenProgress)
 }
 
 /**
@@ -66,9 +73,23 @@ fun PathRoute(onTrain: () -> Unit, onChangeGoal: () -> Unit, viewModel: PathView
  * trains. Train the next gate is pinned to the bottom.
  */
 @Composable
-fun PathScreen(uiState: PathUiState, onTrain: () -> Unit, onChangeGoal: () -> Unit, modifier: Modifier = Modifier) {
+fun PathScreen(
+    uiState: PathUiState,
+    onTrain: () -> Unit,
+    onChangeGoal: () -> Unit,
+    onOpenProgress: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier = modifier.fillMaxSize().background(LevitxColors.Background)) {
-        TabHeader(stringResource(R.string.tab_plan))
+        TabHeader(stringResource(R.string.tab_plan)) {
+            Caption(
+                text = stringResource(R.string.plan_open_progress),
+                color = LevitxColors.Accent,
+                modifier = Modifier
+                    .clickable(role = Role.Button, onClick = onOpenProgress)
+                    .padding(12.dp),
+            )
+        }
         when (uiState) {
             PathUiState.Loading -> Unit
 
@@ -204,6 +225,7 @@ private fun PathScreenPreview() {
             ),
             onTrain = {},
             onChangeGoal = {},
+            onOpenProgress = {},
         )
     }
 }

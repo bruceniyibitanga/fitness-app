@@ -55,7 +55,7 @@ The phone stores the coach through `CoachRepository` in `:data`. What the coach 
 
 ### The phone app
 
-The phone has three destinations on its Navigation 3 back stack: setup, the tabs, and the workout in progress. Which comes first is decided once at launch: setup for someone the coach doesn't know yet, the tabs for everyone else. Locked or unreadable data goes to the tabs, which explain it, so setup can never overwrite a coach that is still there.
+The phone's main destinations on its Navigation 3 back stack are setup, the tabs, and the workout in progress, with detail screens (an exercise, a program, Progress, History, a past workout) opened on top of the tabs. Which comes first is decided once at launch: setup for someone the coach doesn't know yet, the tabs for everyone else. Locked or unreadable data goes to the tabs, which explain it, so setup can never overwrite a coach that is still there.
 
 - **Setup** (`onboarding/`) asks only what training can't tell the coach: the goal, all-round or focused, whether they can do a pull-up, optional bodyweight, the week and the kit. It shows the first session the coach would plan before anything is saved, then saves it all in one go.
 - **The tabs** (`main/`) are Today, Train, Plan, Skills and Body. They swap content in place, so back from any tab leaves the app.
@@ -72,6 +72,8 @@ The phone has three destinations on its Navigation 3 back stack: setup, the tabs
 - **Exercise detail** opens from Today, a workout or Skills: form cues and set-up notes from `ExerciseGuides` in `:core`, the person's target, best and load per rep, and the exercise's ladder with their place on it.
 - **Plan** shows the goal's gates on a rail, with how many are left and what each one trains.
 - **Body** shows the bodyweight trend from `bodyweightTrend` in `:core` (the same figure the coach plans with), the load per rep it gives each exercise trained now, the kit the plan can use, and the bands. Kit changes go through `CoachRepository.updateProfile`, so Today plans with the new kit straight away.
+- **Progress** opens from Today's figures and from Plan, not a tab of its own, because it's something to check weekly rather than daily. It reads every finished workout through `HistoryRepository` (`:data`), which groups the stored rows into `WorkoutRecord`s off the main thread. The figures come from `core/history`: `Progress.loadSeries` for kilograms per rep over time (a square marks each climb to a harder rung), `visits` and the records for one exercise, `workoutsPerWeek`, and `passedGates`, dated by the first stored workout that reached the target. Hard sets this week come from the coach's own model and window, so Progress and the coach never count the week differently. Nothing on these screens is estimated: an exercise without a load figure, or a workout without a bodyweight, simply has no kilograms.
+- **History** shows a month at a time in the phone's time zone, with trained days filled and training days still to come outlined, and opens each **past workout** with every set as it was logged.
 
 #### The design kit
 

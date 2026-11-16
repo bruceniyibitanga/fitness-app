@@ -44,10 +44,9 @@ import app.levitx.phone.ui.ChoiceBar
 import app.levitx.phone.ui.ChoiceRow
 import app.levitx.phone.ui.DecimalInput
 import app.levitx.phone.ui.Help
+import app.levitx.phone.ui.MAX_REPS_LEFT
 import app.levitx.phone.ui.ScreenPadding
-
-/** The last "reps left" cell, shown as "4+". Four or more is Easy to the coach. */
-private const val MAX_REPS_LEFT = 4
+import app.levitx.phone.ui.repsLeftLabel
 
 /** Largest number the counter goes to. No one does 999 reps in a set. */
 private const val MAX_ENTRY = 999
@@ -124,11 +123,6 @@ internal fun RepsLeft(selected: Int, onSelect: (Int) -> Unit) {
         Help(stringResource(R.string.workout_reps_left_help), modifier = Modifier.padding(top = 10.dp))
     }
 }
-
-/** "4+" for the last cell, else the number. */
-@Composable
-internal fun repsLeftLabel(left: Int): String =
-    if (left >= MAX_REPS_LEFT) stringResource(R.string.workout_reps_left_max, MAX_REPS_LEFT) else left.toString()
 
 /** The load per rep for the set as chosen, or null without bodyweight or a load to track. */
 internal fun loadPerRep(state: WorkoutUiState.Active, addedKg: Double, assistanceKg: Double): Double? {

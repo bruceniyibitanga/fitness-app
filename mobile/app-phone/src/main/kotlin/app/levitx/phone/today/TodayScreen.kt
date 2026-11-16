@@ -1,6 +1,7 @@
 package app.levitx.phone.today
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +69,7 @@ import kotlinx.coroutines.launch
 fun TodayRoute(
     onOpenWorkout: () -> Unit,
     onOpenExercise: (String) -> Unit,
+    onOpenProgress: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -78,6 +81,7 @@ fun TodayRoute(
             onRest = viewModel::rest,
             onAcknowledgeWeightNotice = viewModel::acknowledgeWeightNotice,
             onOpenExercise = onOpenExercise,
+            onOpenProgress = onOpenProgress,
         ),
     )
 }
@@ -89,12 +93,14 @@ fun TodayRoute(
  * @property onRest Takes the rest day the coach offered.
  * @property onAcknowledgeWeightNotice Marks the weight notice as read.
  * @property onOpenExercise Opens an exercise's detail by id.
+ * @property onOpenProgress Opens Progress, from the figures under the first exercise.
  */
 data class TodayActions(
     val onStart: (SuggestionChoice?) -> Unit,
     val onRest: () -> Unit,
     val onAcknowledgeWeightNotice: () -> Unit,
     val onOpenExercise: (String) -> Unit,
+    val onOpenProgress: () -> Unit,
 )
 
 /**
@@ -138,20 +144,7 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
             Lead(session.plans.first(), state.bodyweightKg)
             Rule()
         }
-        StatStrip(
-            figures = listOf(
-                (state.bodyweightKg?.let(::formatKg) ?: stringResource(R.string.no_value)) to
-                    stringResource(R.string.today_body_kg),
-                stringResource(R.string.today_week_count, state.sessionsLastWeek, state.sessionsPerWeek) to
-                    stringResource(R.string.today_last_seven_days),
-                (
-                    session?.let { stringResource(R.string.minutes_short, it.estimatedMinutes) }
-                        ?: stringResource(R.string.no_value)
-                    ) to
-                    stringResource(R.string.today_session_length),
-            ),
-            modifier = Modifier.padding(start = ScreenPadding),
-        )
+        WeekFigures(state, session?.estimatedMinutes, actions.onOpenProgress)
         Rule()
         SquareNote(title = stringResource(R.string.today_why), text = CoachPhrases.describe(recommendation.reason))
         Rule()
@@ -174,6 +167,31 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
             height = 64.dp,
         )
     }
+}
+
+/**
+ * Bodyweight, sessions in the last seven days and the session's length.
+ * Tapping them opens Progress: the week's figures lead on to the full picture.
+ */
+@Composable
+private fun WeekFigures(state: TodayUiState.Ready, sessionMinutes: Int?, onOpenProgress: () -> Unit) {
+    StatStrip(
+        figures = listOf(
+            (state.bodyweightKg?.let(::formatKg) ?: stringResource(R.string.no_value)) to
+                stringResource(R.string.today_body_kg),
+            stringResource(R.string.today_week_count, state.sessionsLastWeek, state.sessionsPerWeek) to
+                stringResource(R.string.today_last_seven_days),
+            (sessionMinutes?.let { stringResource(R.string.minutes_short, it) } ?: stringResource(R.string.no_value)) to
+                stringResource(R.string.today_session_length),
+        ),
+        modifier = Modifier
+            .clickable(
+                role = Role.Button,
+                onClickLabel = stringResource(R.string.today_open_progress),
+                onClick = onOpenProgress,
+            )
+            .padding(start = ScreenPadding),
+    )
 }
 
 /** The top bar: the Levitx mark and today's date. */
@@ -314,7 +332,8 @@ private fun TodayScreenPreview() {
                 bodyweightKg = 74.2,
                 hasWorkoutInProgress = false,
             ),
-            actions = TodayActions(onStart = {}, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}),
+            actions = TodayActions(onStart = {
+            }, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}, onOpenProgress = {}),
         )
     }
 }

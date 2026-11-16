@@ -83,6 +83,7 @@ fun MainRoute(navigation: MainNavigation) {
             MainTab.TODAY -> TodayRoute(
                 onOpenWorkout = navigation.onOpenWorkout,
                 onOpenExercise = navigation.onOpenExercise,
+                onOpenProgress = navigation.onOpenProgress,
             )
 
             MainTab.TRAIN -> TrainRoute(
@@ -93,6 +94,7 @@ fun MainRoute(navigation: MainNavigation) {
             MainTab.PLAN -> PathRoute(
                 onTrain = { tab = MainTab.TODAY },
                 onChangeGoal = { tab = MainTab.TRAIN },
+                onOpenProgress = navigation.onOpenProgress,
             )
 
             MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
@@ -109,12 +111,14 @@ fun MainRoute(navigation: MainNavigation) {
  * @property onOpenFocusWorkout Opens a single workout from the Train tab, by focus name.
  * @property onOpenExercise Opens an exercise's detail, by id.
  * @property onOpenProgram Opens a skill program, by id.
+ * @property onOpenProgress Opens Progress.
  */
 data class MainNavigation(
     val onOpenWorkout: () -> Unit,
     val onOpenFocusWorkout: (String) -> Unit,
     val onOpenExercise: (String) -> Unit,
     val onOpenProgram: (String) -> Unit,
+    val onOpenProgress: () -> Unit,
 )
 
 /** The tab bar around [content]. Stateless, so it previews and tests without the tabs' data. */

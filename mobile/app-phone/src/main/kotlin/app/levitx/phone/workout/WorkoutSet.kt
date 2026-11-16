@@ -33,6 +33,7 @@ import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.durationText
 import app.levitx.phone.ui.measureText
+import app.levitx.phone.ui.repsLeftLabel
 
 /*
  * The set up next: the counter, how hard to go, the load, what follows, and

@@ -4,9 +4,6 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.ExerciseResult
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.currentExercise
-import app.levitx.core.load.AddedWeight
-import app.levitx.core.load.BandAssistance
-import app.levitx.core.load.LoadModifier
 import app.levitx.core.load.calculateEffectiveLoad
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.skills.GateMeasure
@@ -147,12 +144,7 @@ private fun kgMoved(done: List<ExerciseResult>, bodyweightKg: Double): Int? {
     return loaded.sumOf { exercise ->
         val profile = checkNotNull(exercise.plan.exercise.loadProfile)
         exercise.sets.sumOf { set ->
-            set.value * calculateEffectiveLoad(bodyweightKg, profile, modifiers(set)).totalKg
+            set.value * calculateEffectiveLoad(bodyweightKg, profile, set.modifiers).totalKg
         }
     }.roundToInt()
-}
-
-private fun modifiers(set: LoggedSet): List<LoadModifier> = buildList {
-    if (set.addedKg > 0.0) add(AddedWeight(set.addedKg))
-    if (set.assistanceKg > 0.0) add(BandAssistance(set.assistanceKg))
 }

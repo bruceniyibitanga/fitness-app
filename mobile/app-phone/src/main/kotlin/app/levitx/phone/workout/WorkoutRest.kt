@@ -39,6 +39,7 @@ import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.durationText
 import app.levitx.phone.ui.measureText
+import app.levitx.phone.ui.repsLeftLabel
 
 /** How often the rest countdown redraws. A quarter second keeps the seconds honest. */
 private const val COUNTDOWN_TICK_MILLIS = 250L
