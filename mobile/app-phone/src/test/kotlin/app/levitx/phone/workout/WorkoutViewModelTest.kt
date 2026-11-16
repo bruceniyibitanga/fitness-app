@@ -52,7 +52,8 @@ class WorkoutViewModelTest {
 
     @Test
     fun theLiveSessionFollowsTheWorkoutAndEndsWithIt() {
-        val first = checkNotNull(live.session.value.takeIf { viewModel.uiState.value is WorkoutUiState.Active })
+        assertTrue(viewModel.uiState.value is WorkoutUiState.Active)
+        val first = checkNotNull(live.session.value)
         assertEquals(1, first.setNumber)
         assertEquals(0, first.setsBehind)
         assertNull(first.restEndsAtElapsedMillis)

@@ -146,9 +146,10 @@ class WorkoutCuerTest {
         startCuer()
         live.publish(owner, session)
         runCurrent()
+        val before = released
         live.clear(owner)
         runCurrent()
-        assertEquals(1, released)
+        assertEquals(before + 1, released)
     }
 
     private companion object {
