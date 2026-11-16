@@ -58,7 +58,6 @@ internal fun ColumnScope.TimerPanel(
 ) {
     val phase = timer.phaseAt(rememberElapsedNow(now, TIMER_TICK_MILLIS))
     val target = state.nextSet.target
-    PlayCue(timerBeat(phase, target), state.soundsOn, state.buzzesOn)
     // Negatives stop by themselves after the last rep, keeping the count.
     val done = phase is TimerPhase.Done
     LaunchedEffect(done) { if (done) onTimer(TimerAction.STOP) }

@@ -84,6 +84,23 @@ internal fun SwitchRow(title: String, note: String, checked: Boolean, onChange: 
     Rule(Modifier.padding(horizontal = ScreenPadding))
 }
 
+/** A row that opens somewhere else, with where it stands ([status]) on the right. */
+@Composable
+internal fun LinkRow(title: String, note: String, status: String, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = ScreenPadding, vertical = 10.dp),
+    ) {
+        RowText(title, note, Modifier.weight(1f))
+        Caption(status, color = LevitxColors.TextFaint, modifier = Modifier.padding(start = 16.dp))
+    }
+    Rule(Modifier.padding(horizontal = ScreenPadding))
+}
+
 /** A data action: its name and, on the right, what kind of thing it is. */
 @Composable
 internal fun DataButton(title: String, kind: String, enabled: Boolean, onClick: () -> Unit) {

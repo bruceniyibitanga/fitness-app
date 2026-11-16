@@ -73,11 +73,17 @@ The database key is 256 random bits made on the device the first time the app ru
 - **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
 - **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
 - **Gradle wrapper.** The wrapper jar is checked against Gradle's published checksums in CI, and the distribution download is checked against its SHA-256.
-- **Permissions.** The phone app has none. The watch app has these, each with a comment in the manifest saying which feature needs it:
+- **Permissions.** Each one has a comment in the manifest saying which feature needs it. The phone app has these, all for keeping a workout going off screen ([ADR 0008](adr/0008-phone-workout-off-screen.md)):
+  - notifications: the workout notification with the rest countdown. Asked for once, when the first workout opens. A workout runs and beeps without it.
+  - Live Updates (`POST_PROMOTED_NOTIFICATIONS`): lets that notification sit on the lock screen and in the status bar on Android 16. Granted at install.
+  - foreground service (type `health`), wake lock and vibrate: granted at install. They keep the workout running with the phone locked, and give the beeps and buzzes.
+  - `HIGH_SAMPLING_RATE_SENSORS`: granted at install. Android 14 and later only start a `health` service for an app with one sensor permission, and this is the only one that isn't a prompt. Levitx reads no sensors.
+
+  The watch app has these:
   - heart rate (`BODY_SENSORS` up to Wear OS 5, `READ_HEART_RATE` from Wear OS 6): shown during a session. Asked for when the first session starts. A session runs without it.
   - notifications: the "session in progress" notification. Asked for at the same time.
   - foreground service (type `health`), vibrate and wake lock: granted at install. They keep the session going off-screen and give the rest alert ([ADR 0006](adr/0006-watch-workout-service.md)).
-- **The workout notification is public** (it shows on a locked watch) and only ever says "Exercise 1 of 4, set 2 of 3" or "Rest".
+- **The workout notifications are public** (they show on a locked watch or phone). The watch's only ever says "Exercise 1 of 4, set 2 of 3" or "Rest". The phone's adds the exercise name, a progress bar and the rest or hold clock. Neither shows reps, loads, bodyweight or anything else from the log.
 - **CI.** Uses a read-only token and actions pinned to commit SHAs.
 - **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
 

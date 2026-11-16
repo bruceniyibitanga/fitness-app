@@ -455,11 +455,15 @@
     <string name="settings_lead_in">Count-in</string>
     <string name="settings_lead_in_note">Before a hold or slow negatives, so you can get in position.</string>
     <string name="settings_seconds">%1$d S</string>
-    <string name="settings_sounds_group">SOUNDS AND BUZZES</string>
+    <string name="settings_sounds_group">DURING A WORKOUT</string>
     <string name="settings_sounds">Sounds</string>
     <string name="settings_sounds_note">Beeps for timers and the end of rest, at your media volume. You can also turn them off for one workout from its menu.</string>
     <string name="settings_buzzes">Buzzes</string>
     <string name="settings_buzzes_note">A buzz with each beep, for a phone in your pocket.</string>
+    <string name="settings_notification">Lock screen</string>
+    <string name="settings_notification_note">Your rest countdown and set on the lock screen and in the status bar while you train. Opens Android\'s notification settings.</string>
+    <string name="settings_on">ON</string>
+    <string name="settings_off">OFF</string>
     <string name="settings_data">YOUR DATA</string>
     <string name="settings_data_note">Everything you log stays on this phone, encrypted with a key Android keeps for Levitx. Bodyweight never goes to the watch. There is no account and no server.</string>
     <string name="settings_export">Export everything</string>
@@ -626,4 +630,19 @@
     <string name="data_unavailable_label">DATA LOCKED</string>
     <string name="data_unavailable_title">Levitx can\'t open your data right now.</string>
     <string name="data_unavailable">Your training data couldn\'t be unlocked on this device. Nothing was changed or deleted. Close the app and open it again to retry.</string>
+    <!-- The workout notification. Shown on the lock screen, so it never includes reps, loads or weight. -->
+    <string name="live_channel_name">Workout in progress</string>
+    <string name="live_channel_description">Your rest countdown and set, on the lock screen and in the status bar while you train. It never makes a sound.</string>
+    <string name="live_starting">Workout in progress</string>
+    <string name="live_title_rest">Rest</string>
+    <string name="live_title_rest_over">Rest\'s up</string>
+    <string name="live_title_count_in">Get in position</string>
+    <string name="live_set_of">set %1$d of %2$d</string>
+    <string name="live_text_next">Next: %1$s, %2$s</string>
+    <string name="live_text_exercise_set">%1$s, %2$s</string>
+    <string name="live_text_holding">Holding, %1$s</string>
+    <string name="live_text_negatives">Slow negatives, %1$s</string>
+    <string name="live_text_ready">Set %1$d of %2$d · exercise %3$d of %4$d</string>
+    <!-- The status bar chip. Seven characters or fewer, or Android cuts it. -->
+    <string name="live_chip_set">Set %1$d</string>
 </resources>

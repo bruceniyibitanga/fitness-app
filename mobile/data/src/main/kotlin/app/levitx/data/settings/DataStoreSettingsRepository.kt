@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 private val LEAD_IN = intPreferencesKey("lead_in_seconds")
 private val SOUNDS = booleanPreferencesKey("sounds")
 private val BUZZES = booleanPreferencesKey("buzzes")
+private val NOTIFICATIONS_ASKED = booleanPreferencesKey("notifications_asked")
 
 /**
  * [SettingsRepository] on Jetpack DataStore. DataStore reads and writes off
@@ -29,6 +30,7 @@ internal class DataStoreSettingsRepository @Inject constructor(private val store
                 leadInSeconds = prefs[LEAD_IN]?.takeIf { it in LEAD_IN_CHOICES } ?: LEAD_IN_CHOICES.first(),
                 sounds = prefs[SOUNDS] ?: true,
                 buzzes = prefs[BUZZES] ?: true,
+                notificationsAsked = prefs[NOTIFICATIONS_ASKED] ?: false,
             )
         }
         .distinctUntilChanged()
@@ -43,6 +45,10 @@ internal class DataStoreSettingsRepository @Inject constructor(private val store
 
     override suspend fun setBuzzes(on: Boolean) {
         store.edit { it[BUZZES] = on }
+    }
+
+    override suspend fun markNotificationsAsked() {
+        store.edit { it[NOTIFICATIONS_ASKED] = true }
     }
 
     override suspend fun clear() {

@@ -2,11 +2,37 @@
 <!--
   Phone app manifest.
 
-  No permissions are requested yet. Each one is added only when a feature
-  needs it, with a comment saying which feature (see docs/app/SECURITY.md).
+  Each permission is added only when a feature needs it, with a comment
+  saying which feature (see docs/app/SECURITY.md).
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      The workout keeps running with the phone locked or another app in front
+      (ADR 0008). LiveWorkoutService is a foreground service of type "health",
+      the type Android gives exercise trackers. All of these are granted at
+      install except notifications, which the workout screen asks for once.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <!--
+      Android 14 and later only start a "health" service for an app that has
+      one of a short list of sensor permissions. This is the only one on the
+      list that isn't a prompt, and Android's guide to service types names it
+      as a way to meet the rule. Levitx reads no sensors, with it or without.
+    -->
+    <uses-permission
+        android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"
+        tools:ignore="HighSamplingRate" />
+    <!-- The workout notification, with the rest countdown. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Lets that notification show as a Live Update on Android 16 and later. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <!-- Keeps the processor awake while a beep is due, so the end of rest is on time. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- The buzz with each beep. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".LevitxPhoneApplication"
@@ -26,6 +52,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Keeps a workout running off screen and shows its notification. Not
+          exported: only this app starts it.
+        -->
+        <service
+            android:name=".live.LiveWorkoutService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
 
         <!--
           Receives finished workouts from the watch over the Wearable Data

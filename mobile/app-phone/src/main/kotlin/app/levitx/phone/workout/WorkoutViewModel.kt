@@ -12,12 +12,15 @@ import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.settings.SettingsRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
+import app.levitx.phone.live.LiveWorkout
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -29,6 +32,10 @@ import kotlinx.coroutines.sync.withLock
  * The rules for moving through a workout are [WorkoutRun]'s. This class only
  * connects them to the screen and keeps them safe: after every change the run
  * is saved as the draft, so a workout survives the app being killed.
+ *
+ * It also keeps [LiveWorkout] up to date, so the beeps and the workout
+ * notification follow the workout when the screen is off or another app is
+ * in front.
  */
 @HiltViewModel
 class WorkoutViewModel @Inject constructor(
@@ -37,6 +44,7 @@ class WorkoutViewModel @Inject constructor(
     private val equipmentRepository: EquipmentRepository,
     private val clock: TrainingClock,
     private val settings: SettingsRepository,
+    private val live: LiveWorkout,
 ) : ViewModel() {
     private val state = MutableStateFlow<WorkoutUiState>(WorkoutUiState.Loading)
 
@@ -47,6 +55,14 @@ class WorkoutViewModel @Inject constructor(
     private val writes = Mutex()
 
     init {
+        // Every change to the workout reaches the cues and the notification, and they stop when it ends.
+        viewModelScope.launch {
+            state
+                .map { (it as? WorkoutUiState.Active)?.toLiveSession() }
+                .distinctUntilChanged()
+                .collect { live.publish(this@WorkoutViewModel, it) }
+        }
+        addCloseable { live.clear(this@WorkoutViewModel) }
         viewModelScope.launch {
             handlingDataFailures(onFailure = { state.value = WorkoutUiState.Unavailable }) {
                 val run = drafts.observeDraft().first()
