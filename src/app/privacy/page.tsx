@@ -57,9 +57,9 @@ const app: Section[] = [
     ],
   },
   {
-    title: "Questions",
+    title: "Who we are, and questions",
     body: [
-      "Email us at the developer address on Levitx's Google Play page, or reply to any email we've sent you.",
+      "Levitx is made by Xenova Digital (xenovadigital.com). For anything about your data or this policy, email support@xenovadigital.com.",
     ],
   },
 ];
@@ -85,7 +85,9 @@ const website: Section[] = [
   },
   {
     title: "Removing it",
-    body: ["Every email has an unsubscribe link. Reply to any email and we'll delete your address completely."],
+    body: [
+      "Every email has an unsubscribe link. Reply to any email, or write to support@xenovadigital.com, and we'll delete your address completely.",
+    ],
   },
 ];
 

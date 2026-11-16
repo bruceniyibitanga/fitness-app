@@ -58,6 +58,14 @@ Then add Wear OS under **Test and release → Advanced settings → Form factors
 
 The first time, upload to **Internal testing** and try it on your own phone and watch before anything else. Then go through the checklist in [TESTING-ON-DEVICES.md](TESTING-ON-DEVICES.md), with the release build this time.
 
+## Contact details
+
+Play shows these on the listing. Levitx is published by Xenova Digital.
+
+- **Email:** support@xenovadigital.com. It's also on the privacy page, so make sure it reaches you before the first release.
+- **Website:** https://levitx.app
+- **Developer name:** Xenova Digital
+
 ## App content forms
 
 Play Console's **Policy → App content** page needs these before the first release. Draft answers, to check before submitting:
