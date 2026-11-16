@@ -56,6 +56,9 @@ import app.levitx.phone.ui.signedKg
  */
 private const val MIN_TREND_POINTS = 6
 
+/** A gain of at least this many kg is shown in orange; less rounds to nothing. */
+private const val KG_CHANGE_SHOWN = 0.05
+
 /** Size of the marks on the load chart. */
 private val MarkSize = 8.dp
 
@@ -165,7 +168,11 @@ private fun HeadlineSection(headline: Headline?) {
             Caption(stringResource(R.string.kg), modifier = Modifier.padding(start = 6.dp, bottom = 8.dp))
             Spacer(Modifier.weight(1f))
             Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(bottom = 6.dp)) {
-                Text(signedKg(headline.changeKg), style = LevitxType.Figure, color = LevitxColors.Accent)
+                Text(
+                    text = signedKg(headline.changeKg),
+                    style = LevitxType.Figure,
+                    color = if (headline.changeKg >= KG_CHANGE_SHOWN) LevitxColors.Accent else LevitxColors.TextMuted,
+                )
                 Caption(stringResource(R.string.progress_since, shortDate(headline.points.first().atEpochMillis)))
             }
         }
