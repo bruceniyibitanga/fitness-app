@@ -1,5 +1,6 @@
 package app.levitx.phone.settings
 
+import app.levitx.core.load.WeightUnit
 import app.levitx.data.DataUnavailableException
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeSettingsRepository
@@ -47,8 +48,10 @@ class SettingsViewModelTest {
         viewModel.setLeadInSeconds(5)
         viewModel.setSounds(false)
         viewModel.setBuzzes(false)
+        viewModel.setUnits(WeightUnit.LB)
         val shown = viewModel.uiState.value.settings
         assertEquals(5, shown.leadInSeconds)
+        assertEquals(WeightUnit.LB, shown.units)
         assertFalse(shown.sounds)
         assertFalse(shown.buzzes)
     }

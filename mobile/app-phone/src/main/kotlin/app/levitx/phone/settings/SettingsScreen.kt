@@ -7,9 +7,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,8 +18,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,9 +41,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.levitx.core.load.WeightUnit
 import app.levitx.data.settings.LEAD_IN_CHOICES
 import app.levitx.design.LevitxColors
-import app.levitx.design.LevitxType
 import app.levitx.phone.BuildConfig
 import app.levitx.phone.R
 import app.levitx.phone.ui.BackHeader
@@ -55,6 +51,7 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.ConfirmSheet
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.unitLabel
 
 /** The export's suggested file name. The person can change it in the save dialog. */
 private const val EXPORT_FILE_NAME = "levitx-export.zip"
@@ -63,6 +60,7 @@ private const val EXPORT_FILE_NAME = "levitx-export.zip"
  * What Settings can do.
  *
  * @property onLeadIn Sets the count-in, in seconds.
+ * @property onUnits Shows weights in kilograms or pounds.
  * @property onSounds Turns beeps on or off.
  * @property onBuzzes Turns buzzes on or off.
  * @property onOpenNotifications Opens Android's notification settings for Levitx.
@@ -71,6 +69,7 @@ private const val EXPORT_FILE_NAME = "levitx-export.zip"
  */
 data class SettingsActions(
     val onLeadIn: (Int) -> Unit,
+    val onUnits: (WeightUnit) -> Unit,
     val onSounds: (Boolean) -> Unit,
     val onBuzzes: (Boolean) -> Unit,
     val onOpenNotifications: () -> Unit,
@@ -103,6 +102,7 @@ fun SettingsRoute(
         notificationsOn = notificationsOn,
         actions = SettingsActions(
             onLeadIn = viewModel::setLeadInSeconds,
+            onUnits = viewModel::setUnits,
             onSounds = viewModel::setSounds,
             onBuzzes = viewModel::setBuzzes,
             onOpenNotifications = { openNotificationSettings(context) },
@@ -170,37 +170,29 @@ fun SettingsScreen(
     }
 }
 
-/** The count-in before holds and negatives. */
+/** The count-in before holds and negatives, and the unit weights are shown in. */
 @Composable
 private fun Training(state: SettingsUiState, actions: SettingsActions) {
     Group(stringResource(R.string.settings_training))
     Column(modifier = Modifier.padding(horizontal = ScreenPadding, vertical = 12.dp)) {
         RowText(stringResource(R.string.settings_lead_in), stringResource(R.string.settings_lead_in_note))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.padding(top = 12.dp).selectableGroup(),
-        ) {
-            LEAD_IN_CHOICES.forEach { seconds ->
-                val selected = state.settings.leadInSeconds == seconds
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .background(if (selected) LevitxColors.Text else LevitxColors.Background)
-                        .border(1.dp, if (selected) LevitxColors.Text else LevitxColors.Outline)
-                        .selectable(selected = selected, role = Role.RadioButton, onClick = {
-                            actions.onLeadIn(seconds)
-                        }),
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_seconds, seconds),
-                        style = LevitxType.Caption,
-                        color = if (selected) LevitxColors.Background else LevitxColors.Text,
-                    )
-                }
-            }
-        }
+        ChoiceBoxes(
+            choices = LEAD_IN_CHOICES,
+            selected = state.settings.leadInSeconds,
+            label = { stringResource(R.string.settings_seconds, it) },
+            onSelect = actions.onLeadIn,
+        )
+        RowText(
+            stringResource(R.string.settings_units),
+            stringResource(R.string.settings_units_note),
+            modifier = Modifier.padding(top = 22.dp),
+        )
+        ChoiceBoxes(
+            choices = WeightUnit.entries,
+            selected = state.settings.units,
+            label = { unitLabel(it).uppercase() },
+            onSelect = actions.onUnits,
+        )
     }
     Rule()
 }

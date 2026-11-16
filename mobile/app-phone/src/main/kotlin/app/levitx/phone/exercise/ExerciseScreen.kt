@@ -38,7 +38,6 @@ import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.load.LoadEvidence
 import app.levitx.core.load.calculateEffectiveLoad
-import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -54,6 +53,8 @@ import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.patternPhoto
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightNumber
 import kotlin.math.roundToInt
 
 private val NoteMarkSize = 6.dp
@@ -167,8 +168,8 @@ private fun Numbers(state: ExerciseUiState.Ready) {
     val figures = buildList {
         if (profile != null && bodyweight != null) {
             add(
-                formatKg(calculateEffectiveLoad(bodyweight, profile).totalKg) to
-                    stringResource(R.string.exercise_kg_per_rep),
+                weightNumber(calculateEffectiveLoad(bodyweight, profile).totalKg) to
+                    stringResource(R.string.exercise_kg_per_rep, unitCaps()),
             )
         }
         if (profile != null) {

@@ -7,6 +7,7 @@ import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SkillTraining
 import app.levitx.core.load.LoadLimits
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.ui.parseKg
 import java.time.DayOfWeek
@@ -41,6 +42,7 @@ val SessionLengths: List<Int> = listOf(20, 30, 45, 60)
  * @property style All-round or focused. Only asked with a skill goal.
  * @property pullUp The answer to "Can you do a strict pull-up?", or null before it is given.
  * @property bodyweightText Bodyweight as typed. Optional.
+ * @property bodyweightUnit The unit it was typed in.
  * @property days Training days.
  * @property minutes Time per session.
  * @property equipment Kit they have. Empty until they pick some: nothing is assumed.
@@ -55,6 +57,7 @@ data class OnboardingUiState(
     val style: PlanStyle = PlanStyle.ALL_ROUND,
     val pullUp: PullUpAnswer? = null,
     val bodyweightText: String = "",
+    val bodyweightUnit: WeightUnit = WeightUnit.KG,
     val days: Set<DayOfWeek> = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
     val minutes: Int = CoachProfile.DEFAULT_SESSION_MINUTES,
     val equipment: Set<Equipment> = emptySet(),
@@ -62,9 +65,10 @@ data class OnboardingUiState(
     val saving: Boolean = false,
     val unavailable: Boolean = false,
 ) {
-    /** The bodyweight typed, or null when the field is empty or invalid. */
+    /** The bodyweight typed, in kilograms, or null when the field is empty or invalid. */
     val bodyweightKg: Double?
-        get() = parseKg(bodyweightText)?.takeIf { it in LoadLimits.MIN_BODYWEIGHT_KG..LoadLimits.MAX_BODYWEIGHT_KG }
+        get() = parseKg(bodyweightText)?.let(bodyweightUnit::toKg)
+            ?.takeIf { it in LoadLimits.MIN_BODYWEIGHT_KG..LoadLimits.MAX_BODYWEIGHT_KG }
 
     /** True when something is typed in the bodyweight field that isn't a usable weight. */
     val bodyweightInvalid: Boolean

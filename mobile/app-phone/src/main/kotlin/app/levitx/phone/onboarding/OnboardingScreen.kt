@@ -50,12 +50,14 @@ import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.ScreenTitle
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.StepHeader
 import app.levitx.phone.ui.Wordmark
+import app.levitx.phone.ui.unitLabel
 import java.time.DayOfWeek
 import kotlinx.coroutines.launch
 
@@ -71,6 +73,7 @@ private const val PHOTO_FADE_START = 0.5f
 /** Setup destination: connects [OnboardingViewModel] to [OnboardingScreen]. */
 @Composable
 fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
+    val unit = LocalWeightUnit.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     // Back steps through setup before it leaves the app.
@@ -83,7 +86,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
             onChooseGoal = viewModel::chooseGoal,
             onChooseStyle = viewModel::chooseStyle,
             onAnswerPullUp = viewModel::answerPullUp,
-            onTypeBodyweight = viewModel::typeBodyweight,
+            onTypeBodyweight = { viewModel.typeBodyweight(it, unit) },
             onToggleDay = viewModel::toggleDay,
             onChooseMinutes = viewModel::chooseMinutes,
             onToggleEquipment = { viewModel.chooseEquipment(it) },
@@ -261,7 +264,7 @@ private fun ColumnScope.WelcomeText() {
             modifier = Modifier.semantics { heading() },
         )
         Text(
-            text = stringResource(R.string.welcome_body),
+            text = stringResource(R.string.welcome_body, unitLabel()),
             fontSize = 15.sp,
             lineHeight = 22.sp,
             color = LevitxColors.TextMuted,
@@ -270,7 +273,7 @@ private fun ColumnScope.WelcomeText() {
             Rule()
             StatStrip(
                 listOf(
-                    stringResource(R.string.welcome_fact_kg) to stringResource(R.string.welcome_fact_kg_caption),
+                    unitLabel() to stringResource(R.string.welcome_fact_kg_caption),
                     stringResource(R.string.welcome_fact_gates) to stringResource(R.string.welcome_fact_gates_caption),
                     stringResource(R.string.welcome_fact_watch) to stringResource(R.string.welcome_fact_watch_caption),
                 ),

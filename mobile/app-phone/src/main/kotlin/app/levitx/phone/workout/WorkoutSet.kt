@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.phone.R
@@ -34,6 +33,8 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.durationText
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.repsLeftLabel
+import app.levitx.phone.ui.unitLabel
+import app.levitx.phone.ui.weightNumber
 import app.levitx.phone.ui.weightText
 
 /*
@@ -113,7 +114,7 @@ private fun SetHeader(state: WorkoutUiState.Active, load: Double?, value: Int, o
                 run.load.addedKg.takeIf {
                     it > 0.0
                 }?.let { stringResource(R.string.workout_added_weight, weightText(it)) },
-                load?.let { stringResource(R.string.kg_per_rep, formatKg(it)) },
+                load?.let { stringResource(R.string.kg_per_rep, weightNumber(it), unitLabel()) },
             ).joinToString(" · "),
         )
         Counter(

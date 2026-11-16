@@ -27,7 +27,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -40,6 +39,8 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.durationText
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.repsLeftLabel
+import app.levitx.phone.ui.unitLabel
+import app.levitx.phone.ui.weightNumber
 
 /** How often the rest countdown redraws. A quarter second keeps the seconds honest. */
 private const val COUNTDOWN_TICK_MILLIS = 250L
@@ -167,7 +168,9 @@ private fun RestNext(state: WorkoutUiState.Active) {
                 color = LevitxColors.Text,
             )
         }
-        load?.let { Caption(stringResource(R.string.kg_per_rep, formatKg(it)), color = LevitxColors.TextMuted) }
+        load?.let {
+            Caption(stringResource(R.string.kg_per_rep, weightNumber(it), unitLabel()), color = LevitxColors.TextMuted)
+        }
     }
 }
 

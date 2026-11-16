@@ -43,8 +43,10 @@ import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.patternName
+import app.levitx.phone.ui.perRepCaption
 import app.levitx.phone.ui.shortDate
-import app.levitx.phone.ui.signedKg
+import app.levitx.phone.ui.signedWeight
+import app.levitx.phone.ui.weightNumber
 
 /** Workouts a week the grid has room for; more still count, they just fill the column. */
 private const val WEEK_SQUARES = 4
@@ -52,7 +54,7 @@ private const val WEEK_SQUARES = 4
 /** Every movement trained in range, each opening its exercise's progress. */
 @Composable
 internal fun Moves(moves: List<MoveRow>, onOpenExercise: (String) -> Unit) {
-    SectionTitle(stringResource(R.string.progress_moves), stringResource(R.string.figure_kg_per_rep))
+    SectionTitle(stringResource(R.string.progress_moves), perRepCaption())
     moves.forEach { move ->
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -72,12 +74,12 @@ internal fun Moves(moves: List<MoveRow>, onOpenExercise: (String) -> Unit) {
                 Caption(move.exerciseName, color = LevitxColors.TextFaint)
             }
             Text(
-                text = move.kgNow?.let(::formatKg) ?: measureText(move.measure, move.best),
+                text = move.kgNow?.let { weightNumber(it) } ?: measureText(move.measure, move.best),
                 style = LevitxType.Figure,
                 color = LevitxColors.Text,
             )
             Text(
-                text = move.changeKg?.let(::signedKg).orEmpty(),
+                text = move.changeKg?.let { signedWeight(it) }.orEmpty(),
                 style = LevitxType.Caption,
                 color = if ((move.changeKg ?: 0.0) > 0.0) LevitxColors.Accent else LevitxColors.TextMuted,
                 modifier = Modifier

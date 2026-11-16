@@ -3,6 +3,7 @@ package app.levitx.phone.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.design.LevitxColors
+import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Rule
@@ -82,6 +86,34 @@ internal fun SwitchRow(title: String, note: String, checked: Boolean, onChange: 
         }
     }
     Rule(Modifier.padding(horizontal = ScreenPadding))
+}
+
+/** One of [choices] as a row of square boxes, the [selected] one filled. */
+@Composable
+internal fun <T> ChoiceBoxes(choices: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.padding(top = 12.dp).selectableGroup(),
+    ) {
+        choices.forEach { choice ->
+            val isSelected = choice == selected
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+                    .background(if (isSelected) LevitxColors.Text else LevitxColors.Background)
+                    .border(1.dp, if (isSelected) LevitxColors.Text else LevitxColors.Outline)
+                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(choice) }),
+            ) {
+                Text(
+                    text = label(choice),
+                    style = LevitxType.Caption,
+                    color = if (isSelected) LevitxColors.Background else LevitxColors.Text,
+                )
+            }
+        }
+    }
 }
 
 /** A row that opens somewhere else, with where it stands ([status]) on the right. */

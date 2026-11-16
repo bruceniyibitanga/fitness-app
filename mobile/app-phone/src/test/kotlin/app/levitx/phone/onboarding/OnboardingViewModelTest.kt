@@ -3,6 +3,7 @@ package app.levitx.phone.onboarding
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.load.WeightUnit
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
@@ -80,6 +81,14 @@ class OnboardingViewModelTest {
         viewModel.next()
         assertTrue(viewModel.back())
         assertEquals(OnboardingStep.WELCOME, step)
+    }
+
+    @Test
+    fun bodyweightTypedInPoundsIsKeptInKilograms() {
+        viewModel.typeBodyweight("165", WeightUnit.LB)
+        assertEquals(74.84, checkNotNull(viewModel.uiState.value.bodyweightKg), 0.01)
+        viewModel.typeBodyweight("30", WeightUnit.LB)
+        assertTrue(viewModel.uiState.value.bodyweightInvalid)
     }
 
     @Test

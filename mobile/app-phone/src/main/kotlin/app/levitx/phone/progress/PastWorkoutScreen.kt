@@ -36,7 +36,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.history.ExerciseRecord
 import app.levitx.core.history.WorkoutRecord
-import app.levitx.core.load.formatKg
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
@@ -46,6 +45,7 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.ConfirmSheet
 import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.clockTime
@@ -53,6 +53,9 @@ import app.levitx.phone.ui.dayDate
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.repsLeftLabel
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightNumber
+import app.levitx.phone.ui.weightText
 import kotlin.math.roundToInt
 
 /** Past workout destination: connects [PastWorkoutViewModel] to [PastWorkoutScreen]. */
@@ -189,7 +192,7 @@ private fun ExerciseBlock(record: ExerciseRecord) {
                     .weight(1f)
                     .semantics { heading() },
             )
-            record.topKgPerRep?.let { Caption(stringResource(R.string.past_workout_kg, formatKg(it))) }
+            record.topKgPerRep?.let { Caption(stringResource(R.string.past_workout_kg, weightNumber(it), unitCaps())) }
         }
         Row(modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)) {
             SetCell(stringResource(R.string.past_workout_set), LevitxColors.TextFaint, header = true)
@@ -228,8 +231,8 @@ private fun SetCell(text: String, color: Color, header: Boolean = false, wide: B
 /** "+10 kg", "15 kg band help", or a dot for bodyweight only. */
 @Composable
 private fun loadText(set: LoggedSet): String = when {
-    set.addedKg > 0.0 -> stringResource(R.string.past_workout_added, formatKg(set.addedKg))
-    set.assistanceKg > 0.0 -> stringResource(R.string.past_workout_band, formatKg(set.assistanceKg))
+    set.addedKg > 0.0 -> stringResource(R.string.past_workout_added, weightText(set.addedKg))
+    set.assistanceKg > 0.0 -> stringResource(R.string.past_workout_band, weightText(set.assistanceKg))
     else -> stringResource(R.string.workout_summary_no_left)
 }
 
@@ -246,7 +249,9 @@ internal fun workoutMeta(workout: WorkoutRecord): String {
     val parts = listOfNotNull(
         duration(workout.minutes),
         pluralStringResource(R.plurals.past_workout_sets, workout.sets, workout.sets),
-        workout.kgMoved?.let { stringResource(R.string.past_workout_moved, it.roundToInt()) },
+        workout.kgMoved?.let {
+            stringResource(R.string.past_workout_moved, LocalWeightUnit.current.fromKg(it).roundToInt(), unitCaps())
+        },
     )
     return parts.joinToString(" · ")
 }

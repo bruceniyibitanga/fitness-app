@@ -7,6 +7,7 @@ import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.load.WeightUnit
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.time.TrainingClock
@@ -73,8 +74,9 @@ class OnboardingViewModel @Inject constructor(
     /** Answers "Can you do a strict pull-up?". */
     fun answerPullUp(answer: PullUpAnswer) = state.update { it.copy(pullUp = answer) }
 
-    /** Keeps what is typed in the bodyweight field. Short, so nothing silly can be stored. */
-    fun typeBodyweight(text: String) = state.update { it.copy(bodyweightText = text.take(MAX_WEIGHT_CHARS)) }
+    /** Keeps what is typed in the bodyweight field, and the [unit] it is in. Short, so nothing silly can be stored. */
+    fun typeBodyweight(text: String, unit: WeightUnit = WeightUnit.KG) =
+        state.update { it.copy(bodyweightText = text.take(MAX_WEIGHT_CHARS), bodyweightUnit = unit) }
 
     /** Adds or removes a training day. */
     fun toggleDay(day: DayOfWeek) = state.update { it.copy(days = it.days.toggled(day)) }

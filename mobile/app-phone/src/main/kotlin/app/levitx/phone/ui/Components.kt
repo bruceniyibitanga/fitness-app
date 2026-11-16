@@ -35,12 +35,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxSpacing
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
+import kotlin.math.abs
 
 /*
  * Small building blocks the phone screens share, so every screen has the same
@@ -121,9 +123,11 @@ fun NumberInput(
 }
 
 /**
- * Kilogram entry that accepts decimals, with − and + buttons that step by
- * [step]. Reports only valid numbers between 0 and [max]; while the field
- * holds something unfinished (like "7." or ""), the last valid value stands.
+ * Weight entry that accepts decimals, with − and + buttons. [value] and [max]
+ * are in kilograms; the field shows and takes the person's [unit], and the
+ * buttons step by half a kilogram or one pound. Reports only valid weights
+ * between 0 and [max]; while the field holds something unfinished (like "7."
+ * or ""), the last valid value stands.
  */
 @Composable
 fun DecimalInput(
@@ -132,13 +136,16 @@ fun DecimalInput(
     label: String,
     max: Double,
     modifier: Modifier = Modifier,
-    step: Double = DEFAULT_KG_STEP,
+    unit: WeightUnit = LocalWeightUnit.current,
 ) {
-    var text by rememberSaveable { mutableStateOf(formatKg(value)) }
+    val shown = unit.fromKg(value)
+    val step = unit.toKg(if (unit == WeightUnit.KG) DEFAULT_KG_STEP else DEFAULT_LB_STEP)
+    var text by rememberSaveable(unit) { mutableStateOf(formatKg(shown)) }
     // Follow changes made elsewhere (the buttons, or a new default) without
     // fighting the person while they type.
-    LaunchedEffect(value) {
-        if (parseKg(text) != value) text = formatKg(value)
+    LaunchedEffect(value, unit) {
+        val typed = parseKg(text)?.let(unit::toKg)
+        if (typed == null || abs(typed - value) > SAME_KG) text = formatKg(shown)
     }
     Column(modifier = modifier) {
         SectionLabel(text = label)
@@ -151,7 +158,7 @@ fun DecimalInput(
                 value = text,
                 onValueChange = { typed ->
                     text = typed.take(MAX_KG_CHARS)
-                    parseKg(text)?.takeIf { it <= max }?.let(onValueChange)
+                    parseKg(text)?.let(unit::toKg)?.takeIf { it <= max }?.let(onValueChange)
                 },
                 textStyle = LevitxType.Numeral.copy(textAlign = TextAlign.Center),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -202,4 +209,10 @@ private const val MAX_ENTRY = 999
 private const val MAX_DIGITS = 3
 private const val SECONDS_PER_MINUTE = 60
 private const val DEFAULT_KG_STEP = 0.5
+
+/** Typed and stored weights this close are the same: a pound doesn't convert to a whole number of kilograms. */
+private const val SAME_KG = 0.001
+
+/** The buttons step by one pound for people who weigh in pounds. */
+private const val DEFAULT_LB_STEP = 1.0
 private const val MAX_KG_CHARS = 6

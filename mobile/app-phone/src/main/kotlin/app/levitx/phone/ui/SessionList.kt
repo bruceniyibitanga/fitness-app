@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.load.calculateEffectiveLoad
-import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.phone.R
@@ -109,8 +108,9 @@ private fun planFigure(plan: ExercisePlan, bodyweightKg: Double?): Pair<String, 
     return when {
         profile != null && bodyweightKg != null -> stringResource(
             R.string.kg_per_rep,
-            formatKg(calculateEffectiveLoad(bodyweightKg, profile).totalKg),
-        ) to stringResource(R.string.figure_kg_per_rep)
+            weightNumber(calculateEffectiveLoad(bodyweightKg, profile).totalKg),
+            unitLabel(),
+        ) to perRepCaption()
 
         profile != null -> stringResource(R.string.percent, (profile.bodyweightShare * PERCENT).roundToInt()) to
             stringResource(R.string.figure_of_bodyweight)
