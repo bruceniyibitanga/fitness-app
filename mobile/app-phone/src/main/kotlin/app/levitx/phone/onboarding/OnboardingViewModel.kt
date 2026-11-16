@@ -1,19 +1,14 @@
 package app.levitx.phone.onboarding
 
 import androidx.lifecycle.ViewModel
-import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.Coach
-import app.levitx.core.coach.Equipment
-import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
-import app.levitx.core.load.WeightUnit
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.DayOfWeek
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +20,8 @@ import kotlinx.coroutines.flow.update
  * the first session, then saves everything in one go.
  *
  * Only what can't be learned from training is asked: the goal, the week and
- * the kit. Level is measured in the first sessions, not asked.
+ * the kit. Level is measured in the first sessions, or sooner with the
+ * optional quick test, which counts one set of a few movements.
  */
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
@@ -39,55 +35,34 @@ class OnboardingViewModel @Inject constructor(
     /** The current screen state. */
     val uiState: StateFlow<OnboardingUiState> = state.asStateFlow()
 
-    /** Moves to the next step, if this one has what it needs. */
-    fun next() {
-        val current = state.value
-        if (!current.canContinue || current.step == OnboardingStep.READY) return
-        val nextStep = OnboardingStep.entries[current.step.ordinal + 1]
+    /**
+     * Moves to the next step, if this one has what it needs. In the quick test
+     * it confirms the count on screen and moves to the next movement first,
+     * or with [skipTest], skips the rest of the test and keeps what was confirmed.
+     */
+    fun next(skipTest: Boolean = false) {
         val now = clock.currentTimeMillis()
-        state.update {
-            it.copy(
-                step = nextStep,
-                firstSession = if (nextStep == OnboardingStep.READY) coach.firstSession(it, now) else it.firstSession,
-            )
+        state.update { current ->
+            val moved = if (skipTest) current.skippingTest() else current.forward()
+            val arrived = moved.step == OnboardingStep.READY && current.step != OnboardingStep.READY
+            if (arrived) moved.copy(firstSession = coach.firstSession(moved, now)) else moved
         }
     }
 
     /**
-     * Goes back a step.
+     * Goes back a step, or a movement within the quick test.
      *
      * @return False on the first step, where back should leave the app.
      */
     fun back(): Boolean {
         val current = state.value
         if (current.step == OnboardingStep.WELCOME || current.saving) return false
-        state.update { it.copy(step = OnboardingStep.entries[it.step.ordinal - 1]) }
+        state.update { it.backward() }
         return true
     }
 
-    /** Picks a skill path by id, or general fitness with null. */
-    fun chooseGoal(pathId: String?) = state.update { it.copy(goalChosen = true, goalPathId = pathId) }
-
-    /** Picks all-round or focused. */
-    fun chooseStyle(style: PlanStyle) = state.update { it.copy(style = style) }
-
-    /** Answers "Can you do a strict pull-up?". */
-    fun answerPullUp(answer: PullUpAnswer) = state.update { it.copy(pullUp = answer) }
-
-    /** Keeps what is typed in the bodyweight field, and the [unit] it is in. Short, so nothing silly can be stored. */
-    fun typeBodyweight(text: String, unit: WeightUnit = WeightUnit.KG) =
-        state.update { it.copy(bodyweightText = text.take(MAX_WEIGHT_CHARS), bodyweightUnit = unit) }
-
-    /** Adds or removes a training day. */
-    fun toggleDay(day: DayOfWeek) = state.update { it.copy(days = it.days.toggled(day)) }
-
-    /** Picks the time per session. */
-    fun chooseMinutes(minutes: Int) = state.update { it.copy(minutes = minutes) }
-
-    /** Adds or removes a piece of kit, or with null, says they have none and clears anything picked. */
-    fun chooseEquipment(equipment: Equipment?) = state.update {
-        it.copy(equipment = if (equipment == null) emptySet() else it.equipment.toggled(equipment))
-    }
+    /** Takes one setup answer: a choice, a field typed, or a quick test count. */
+    fun answer(answer: SetupAnswer) = state.update { it.with(answer) }
 
     /**
      * Saves the answers and sets up the coach. Bodyweight, when given, goes to
@@ -106,20 +81,17 @@ class OnboardingViewModel @Inject constructor(
             },
         ) {
             answers.bodyweightKg?.let { equipmentRepository.recordBodyweight(it) }
-            coachRepository.start(answers.profile, answers.pullUp ?: PullUpAnswer.NOT_SURE, answers.days)
+            coachRepository.start(
+                answers.profile,
+                answers.pullUp ?: PullUpAnswer.NOT_SURE,
+                answers.days,
+                answers.tested,
+            )
             true
         }
-    }
-
-    private companion object {
-        const val MAX_WEIGHT_CHARS = 6
     }
 }
 
 /** The first session the coach would plan from [answers], to show before anything is saved. */
-private fun Coach.firstSession(answers: OnboardingUiState, nowEpochMillis: Long): PlannedSession? = recommend(
-    AthleteModel.starting(answers.profile, answers.pullUp ?: PullUpAnswer.NOT_SURE),
-    nowEpochMillis,
-).session
-
-private fun <T> Set<T>.toggled(item: T): Set<T> = if (item in this) this - item else this + item
+private fun Coach.firstSession(answers: OnboardingUiState, nowEpochMillis: Long): PlannedSession? =
+    recommend(answers.startingModel, nowEpochMillis).session

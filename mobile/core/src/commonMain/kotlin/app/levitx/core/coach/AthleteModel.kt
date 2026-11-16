@@ -200,14 +200,25 @@ public data class AthleteModel(
         /**
          * The model for someone who has just finished setup. Every ladder
          * starts at its easiest rung and the first sessions find the real
-         * level, except pulling, where a "yes" to [pullUp] starts at pull-ups.
+         * level, except pulling, where a "yes" to [pullUp] starts at pull-ups,
+         * and any movement in the optional quick test, which [tested] places.
+         * A pull-up count in [tested] wins over the [pullUp] answer.
+         *
+         * @param tested Quick test results, as reps per test. Empty when skipped.
+         * @throws IllegalArgumentException if a result is out of its test's range.
          */
-        public fun starting(profile: CoachProfile, pullUp: PullUpAnswer): AthleteModel {
+        public fun starting(
+            profile: CoachProfile,
+            pullUp: PullUpAnswer,
+            tested: Map<QuickTest, Int> = emptyMap(),
+        ): AthleteModel {
             val pullUpRung = ExerciseCatalogue.ladder(MovementPattern.VERTICAL_PULL).rungs
                 .indexOfFirst { rung -> rung.options.any { it.id == PULL_UP_ID } }
             val canPullUp = pullUp == PullUpAnswer.YES
             val rungs = if (canPullUp) mapOf(MovementPattern.VERTICAL_PULL to pullUpRung) else emptyMap()
-            return AthleteModel(profile = profile, rungs = rungs)
+            return tested.entries.fold(AthleteModel(profile = profile, rungs = rungs)) { model, (test, reps) ->
+                QuickTestPlacement.place(model, test, reps)
+            }
         }
     }
 }

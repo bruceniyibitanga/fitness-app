@@ -4,6 +4,7 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.pain.PainAssessment
 import java.time.DayOfWeek
@@ -34,8 +35,15 @@ interface CoachRepository {
      * Sets the coach up from the setup answers. Bests already recorded on the
      * goal's gates are kept. Calling it again starts the coach over, keeping
      * bests and bodyweight.
+     *
+     * @param tested Results of the optional quick test, as reps per test. Empty when it was skipped.
      */
-    suspend fun start(profile: CoachProfile, pullUp: PullUpAnswer, trainingDays: Set<DayOfWeek>)
+    suspend fun start(
+        profile: CoachProfile,
+        pullUp: PullUpAnswer,
+        trainingDays: Set<DayOfWeek>,
+        tested: Map<QuickTest, Int> = emptyMap(),
+    )
 
     /** Changes the setup answers without forgetting anything learned. */
     suspend fun updateProfile(profile: CoachProfile, trainingDays: Set<DayOfWeek>)
