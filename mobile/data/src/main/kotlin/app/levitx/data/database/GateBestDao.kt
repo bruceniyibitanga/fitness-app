@@ -18,6 +18,10 @@ internal abstract class GateBestDao {
     @Query("SELECT * FROM gate_best")
     abstract suspend fun all(): List<GateBestEntity>
 
+    /** Forgets the best for [gateId]. */
+    @Query("DELETE FROM gate_best WHERE gateId = :gateId")
+    abstract suspend fun delete(gateId: String)
+
     /** The stored best for [gateId], or null if there isn't one. */
     @Query("SELECT best FROM gate_best WHERE gateId = :gateId")
     abstract suspend fun best(gateId: String): Int?

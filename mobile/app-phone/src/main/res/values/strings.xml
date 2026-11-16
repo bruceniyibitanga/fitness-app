@@ -211,7 +211,7 @@
     <string name="workout_back">Back to Today</string>
     <string name="workout_start_hold">Start hold</string>
     <string name="workout_start_negatives">Start negatives</string>
-    <string name="workout_count_in_hint">3 S COUNT-IN</string>
+    <string name="workout_count_in_hint">%1$d S COUNT-IN</string>
     <string name="workout_log_short">Log</string>
     <string name="workout_again_short">Again</string>
     <string name="workout_negative_instructions">Take %1$s to lower each rep, in control all the way down. The timer sets the pace.</string>
@@ -275,8 +275,8 @@
     <string name="workout_menu_skip_body">No penalty. The coach plans around it.</string>
     <string name="workout_menu_next">Move to the next exercise</string>
     <string name="workout_menu_next_body">The sets you\'ve done are kept.</string>
-    <string name="workout_menu_sounds">Sounds and buzzes</string>
-    <string name="workout_menu_sounds_on">On: beeps for timers and rest. Tap to turn them off.</string>
+    <string name="workout_menu_sounds">Sounds</string>
+    <string name="workout_menu_sounds_on">On: beeps for timers and rest. Tap to turn them off for this workout.</string>
     <string name="workout_menu_sounds_off">Off. Tap to turn them on.</string>
     <string name="workout_menu_leave">Leave for now</string>
     <string name="workout_menu_leave_body">Your workout is kept. Pick it up from Today.</string>
@@ -432,6 +432,65 @@
     <string name="past_workout_added">+%1$s kg</string>
     <string name="past_workout_band">%1$s kg band help</string>
 
+    <!-- Progress: too little for a chart -->
+    <plurals name="progress_not_enough">
+        <item quantity="one">%1$d more workout for a trend.</item>
+        <item quantity="other">%1$d more workouts for a trend.</item>
+    </plurals>
+    <string name="progress_not_enough_note">A line through two or three workouts says more than they know, so the chart waits for %1$d. A longer range might already have enough.</string>
+
+    <!-- Deleting a past workout -->
+    <string name="past_workout_delete">Delete this workout</string>
+    <string name="past_workout_delete_title">Delete the workout from %1$s?</string>
+    <plurals name="past_workout_delete_body">
+        <item quantity="one">Its %1$d set goes too, and any best it set goes back to the best before it. The coach keeps its current targets; they settle again over your next few workouts. This can\'t be undone.</item>
+        <item quantity="other">Its %1$d sets go too, and any best it set goes back to the best before it. The coach keeps its current targets; they settle again over your next few workouts. This can\'t be undone.</item>
+    </plurals>
+    <string name="past_workout_delete_keep">Keep it</string>
+    <string name="past_workout_delete_confirm">Delete</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_training">TRAINING</string>
+    <string name="settings_lead_in">Count-in</string>
+    <string name="settings_lead_in_note">Before a hold or slow negatives, so you can get in position.</string>
+    <string name="settings_seconds">%1$d S</string>
+    <string name="settings_sounds_group">SOUNDS AND BUZZES</string>
+    <string name="settings_sounds">Sounds</string>
+    <string name="settings_sounds_note">Beeps for timers and the end of rest, at your media volume. You can also turn them off for one workout from its menu.</string>
+    <string name="settings_buzzes">Buzzes</string>
+    <string name="settings_buzzes_note">A buzz with each beep, for a phone in your pocket.</string>
+    <string name="settings_data">YOUR DATA</string>
+    <string name="settings_data_note">Everything you log stays on this phone, encrypted with a key Android keeps for Levitx. Bodyweight never goes to the watch. There is no account and no server.</string>
+    <string name="settings_export">Export everything</string>
+    <string name="settings_export_kind">ZIP · JSON + CSV</string>
+    <string name="settings_exporting">Writing your export…</string>
+    <string name="settings_exported">Saved. The file isn\'t encrypted, so keep it somewhere private.</string>
+    <string name="settings_export_failed">Couldn\'t save the file. Nothing in the app changed. Try again, or pick another place to save it.</string>
+    <string name="settings_delete">Delete everything</string>
+    <string name="settings_delete_kind">ASKS FIRST</string>
+    <string name="settings_delete_title">Delete everything?</string>
+    <string name="settings_delete_body">Your workouts, weigh-ins, kit, bands, plan and settings are deleted from this phone for good, and you start again from setup. Export first if you want a copy. Your watch keeps its copy of the plan (never your weight) until you clear Levitx on the watch.</string>
+    <string name="settings_delete_keep">Keep it</string>
+    <string name="settings_delete_confirm">Delete everything</string>
+    <string name="settings_deleting">Deleting…</string>
+    <string name="settings_delete_failed">Couldn\'t delete right now. Nothing was changed. Close Levitx, open it again, and try once more.</string>
+    <string name="settings_about">ABOUT</string>
+    <string name="settings_credits">Photo credits</string>
+    <string name="settings_version">Version</string>
+
+    <!-- Photo credits -->
+    <string name="credits_intro">The photos come from Unsplash and are used under the Unsplash License. Credit isn\'t required, but we give it. Each one opens its page on Unsplash.</string>
+    <string name="credits_on_unsplash">Photographer on Unsplash</string>
+    <string name="credit_welcome">WELCOME</string>
+    <string name="credit_first_pull_up">FIRST PULL-UP · PULLING</string>
+    <string name="credit_muscle_up">MUSCLE-UP</string>
+    <string name="credit_push">PUSHING</string>
+    <string name="credit_upper">UPPER BODY</string>
+    <string name="credit_legs">LEGS</string>
+    <string name="credit_core">CORE</string>
+    <string name="credit_full_body">FULL BODY</string>
+
     <!-- Skills -->
     <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>
     <string name="skills_rungs_description">Step %1$d of %2$d on this ladder.</string>
@@ -564,5 +623,7 @@
     <string name="equipment_band_save">Save band</string>
 
     <!-- Errors -->
+    <string name="data_unavailable_label">DATA LOCKED</string>
+    <string name="data_unavailable_title">Levitx can\'t open your data right now.</string>
     <string name="data_unavailable">Your training data couldn\'t be unlocked on this device. Nothing was changed or deleted. Close the app and open it again to retry.</string>
 </resources>

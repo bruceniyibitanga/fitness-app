@@ -21,7 +21,7 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 | What the coach has learned (training history, targets, latest pain advice, how suggestions went) and the workout in progress | Health | Local database, as JSON documents in two tables | Encrypted. Never synced. Reading a damaged document fails without quoting it, so none of it reaches a crash report |
 | The watch's copy of the goal, bests, bands and next session, and its own workouts | Personal | The watch's local database | Encrypted the same way, with the watch's own Keystore key |
 | Heart rate | Health | Watch memory only, while a session runs | Never written to disk, never sent to the phone or anywhere else |
-| Settings | Low | Local database | Encrypted |
+| Settings: the count-in, sounds and buzzes | Low | A DataStore file in the app's private storage | Not encrypted, because none of it is personal. Excluded from backups like everything else |
 | Database key | Secret | `noBackupFilesDir`, encrypted with a Keystore AES-GCM key | Never in code, logs or backups |
 
 The database key is 256 random bits made on the device the first time the app runs (`DatabaseKeyStore` in `:data`):
@@ -31,6 +31,12 @@ The database key is 256 random bits made on the device the first time the app ru
 - SQLCipher gets it as a raw key, so there is no password stretching to slow down app start (the key is random, not a password).
 - **Fail closed.** If the key is missing, tampered with, or its Keystore key is gone, or if the database exists without a key, the app shows an error. It never creates a fresh key over existing data, and never falls back to an unencrypted database.
 - These behaviours are tested on an emulator in CI.
+
+## The person's own copy, and deleting
+
+- **Export.** Settings > Export everything writes a zip with `levitx.json` (all of it, including the coach's stored state) and `workouts.csv` and `weigh-ins.csv` for a spreadsheet. The person picks where it goes in the system's save dialog, so the app needs no storage permission and can write only that one file. The file is **not encrypted**: it's for the person to read and use elsewhere, and the screen says so and asks them to keep it somewhere private. The password-protected file for moving to a new phone (below) is a separate thing and comes with an import.
+- **Delete one workout.** Removes its rows and sets, takes it out of the coach's recent history, and puts any best it set back to the best of the workouts left (`Forgetting` in `:core`). Targets the coach moved since stay; they rest on later workouts too, so undoing them would be a guess.
+- **Delete everything.** Settings > Delete everything, after a confirm sheet. Room deletes every row, sets a WAL checkpoint and runs `VACUUM`, so the space the rows used is rewritten. The settings file is cleared, and the phone takes its published state off the Data Layer so nothing more is offered to the watch. The watch keeps what it already has (never bodyweight) until Levitx is cleared on the watch; the confirm sheet says so. The app then starts again from setup with a fresh plan.
 
 ## Backups
 

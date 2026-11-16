@@ -44,6 +44,7 @@ import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.BackHeader
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -91,10 +92,7 @@ fun HistoryScreen(
         when (uiState) {
             HistoryUiState.Loading -> Unit
 
-            HistoryUiState.Unavailable -> Lede(
-                stringResource(R.string.data_unavailable),
-                Modifier.padding(ScreenPadding),
-            )
+            HistoryUiState.Unavailable -> DataUnavailable()
 
             is HistoryUiState.Ready -> Column(Modifier.verticalScroll(rememberScrollState())) {
                 Calendar(uiState)

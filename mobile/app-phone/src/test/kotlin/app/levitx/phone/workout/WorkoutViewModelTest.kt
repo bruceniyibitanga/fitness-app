@@ -9,9 +9,11 @@ import app.levitx.core.coach.SkillTraining
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.skills.SkillCatalogue
+import app.levitx.data.settings.AppSettings
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
+import app.levitx.testing.FakeSettingsRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
 import app.levitx.testing.coachState
@@ -30,7 +32,9 @@ class WorkoutViewModelTest {
     private val clock = FakeTrainingClock()
     private val drafts = FakeWorkoutDraftRepository(startedWorkout(nowEpochMillis = clock.now))
     private val coachRepository = FakeCoachRepository(coachState(), drafts)
-    private val viewModel by lazy { WorkoutViewModel(coachRepository, drafts, FakeEquipmentRepository(), clock) }
+    private val viewModel by lazy {
+        WorkoutViewModel(coachRepository, drafts, FakeEquipmentRepository(), clock, FakeSettingsRepository())
+    }
 
     private val active: WorkoutUiState.Active
         get() = viewModel.uiState.value as WorkoutUiState.Active
@@ -38,7 +42,8 @@ class WorkoutViewModelTest {
     @Test
     fun withNoWorkoutInProgressThereIsNothingToShow() {
         val empty = FakeWorkoutDraftRepository()
-        val viewModel = WorkoutViewModel(coachRepository, empty, FakeEquipmentRepository(), clock)
+        val viewModel =
+            WorkoutViewModel(coachRepository, empty, FakeEquipmentRepository(), clock, FakeSettingsRepository())
         assertEquals(WorkoutUiState.NoWorkout, viewModel.uiState.value)
     }
 
@@ -128,7 +133,7 @@ class WorkoutViewModelTest {
         val timer = checkNotNull((holds.uiState.value as WorkoutUiState.Active).timer)
         assertEquals(TimerKind.HOLD, timer.kind)
         // Through the count-in, then 23.5 seconds of holding.
-        clock.elapsed += LEAD_IN_MILLIS + 23_500
+        clock.elapsed += DEFAULT_LEAD_IN_SECONDS * 1_000L + 23_500
         holds.timer(TimerAction.STOP)
         val stopped = holds.uiState.value as WorkoutUiState.Active
         assertNull(stopped.timer)
@@ -151,7 +156,7 @@ class WorkoutViewModelTest {
     fun loggingASetEndsTheTimerAndItsCount() {
         val holds = timedWorkout(firstId = "core.plank")
         holds.timer(TimerAction.START)
-        clock.elapsed += LEAD_IN_MILLIS + 20_000
+        clock.elapsed += DEFAULT_LEAD_IN_SECONDS * 1_000L + 20_000
         holds.timer(TimerAction.STOP)
         holds.logSet(20, repsInReserve = null)
         val resting = holds.uiState.value as WorkoutUiState.Active
@@ -176,7 +181,13 @@ class WorkoutViewModelTest {
             intensity = Intensity.HARD,
         )
         val drafts = FakeWorkoutDraftRepository(WorkoutRun("timed", PlannedSession(listOf(plan)), clock.now))
-        return WorkoutViewModel(FakeCoachRepository(coachState(), drafts), drafts, FakeEquipmentRepository(), clock)
+        return WorkoutViewModel(
+            FakeCoachRepository(coachState(), drafts),
+            drafts,
+            FakeEquipmentRepository(),
+            clock,
+            FakeSettingsRepository(),
+        )
     }
 
     @Test
@@ -242,6 +253,29 @@ class WorkoutViewModelTest {
             isGateAttempt = true,
         )
         val drafts = FakeWorkoutDraftRepository(WorkoutRun("gate", PlannedSession(listOf(plan)), clock.now))
-        return WorkoutViewModel(FakeCoachRepository(coachState(), drafts), drafts, FakeEquipmentRepository(), clock)
+        return WorkoutViewModel(
+            FakeCoachRepository(coachState(), drafts),
+            drafts,
+            FakeEquipmentRepository(),
+            clock,
+            FakeSettingsRepository(),
+        )
+    }
+
+    @Test
+    fun theTimerCountsInForTheChosenLengthAndSoundsStartAsChosen() {
+        val drafts = FakeWorkoutDraftRepository(startedWorkout(clock.now))
+        val settings = FakeSettingsRepository(AppSettings(leadInSeconds = 10, sounds = false, buzzes = true))
+        val chosen =
+            WorkoutViewModel(
+                FakeCoachRepository(coachState(), drafts),
+                drafts,
+                FakeEquipmentRepository(),
+                clock,
+                settings,
+            )
+        val active = chosen.uiState.value as WorkoutUiState.Active
+        assertEquals(false, active.soundsOn)
+        assertEquals(10, active.leadInSeconds)
     }
 }

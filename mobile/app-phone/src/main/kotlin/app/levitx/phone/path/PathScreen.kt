@@ -39,6 +39,7 @@ import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.GateRow
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.QuietBar
@@ -93,7 +94,7 @@ fun PathScreen(
         when (uiState) {
             PathUiState.Loading -> Unit
 
-            PathUiState.Unavailable -> Lede(stringResource(R.string.data_unavailable), Modifier.padding(ScreenPadding))
+            PathUiState.Unavailable -> DataUnavailable()
 
             PathUiState.NoGoal -> {
                 Lede(stringResource(R.string.path_no_goal), Modifier.padding(ScreenPadding).weight(1f))

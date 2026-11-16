@@ -9,6 +9,7 @@ import app.levitx.core.session.SetLoad
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.equipment.EquipmentRepository
+import app.levitx.data.settings.SettingsRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +36,7 @@ class WorkoutViewModel @Inject constructor(
     private val drafts: WorkoutDraftRepository,
     private val equipmentRepository: EquipmentRepository,
     private val clock: TrainingClock,
+    private val settings: SettingsRepository,
 ) : ViewModel() {
     private val state = MutableStateFlow<WorkoutUiState>(WorkoutUiState.Loading)
 
@@ -54,10 +56,14 @@ class WorkoutViewModel @Inject constructor(
                 } else {
                     // Read once, so every set in the workout uses the same figure.
                     val bodyweight = bodyweightTrend(coach.model.weighIns, clock.currentTimeMillis())?.currentKg
+                    val chosen = settings.observe().first()
                     state.value = WorkoutUiState.Active(
                         run = run,
                         bodyweightKg = bodyweight,
                         bands = equipmentRepository.observeBands().first(),
+                        soundsOn = chosen.sounds,
+                        buzzesOn = chosen.buzzes,
+                        leadInSeconds = chosen.leadInSeconds,
                         gateBests = coach.model.gateBests,
                     )
                 }
@@ -242,7 +248,7 @@ class WorkoutViewModel @Inject constructor(
 /** A timer for the set up next, starting after the lead-in. */
 private fun newTimer(active: WorkoutUiState.Active, kind: TimerKind, now: Long): SetTimer = SetTimer(
     kind = kind,
-    startsAtElapsedMillis = now + LEAD_IN_MILLIS,
+    startsAtElapsedMillis = now + active.leadInSeconds * MILLIS_PER_SECOND,
     lowerMillis = (active.plan.exercise.lowerSeconds ?: 0) * MILLIS_PER_SECOND,
     reps = active.nextSet.target,
 )

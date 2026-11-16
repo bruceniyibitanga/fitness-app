@@ -38,6 +38,8 @@ dependencies {
     implementation(libs.sqlcipher.android)
     // The coach's state and the workout in progress are stored as JSON documents.
     implementation(libs.kotlinx.serialization.json)
+    // App settings such as timer sounds. None of them is personal data.
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
 

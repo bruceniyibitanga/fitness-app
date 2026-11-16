@@ -46,7 +46,8 @@ class FakeCoachRepository(
     }
 
     override suspend fun updateProfile(profile: CoachProfile, trainingDays: Set<DayOfWeek>) {
-        state.value = setUp().let { CoachState(it.model.copy(profile = profile), trainingDays) }
+        val current = checkNotNull(state.value) { "The coach isn't set up" }
+        state.value = CoachState(current.model.copy(profile = profile), trainingDays)
     }
 
     override suspend fun recordWorkout(workoutId: String, result: SessionResult): Boolean {
@@ -67,10 +68,15 @@ class FakeCoachRepository(
 
     override suspend fun markWeightNoticeShown() = update { it.withWeightNoticeShown() }
 
-    private fun update(change: (AthleteModel) -> AthleteModel) {
-        val current = setUp()
-        state.value = current.copy(model = change(current.model))
+    // Forgets the id only: the fake keeps no sets to take back out of the model.
+    override suspend fun deleteWorkout(workoutId: String): Boolean {
+        val known = workoutId in recorded.value
+        recorded.update { it - workoutId }
+        return known
     }
 
-    private fun setUp(): CoachState = checkNotNull(state.value) { "The coach isn't set up" }
+    private fun update(change: (AthleteModel) -> AthleteModel) {
+        val current = checkNotNull(state.value) { "The coach isn't set up" }
+        state.value = current.copy(model = change(current.model))
+    }
 }

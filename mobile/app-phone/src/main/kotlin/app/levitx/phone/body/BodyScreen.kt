@@ -1,21 +1,28 @@
 package app.levitx.phone.body
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -54,17 +61,19 @@ private const val DEFAULT_BODYWEIGHT_KG = 70.0
  * @property onChooseEquipment Null clears the kit; a piece is added or taken away.
  * @property onAddBand Adds a band: its name and the kg of help it gives.
  * @property onDeleteBand Removes a band, by id.
+ * @property onOpenSettings Opens Settings.
  */
 data class BodyActions(
     val onSaveBodyweight: (Double) -> Unit,
     val onChooseEquipment: (Equipment?) -> Unit,
     val onAddBand: (String, Double) -> Unit,
     val onDeleteBand: (String) -> Unit,
+    val onOpenSettings: () -> Unit,
 )
 
 /** Body tab: connects [BodyViewModel] to [BodyScreen]. */
 @Composable
-fun BodyRoute(viewModel: BodyViewModel = hiltViewModel()) {
+fun BodyRoute(onOpenSettings: () -> Unit, viewModel: BodyViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     BodyScreen(
         uiState = uiState,
@@ -73,6 +82,7 @@ fun BodyRoute(viewModel: BodyViewModel = hiltViewModel()) {
             onChooseEquipment = viewModel::chooseEquipment,
             onAddBand = viewModel::addBand,
             onDeleteBand = viewModel::deleteBand,
+            onOpenSettings = onOpenSettings,
         ),
     )
 }
@@ -87,7 +97,20 @@ fun BodyRoute(viewModel: BodyViewModel = hiltViewModel()) {
 fun BodyScreen(uiState: BodyUiState, actions: BodyActions, modifier: Modifier = Modifier) {
     var weighing by rememberSaveable { mutableStateOf(false) }
     Column(modifier = modifier.fillMaxSize().background(LevitxColors.Background)) {
-        TabHeader(stringResource(R.string.tab_body))
+        TabHeader(stringResource(R.string.tab_body)) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clickable(role = Role.Button, onClick = actions.onOpenSettings),
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_settings),
+                    contentDescription = stringResource(R.string.settings_title),
+                    tint = LevitxColors.Text,
+                )
+            }
+        }
         when (uiState) {
             BodyUiState.Loading -> Unit
 
@@ -180,7 +203,7 @@ private fun BodyScreenPreview() {
     LevitxTheme {
         BodyScreen(
             uiState = bodyState(model, listOf(Band("1", "Red", 22.5)), nowEpochMillis = 31 * day),
-            actions = BodyActions({}, {}, { _, _ -> }, {}),
+            actions = BodyActions({}, {}, { _, _ -> }, {}, {}),
         )
     }
 }

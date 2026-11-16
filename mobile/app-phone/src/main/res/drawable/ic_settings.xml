@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings, on the Body tab: three sliders, square like the rest of the icons. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="20"
+    android:viewportHeight="20">
+    <path
+        android:pathData="M3,5h14M3,10h14M3,15h14"
+        android:strokeWidth="1.6"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="square" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M6,3h3v4h-3zM11,8h3v4h-3zM5,13h3v4h-3z" />
+</vector>

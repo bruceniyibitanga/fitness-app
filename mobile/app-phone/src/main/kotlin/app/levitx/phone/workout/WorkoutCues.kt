@@ -104,18 +104,16 @@ internal fun restBeat(secondsLeft: Int): Beat = Beat(
     },
 )
 
-/** Plays [beat]'s cue, once, when [enabled]. */
+/** Plays [beat]'s cue once: the sound when [sounds], the buzz when [buzzes]. */
 @Composable
-internal fun PlayCue(beat: Beat, enabled: Boolean) {
+internal fun PlayCue(beat: Beat, sounds: Boolean, buzzes: Boolean) {
     val haptics = LocalHapticFeedback.current
-    val tones by rememberTones(enabled)
+    val tones by rememberTones(sounds)
     LaunchedEffect(beat) {
-        val cue = beat.cue
-        if (enabled && cue != null) {
-            haptics.performHapticFeedback(cue.haptic)
-            // Starts the tone and returns: the sound plays without holding up the screen.
-            tones?.startTone(cue.tone, cue.millis)
-        }
+        val cue = beat.cue ?: return@LaunchedEffect
+        if (buzzes) haptics.performHapticFeedback(cue.haptic)
+        // Starts the tone and returns: the sound plays without holding up the screen.
+        if (sounds) tones?.startTone(cue.tone, cue.millis)
     }
 }
 

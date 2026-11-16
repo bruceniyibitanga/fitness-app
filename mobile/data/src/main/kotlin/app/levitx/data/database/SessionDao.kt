@@ -45,6 +45,18 @@ internal interface SessionDao {
     @Query("SELECT * FROM training_session ORDER BY finishedAtEpochMillis DESC")
     fun observeAllWithSets(): Flow<List<SessionWithSets>>
 
+    /** Every finished session with its sets, once. For changes made in a transaction. */
+    @Transaction
+    @Query("SELECT * FROM training_session")
+    suspend fun allWithSets(): List<SessionWithSets>
+
+    /**
+     * Deletes a workout's rows: those sharing [workoutId], or the one row of
+     * a session from before workouts had ids. Its sets go with them.
+     */
+    @Query("DELETE FROM training_session WHERE workoutId = :workoutId OR (workoutId IS NULL AND id = :workoutId)")
+    suspend fun deleteWorkout(workoutId: String): Int
+
     /** Number of finished sessions. Used by tests. */
     @Query("SELECT COUNT(*) FROM training_session")
     suspend fun count(): Int

@@ -49,6 +49,15 @@ internal class PhoneSyncEngine @Inject constructor(
     }
 
     /**
+     * Takes the phone's published state off the Data Layer, after the person
+     * deletes everything, so nothing about them is offered to the watch again.
+     */
+    suspend fun forget(): SyncReport = guarded {
+        dataLayer.delete(SyncPaths.STATE)
+        SyncReport(SyncOutcome.DONE, stateChanged = true)
+    }
+
+    /**
      * Publishes the state as it is right now. Used after sessions arrive, so
      * the watch gets the new bests even if the system stops the app before
      * the change is noticed on its own. Publishing unchanged state does nothing.

@@ -6,9 +6,6 @@ package app.levitx.phone.workout
  * redraws and whatever the screen was doing in between.
  */
 
-/** The 3-2-1 before the timer starts, so the person can get on the bar first. */
-internal const val LEAD_IN_MILLIS = 3_000L
-
 /** Time to get back to the top before each negative: a jump, a step or a kick up. */
 internal const val TO_TOP_MILLIS = 4_000L
 

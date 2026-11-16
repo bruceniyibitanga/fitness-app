@@ -41,6 +41,7 @@ import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.BackHeader
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -95,10 +96,7 @@ fun ExerciseProgressScreen(
         when (uiState) {
             ExerciseProgressUiState.Loading -> Unit
 
-            ExerciseProgressUiState.Unavailable -> Lede(
-                stringResource(R.string.data_unavailable),
-                Modifier.padding(ScreenPadding),
-            )
+            ExerciseProgressUiState.Unavailable -> DataUnavailable()
 
             ExerciseProgressUiState.NotFound -> Lede(
                 stringResource(R.string.exercise_progress_none),
