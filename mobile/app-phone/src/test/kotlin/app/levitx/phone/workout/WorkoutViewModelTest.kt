@@ -264,7 +264,7 @@ class WorkoutViewModelTest {
 
     @Test
     fun theTimerCountsInForTheChosenLengthAndSoundsStartAsChosen() {
-        val drafts = FakeWorkoutDraftRepository(startedWorkout(clock.now))
+        val drafts = FakeWorkoutDraftRepository(startedWorkout(nowEpochMillis = clock.now))
         val settings = FakeSettingsRepository(AppSettings(leadInSeconds = 10, sounds = false, buzzes = true))
         val chosen =
             WorkoutViewModel(

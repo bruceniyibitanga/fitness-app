@@ -1,7 +1,7 @@
 package app.levitx.phone.settings
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import app.levitx.data.IoDispatcher
 import app.levitx.data.privacy.PrivacyRepository
 import app.levitx.data.settings.SettingsRepository
@@ -46,7 +46,7 @@ internal class DocumentDataExport @Inject constructor(
     override suspend fun exportTo(uri: String) {
         withContext(ioDispatcher) {
             // "wt": write, and cut off anything a file the person chose to replace held before.
-            val out = context.contentResolver.openOutputStream(Uri.parse(uri), "wt")
+            val out = context.contentResolver.openOutputStream(uri.toUri(), "wt")
                 ?: throw FileNotFoundException("The chosen file couldn't be opened")
             out.use { privacy.export(it) }
         }
