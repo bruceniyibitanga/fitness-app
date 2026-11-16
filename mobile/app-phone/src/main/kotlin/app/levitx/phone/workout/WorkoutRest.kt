@@ -66,7 +66,7 @@ internal fun ColumnScope.Rest(state: WorkoutUiState.Active, endsAt: Long, now: (
     val leftMillis = endsAt - rememberElapsedNow(now, COUNTDOWN_TICK_MILLIS)
     val secondsLeft = ceilSeconds(leftMillis.coerceAtLeast(0))
     val overSeconds = (-leftMillis / MILLIS_PER_SECOND).toInt()
-    PlayCue(restBeat(if (leftMillis > 0) secondsLeft else 0), state.soundsOn)
+    PlayCue(restBeat(if (leftMillis > 0) secondsLeft else 0), state.soundsOn, state.buzzesOn)
     val plannedSeconds = state.lastSet?.plan?.restSeconds ?: state.plan.restSeconds
     Column(
         modifier = Modifier

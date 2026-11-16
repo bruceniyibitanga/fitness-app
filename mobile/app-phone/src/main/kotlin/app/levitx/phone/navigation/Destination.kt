@@ -74,4 +74,12 @@ sealed interface Destination : NavKey {
      */
     @Serializable
     data class PastWorkout(val workoutId: String) : Destination
+
+    /** Settings, the person's data and about, from the Body tab. */
+    @Serializable
+    data object Settings : Destination
+
+    /** Who took the photos in the app. */
+    @Serializable
+    data object PhotoCredits : Destination
 }

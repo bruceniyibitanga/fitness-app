@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -41,12 +42,22 @@ import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.BackHeader
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.shortDate
 import app.levitx.phone.ui.signedKg
+
+/**
+ * Workouts in range before the load chart is drawn. Two or three points draw
+ * a line that says more than they know, so it waits for six.
+ */
+private const val MIN_TREND_POINTS = 6
+
+/** A gain of at least this many kg is shown in orange; less rounds to nothing. */
+private const val KG_CHANGE_SHOWN = 0.05
 
 /** Size of the marks on the load chart. */
 private val MarkSize = 8.dp
@@ -96,10 +107,7 @@ fun ProgressScreen(
         when (uiState) {
             ProgressUiState.Loading -> Unit
 
-            ProgressUiState.Unavailable -> Lede(
-                stringResource(R.string.data_unavailable),
-                Modifier.padding(ScreenPadding),
-            )
+            ProgressUiState.Unavailable -> DataUnavailable()
 
             is ProgressUiState.Ready -> Column(Modifier.verticalScroll(rememberScrollState())) {
                 if (uiState.workoutCount == 0) {
@@ -160,9 +168,17 @@ private fun HeadlineSection(headline: Headline?) {
             Caption(stringResource(R.string.kg), modifier = Modifier.padding(start = 6.dp, bottom = 8.dp))
             Spacer(Modifier.weight(1f))
             Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(bottom = 6.dp)) {
-                Text(signedKg(headline.changeKg), style = LevitxType.Figure, color = LevitxColors.Accent)
+                Text(
+                    text = signedKg(headline.changeKg),
+                    style = LevitxType.Figure,
+                    color = if (headline.changeKg >= KG_CHANGE_SHOWN) LevitxColors.Accent else LevitxColors.TextMuted,
+                )
                 Caption(stringResource(R.string.progress_since, shortDate(headline.points.first().atEpochMillis)))
             }
+        }
+        if (headline.points.size < MIN_TREND_POINTS) {
+            NotEnoughYet(MIN_TREND_POINTS - headline.points.size)
+            return@Column
         }
         LoadChart(headline.points, Modifier.padding(top = 22.dp))
         Row(modifier = Modifier.padding(top = 8.dp)) {
@@ -181,6 +197,25 @@ private fun HeadlineSection(headline: Headline?) {
         )
     }
     Rule()
+}
+
+/** Instead of a chart from too few workouts: how many more it needs, and why it waits. */
+@Composable
+private fun NotEnoughYet(more: Int) {
+    Text(
+        text = pluralStringResource(R.plurals.progress_not_enough, more, more),
+        fontSize = 20.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = LevitxColors.Text,
+        modifier = Modifier.padding(top = 22.dp),
+    )
+    Text(
+        text = stringResource(R.string.progress_not_enough_note, MIN_TREND_POINTS),
+        fontSize = 13.sp,
+        lineHeight = 18.sp,
+        color = LevitxColors.TextMuted,
+        modifier = Modifier.padding(top = 6.dp),
+    )
 }
 
 /**

@@ -24,6 +24,8 @@ import app.levitx.phone.progress.HistoryRoute
 import app.levitx.phone.progress.PastWorkoutRoute
 import app.levitx.phone.progress.ProgressNavigation
 import app.levitx.phone.progress.ProgressRoute
+import app.levitx.phone.settings.PhotoCreditsScreen
+import app.levitx.phone.settings.SettingsRoute
 import app.levitx.phone.train.FocusWorkoutNavigation
 import app.levitx.phone.train.FocusWorkoutRoute
 import app.levitx.phone.workout.WorkoutRoute
@@ -68,6 +70,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                         onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
                         onOpenProgram = { backStack.add(Destination.Program(it)) },
                         onOpenProgress = { backStack.add(Destination.Progress) },
+                        onOpenSettings = { backStack.add(Destination.Settings) },
                     ),
                 )
             }
@@ -95,6 +98,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                 ProgramRoute(pathId = key.pathId, onBack = { backStack.removeLastOrNull() })
             }
             progressEntries(backStack)
+            settingsEntries(backStack)
         },
     )
 }
@@ -137,5 +141,19 @@ private fun EntryProviderScope<NavKey>.progressEntries(backStack: MutableList<Na
     }
     entry<Destination.PastWorkout> { key ->
         PastWorkoutRoute(workoutId = key.workoutId, onBack = { backStack.removeLastOrNull() })
+    }
+}
+
+/** Settings and photo credits. Deleting everything starts again from setup. */
+private fun EntryProviderScope<NavKey>.settingsEntries(backStack: MutableList<NavKey>) {
+    entry<Destination.Settings> {
+        SettingsRoute(
+            onBack = { backStack.removeLastOrNull() },
+            onOpenCredits = { backStack.add(Destination.PhotoCredits) },
+            onDeleted = { backStack.replaceAllWith(Destination.Onboarding) },
+        )
+    }
+    entry<Destination.PhotoCredits> {
+        PhotoCreditsScreen(onBack = { backStack.removeLastOrNull() })
     }
 }

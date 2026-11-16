@@ -51,6 +51,15 @@ class PhoneSync @Inject internal constructor(
     }
 
     /**
+     * Stops offering the watch anything about the person, after they delete
+     * everything. The watch keeps what it already has until Levitx is cleared
+     * on it. Returns when done.
+     */
+    suspend fun forget() {
+        engine.forget().log("phone forget")
+    }
+
+    /**
      * [receive] for a `WearableListenerService` callback.
      *
      * The system may stop a listener service as soon as its callback returns,

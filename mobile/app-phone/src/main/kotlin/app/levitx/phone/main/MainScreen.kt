@@ -99,7 +99,7 @@ fun MainRoute(navigation: MainNavigation) {
 
             MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
 
-            MainTab.BODY -> BodyRoute()
+            MainTab.BODY -> BodyRoute(onOpenSettings = navigation.onOpenSettings)
         }
     }
 }
@@ -112,6 +112,7 @@ fun MainRoute(navigation: MainNavigation) {
  * @property onOpenExercise Opens an exercise's detail, by id.
  * @property onOpenProgram Opens a skill program, by id.
  * @property onOpenProgress Opens Progress.
+ * @property onOpenSettings Opens Settings.
  */
 data class MainNavigation(
     val onOpenWorkout: () -> Unit,
@@ -119,6 +120,7 @@ data class MainNavigation(
     val onOpenExercise: (String) -> Unit,
     val onOpenProgram: (String) -> Unit,
     val onOpenProgress: () -> Unit,
+    val onOpenSettings: () -> Unit,
 )
 
 /** The tab bar around [content]. Stateless, so it previews and tests without the tabs' data. */

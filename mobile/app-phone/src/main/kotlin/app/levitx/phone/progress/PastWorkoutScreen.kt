@@ -1,6 +1,8 @@
 package app.levitx.phone.progress
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,12 +16,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +43,8 @@ import app.levitx.design.LevitxColors
 import app.levitx.phone.R
 import app.levitx.phone.ui.BackHeader
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.ConfirmSheet
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -56,22 +65,54 @@ fun PastWorkoutRoute(
     ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PastWorkoutScreen(uiState, onBack)
+    LaunchedEffect(uiState) { if (uiState == PastWorkoutUiState.Deleted) onBack() }
+    PastWorkoutScreen(uiState, onBack, onDelete = viewModel::delete)
 }
 
 /**
  * One past workout, as the Session detail artboard: when, what, and every
- * set of every exercise with reps left and any vest or band.
+ * set of every exercise with reps left and any vest or band. It can be
+ * deleted, after a confirm sheet that says what goes with it.
  */
 @Composable
-fun PastWorkoutScreen(uiState: PastWorkoutUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
+fun PastWorkoutScreen(
+    uiState: PastWorkoutUiState,
+    onBack: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var confirming by rememberSaveable { mutableStateOf(false) }
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(LevitxColors.Background)
             .statusBarsPadding()
             .navigationBarsPadding(),
     ) {
+        PastWorkoutContent(uiState, onBack, onAskDelete = { confirming = true })
+        val ready = uiState as? PastWorkoutUiState.Ready
+        if (confirming && ready != null) {
+            ConfirmSheet(
+                title = stringResource(
+                    R.string.past_workout_delete_title,
+                    dayDate(ready.workout.finishedAtEpochMillis),
+                ),
+                body = pluralStringResource(R.plurals.past_workout_delete_body, ready.workout.sets, ready.workout.sets),
+                keepLabel = stringResource(R.string.past_workout_delete_keep),
+                confirmLabel = stringResource(R.string.past_workout_delete_confirm),
+                onKeep = { confirming = false },
+                onConfirm = {
+                    confirming = false
+                    onDelete()
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun PastWorkoutContent(uiState: PastWorkoutUiState, onBack: () -> Unit, onAskDelete: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
         val workout = (uiState as? PastWorkoutUiState.Ready)?.workout
         BackHeader(
             workout?.let {
@@ -84,12 +125,9 @@ fun PastWorkoutScreen(uiState: PastWorkoutUiState, onBack: () -> Unit, modifier:
         when (uiState) {
             PastWorkoutUiState.Loading -> Unit
 
-            PastWorkoutUiState.Unavailable -> Lede(
-                stringResource(R.string.data_unavailable),
-                Modifier.padding(ScreenPadding),
-            )
+            PastWorkoutUiState.Unavailable -> DataUnavailable()
 
-            PastWorkoutUiState.NotFound -> Lede(
+            PastWorkoutUiState.NotFound, PastWorkoutUiState.Deleted -> Lede(
                 stringResource(R.string.past_workout_none),
                 Modifier.padding(ScreenPadding),
             )
@@ -115,9 +153,25 @@ fun PastWorkoutScreen(uiState: PastWorkoutUiState, onBack: () -> Unit, modifier:
                 }
                 Rule()
                 uiState.workout.exercises.forEach { ExerciseBlock(it) }
+                DeleteRow(enabled = !uiState.deleting, onClick = onAskDelete)
             }
         }
     }
+}
+
+/** Deleting the workout, at the end, out of the way of reading it. */
+@Composable
+private fun DeleteRow(enabled: Boolean, onClick: () -> Unit) {
+    Text(
+        text = stringResource(R.string.past_workout_delete),
+        fontSize = 15.sp,
+        color = if (enabled) LevitxColors.Accent else LevitxColors.TextFaint,
+        modifier = Modifier
+            .padding(top = 12.dp, bottom = 24.dp)
+            .fillMaxWidth()
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(horizontal = ScreenPadding, vertical = 16.dp),
+    )
 }
 
 /** An exercise: its name and heaviest rep, then a row per set. */

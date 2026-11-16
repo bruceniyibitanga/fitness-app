@@ -3,7 +3,9 @@ package app.levitx.data.coach
 import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.core.history.WorkoutRecord
 import app.levitx.data.database.ActiveGoalEntity
+import app.levitx.data.database.GateBestEntity
 import app.levitx.data.database.LevitxDatabase
 import app.levitx.data.database.LoggedSetEntity
 import app.levitx.data.database.TrainingSessionEntity
@@ -59,4 +61,32 @@ internal suspend fun LevitxDatabase.raiseBests(before: AthleteModel, after: Athl
     after.gateBests
         .filter { (gateId, best) -> best > (before.gateBests[gateId] ?: 0) }
         .forEach { (gateId, best) -> gateBestDao().recordBest(gateId, best, at) }
+}
+
+/**
+ * Sets the bests table to [after] for every gate whose best changed from
+ * [before], dating each by the first of [workouts] that reached it. A gate
+ * left without a best is removed.
+ */
+internal suspend fun LevitxDatabase.resetBests(
+    before: Map<String, Int>,
+    after: Map<String, Int>,
+    workouts: List<WorkoutRecord>,
+) {
+    before.keys.filter { after[it] != before[it] }.forEach { gateId ->
+        val best = after[gateId]
+        if (best == null) {
+            gateBestDao().delete(gateId)
+        } else {
+            val reached = workouts
+                .filter { workout ->
+                    workout.exercises.any { record ->
+                        record.exerciseId == gateId &&
+                            record.sets.any { it.countsTowardGate && it.value >= best }
+                    }
+                }
+                .minOfOrNull { it.finishedAtEpochMillis } ?: 0L
+            gateBestDao().insertOrReplace(GateBestEntity(gateId, best, reached))
+        }
+    }
 }

@@ -144,7 +144,7 @@ private fun SetButtons(state: WorkoutUiState.Active, hint: String?, onLog: () ->
                 kind == TimerKind.HOLD -> stringResource(R.string.workout_start_hold)
                 else -> stringResource(R.string.workout_start_negatives)
             },
-            hint = if (startTimer) stringResource(R.string.workout_count_in_hint) else hint,
+            hint = if (startTimer) stringResource(R.string.workout_count_in_hint, state.leadInSeconds) else hint,
             onClick = if (startTimer) ({ actions.onTimer(TimerAction.START) }) else onLog,
             height = BottomBarHeight,
             modifier = Modifier.weight(2f),

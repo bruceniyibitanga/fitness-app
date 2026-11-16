@@ -9,6 +9,9 @@ import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.equipment.Band
 
+/** The count-in until the settings are read: three seconds. */
+internal const val DEFAULT_LEAD_IN_SECONDS = 3
+
 /** What the workout screen shows. */
 sealed interface WorkoutUiState {
     /** Reading the workout in progress. */
@@ -29,7 +32,9 @@ sealed interface WorkoutUiState {
      * @property timer The hold or negative timer, while it runs.
      * @property counted What the timer counted once stopped, as the starting
      *   figure for logging. The person can correct it first.
-     * @property soundsOn True when timers beep. Off for a quiet gym.
+     * @property soundsOn True when timers beep. Off for a quiet gym. Starts from the settings.
+     * @property buzzesOn True when timers buzz, from the settings.
+     * @property leadInSeconds The count-in before a hold or negatives, from the settings.
      * @property gateBests The person's best per gate, to tell when a set passes one.
      * @property pending A set that would pass a gate, waiting for the person to
      *   confirm it met the standard.
@@ -42,6 +47,8 @@ sealed interface WorkoutUiState {
         val timer: SetTimer? = null,
         val counted: Int? = null,
         val soundsOn: Boolean = true,
+        val buzzesOn: Boolean = true,
+        val leadInSeconds: Int = DEFAULT_LEAD_IN_SECONDS,
         val gateBests: Map<String, Int> = emptyMap(),
         val pending: PendingSet? = null,
         val passed: GatePass? = null,

@@ -1,7 +1,14 @@
 package app.levitx.phone
 
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.ActivityResultRegistryOwner
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityOptionsCompat
 import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
@@ -24,6 +31,7 @@ import app.levitx.core.session.SetLoad
 import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.equipment.Band
+import app.levitx.data.settings.AppSettings
 import app.levitx.phone.body.BarLoad
 import app.levitx.phone.body.BodyActions
 import app.levitx.phone.body.BodyScreen
@@ -51,6 +59,10 @@ import app.levitx.phone.progress.ProgressScreen
 import app.levitx.phone.progress.exerciseProgressState
 import app.levitx.phone.progress.historyState
 import app.levitx.phone.progress.progressState
+import app.levitx.phone.settings.DataTask
+import app.levitx.phone.settings.SettingsActions
+import app.levitx.phone.settings.SettingsScreen
+import app.levitx.phone.settings.SettingsUiState
 import app.levitx.phone.skills.SkillsScreen
 import app.levitx.phone.skills.SkillsUiState
 import app.levitx.phone.skills.standings
@@ -65,6 +77,7 @@ import app.levitx.phone.train.ProgramSummary
 import app.levitx.phone.train.TrainScreen
 import app.levitx.phone.train.TrainUiState
 import app.levitx.phone.train.WorkoutSummary
+import app.levitx.phone.ui.ConfirmSheet
 import app.levitx.phone.workout.GatePass
 import app.levitx.phone.workout.PendingSet
 import app.levitx.phone.workout.ReportBest
@@ -264,7 +277,7 @@ fun BodyScreenshot() {
                     equipment = setOf(Equipment.PULL_UP_BAR, Equipment.BAND),
                     bands = listOf(Band("1", "Red", 22.5)),
                 ),
-                actions = BodyActions({}, {}, { _, _ -> }, {}),
+                actions = BodyActions({}, {}, { _, _ -> }, {}, {}),
             )
         }
     }
@@ -583,6 +596,71 @@ fun HistoryScreenshot() {
 @Composable
 fun PastWorkoutScreenshot() {
     LevitxTheme {
-        PastWorkoutScreen(PastWorkoutUiState.Ready(previewWorkouts.last()), onBack = {})
+        PastWorkoutScreen(PastWorkoutUiState.Ready(previewWorkouts.last()), onBack = {}, onDelete = {})
+    }
+}
+
+/** Nothing to launch in a screenshot: the save dialog just isn't opened. */
+private val noActivityResults = object : ActivityResultRegistryOwner {
+    override val activityResultRegistry = object : ActivityResultRegistry() {
+        override fun <I, O> onLaunch(
+            requestCode: Int,
+            contract: ActivityResultContract<I, O>,
+            input: I,
+            options: ActivityOptionsCompat?,
+        ) = Unit
+    }
+}
+
+@PreviewTest
+@Preview(name = "27 Settings", widthDp = 390, heightDp = 1200)
+@Composable
+fun SettingsScreenshot() {
+    LevitxTheme {
+        CompositionLocalProvider(LocalActivityResultRegistryOwner provides noActivityResults) {
+            SettingsScreen(
+                uiState = SettingsUiState(
+                    AppSettings(leadInSeconds = 5, sounds = true, buzzes = false),
+                    DataTask.EXPORTED,
+                ),
+                actions = SettingsActions({}, {}, {}, {}, {}),
+                onBack = {},
+                onOpenCredits = {},
+            )
+        }
+    }
+}
+
+@PreviewTest
+@Preview(name = "28 Progress, not enough yet", widthDp = 390, heightDp = 700)
+@Composable
+fun ProgressNotEnoughScreenshot() {
+    LevitxTheme {
+        ProgressScreen(
+            uiState = progressState(previewWorkouts.takeLast(3), muscleUp(), ProgressRange.FOUR_WEEKS, previewNow),
+            navigation = noProgressNavigation,
+            onChooseRange = {},
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "29 Delete a workout", widthDp = 390, heightDp = 844)
+@Composable
+fun DeleteWorkoutScreenshot() {
+    LevitxTheme {
+        Box {
+            PastWorkoutScreen(PastWorkoutUiState.Ready(previewWorkouts.last()), onBack = {}, onDelete = {})
+            ConfirmSheet(
+                title = "Delete the workout from Wed 28 Jan?",
+                body = "Its 7 sets go too, and any best it set goes back to the best before it. " +
+                    "The coach keeps its current targets; they settle again over your next few workouts. " +
+                    "This can't be undone.",
+                keepLabel = "Keep it",
+                confirmLabel = "Delete",
+                onKeep = {},
+                onConfirm = {},
+            )
+        }
     }
 }

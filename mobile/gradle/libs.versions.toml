@@ -43,6 +43,8 @@ androidx-activity = "1.13.0"
 androidx-lifecycle = "2.11.0"
 androidx-navigation3 = "1.2.1"
 room = "2.8.5"
+# Small settings that aren't personal (sounds, the count-in). The training data stays in the encrypted database.
+datastore = "1.3.0"
 compose-bom = "2026.09.00"
 wear-compose = "1.7.1"
 # Health Services: heart rate and the workout session on the watch.
@@ -121,6 +123,7 @@ kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 sqlcipher-android = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipher" }
 
 junit = { module = "junit:junit", version.ref = "junit" }

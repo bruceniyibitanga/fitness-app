@@ -8,10 +8,12 @@ import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.CoachTuning
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SessionResult
+import app.levitx.core.history.Forgetting
 import app.levitx.core.pain.PainAssessment
 import app.levitx.data.database.CoachStateEntity
 import app.levitx.data.database.LevitxDatabase
 import app.levitx.data.database.LevitxDatabaseProvider
+import app.levitx.data.history.toWorkouts
 import app.levitx.data.time.TrainingClock
 import java.time.DayOfWeek
 import javax.inject.Inject
@@ -96,6 +98,26 @@ internal class RoomCoachRepository @Inject constructor(
     }
 
     override suspend fun markWeightNoticeShown() = update { it.withWeightNoticeShown() }
+
+    override suspend fun deleteWorkout(workoutId: String): Boolean {
+        val database = databaseProvider.database()
+        return database.withTransaction {
+            val workouts = toWorkouts(database.sessionDao().allWithSets())
+            val workout = workouts.firstOrNull { it.id == workoutId }
+            val now = clock.currentTimeMillis()
+            val current = database.load(now)
+            if (workout == null || current == null) {
+                false
+            } else {
+                val remaining = workouts - workout
+                val updated = Forgetting.forget(current.model, workout, remaining)
+                database.sessionDao().deleteWorkout(workoutId)
+                database.resetBests(current.model.gateBests, updated.gateBests, remaining)
+                database.write(updated, current.trainingDays, now)
+                true
+            }
+        }
+    }
 
     /** Reads the model, changes it with [change] and writes it back, in one transaction. */
     private suspend fun update(change: (AthleteModel) -> AthleteModel) {

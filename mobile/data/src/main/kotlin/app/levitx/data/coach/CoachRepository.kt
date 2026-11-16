@@ -65,6 +65,16 @@ interface CoachRepository {
 
     /** Records that the fast weight loss notice has been shown, so it isn't shown again this spell. */
     suspend fun markWeightNoticeShown()
+
+    /**
+     * Deletes a finished workout and every set in it, and takes it back out
+     * of what the coach knows: the week's sets drop and any best it set goes
+     * back to the best of the workouts left. Targets the coach moved since
+     * stay, and settle again over the next sessions.
+     *
+     * @return True when there was such a workout.
+     */
+    suspend fun deleteWorkout(workoutId: String): Boolean
 }
 
 /** How many recent workout ids [CoachRepository.observeRecentWorkoutIds] reports. */

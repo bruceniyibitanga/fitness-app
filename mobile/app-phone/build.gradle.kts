@@ -24,6 +24,11 @@ android {
         versionName = "0.1.0"
     }
 
+    buildFeatures {
+        // Settings shows the version, read from BuildConfig.VERSION_NAME.
+        buildConfig = true
+    }
+
     testOptions {
         // The preview renderer resolves the app's themes and drawables from
         // the compiled resources, which unit tests only see with this on.
