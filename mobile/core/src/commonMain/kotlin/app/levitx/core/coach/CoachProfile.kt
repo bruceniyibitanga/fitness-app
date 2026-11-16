@@ -1,5 +1,6 @@
 package app.levitx.core.coach
 
+import app.levitx.core.load.LoadKit
 import app.levitx.core.requireInRange
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.core.skills.SkillPath
@@ -39,6 +40,7 @@ public enum class PullUpAnswer {
  * @property sessionsPerWeek Sessions a week they plan to do.
  * @property sessionMinutes Minutes they have for a session.
  * @property equipment Kit they have told us about.
+ * @property loadKit Weight they can add: a vest, plates, a dip belt.
  * @throws IllegalArgumentException if [goalPathId] isn't a known path, or a
  *   number is outside its limits.
  */
@@ -48,6 +50,7 @@ public data class CoachProfile(
     val sessionsPerWeek: Int = DEFAULT_SESSIONS_PER_WEEK,
     val sessionMinutes: Int = DEFAULT_SESSION_MINUTES,
     val equipment: Set<Equipment> = emptySet(),
+    val loadKit: LoadKit = LoadKit(),
 ) {
     init {
         require(goalPathId == null || SkillCatalogue.byId(goalPathId) != null) { "goalPathId must be a known path" }

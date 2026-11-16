@@ -56,6 +56,10 @@ public data class ExerciseResult(val plan: ExercisePlan, val sets: List<LoggedSe
     /** The best set that counts toward a skill gate: unassisted. 0 when there is none. */
     val gateTop: Int
         get() = sets.filter { it.countsTowardGate }.maxOfOrNull { it.value } ?: 0
+
+    /** The work sets done, leaving out a best-effort set. */
+    internal val workSets: List<LoggedSet>
+        get() = plan.sets.zip(sets).filterNot { it.first.isBestEffort }.map { it.second }
 }
 
 /**

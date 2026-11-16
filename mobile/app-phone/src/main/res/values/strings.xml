@@ -176,6 +176,11 @@
     <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see kilograms per rep.</string>
 
     <!-- Workout -->
+    <plurals name="workout_slow_instructions">
+        <item quantity="one">Lower each rep over %2$s. Stop with about %1$d rep left in the tank.</item>
+        <item quantity="other">Lower each rep over %2$s. Stop with about %1$d reps left in the tank.</item>
+    </plurals>
+    <string name="workout_added_weight">+%1$s</string>
     <plurals name="workout_work_instructions">
         <item quantity="one">Stop with about %1$d rep left in the tank. Clean reps only.</item>
         <item quantity="other">Stop with about %1$d reps left in the tank. Clean reps only.</item>
@@ -450,6 +455,20 @@
     <string name="past_workout_delete_confirm">Delete</string>
 
     <!-- Settings -->
+    <!-- Weights -->
+    <string name="unit_kg">kg</string>
+    <string name="unit_lb">lb</string>
+    <string name="weight_value">%1$s %2$s</string>
+    <string name="body_weights_label">WEIGHTS</string>
+    <string name="body_weights_note">A weighted vest and plates. When there\'s no harder version of an exercise for you, the coach adds weight in small steps.</string>
+    <string name="body_vest">Weighted vest</string>
+    <string name="body_vest_none">NONE</string>
+    <string name="body_vest_steps">ADJUSTS IN</string>
+    <string name="body_vest_fixed">Fixed</string>
+    <string name="body_belt">Dip belt</string>
+    <string name="body_plates_label">PLATES</string>
+    <string name="body_less">Less: %1$s</string>
+    <string name="body_more">More: %1$s</string>
     <string name="settings_title">Settings</string>
     <string name="settings_training">TRAINING</string>
     <string name="settings_lead_in">Count-in</string>

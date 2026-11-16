@@ -4,12 +4,16 @@ import app.levitx.core.skills.SkillCatalogue
 
 private const val MILLIS_PER_MINUTE = 60_000L
 
+/** A set carrying this much less than prescribed still counts as the prescribed weight: kit is weighed to the gram. */
+private const val SAME_LOAD_KG = 0.005
+
 /**
  * How one exercise of a session went, in the terms progression decides on.
  *
  * @property top The best unassisted set of any kind.
  * @property workTop The best work set, which is what sessions are compared on.
- * @property hitTarget True when every planned work set was done and reached its target.
+ * @property hitTarget True when every planned work set was done, reached its
+ *   target, and carried at least the weight prescribed.
  * @property effort The hardest rating given to a work set, or null when none was given.
  * @property didBestEffort True when a best-effort set was done.
  */
@@ -29,7 +33,9 @@ internal data class Outcome(
             return Outcome(
                 top = result.gateTop,
                 workTop = work.maxOfOrNull { it.second.value } ?: 0,
-                hitTarget = work.size == planned && work.all { (set, logged) -> logged.value >= set.target },
+                hitTarget = work.size == planned && work.all { (set, logged) ->
+                    logged.value >= set.target && logged.addedKg >= result.plan.addedKg - SAME_LOAD_KG
+                },
                 effort = Effort.of(work.mapNotNull { it.second.repsInReserve }.minOrNull()),
                 didBestEffort = done.any { it.first.isBestEffort },
             )

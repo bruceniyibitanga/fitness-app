@@ -216,4 +216,22 @@ class WorkoutRunTest {
         assertFalse(light.isGateAttempt)
         assertTrue(light.sets.none { it.isBestEffort })
     }
+
+    @Test
+    fun eachExerciseStartsWithTheWeightItsPlanPrescribes() {
+        val weighted = sessionOf(hardPlan(pushUp, 8).trimmedTo(1).copy(addedKg = 5.0), hardPlan(squat, 12).trimmedTo(1))
+        val run = WorkoutRun(id = "w2", session = weighted, startedAtEpochMillis = 1_000)
+        assertEquals(SetLoad(addedKg = 5.0), run.load)
+        val next = run.logSet(8, 2, nowElapsedMillis = 0)
+        assertEquals(5.0, next.logged[0].single().addedKg)
+        assertEquals(SetLoad.None, next.load)
+        assertEquals(
+            SetLoad(addedKg = 5.0),
+            WorkoutRun(
+                "w3",
+                sessionOf(hardPlan(squat, 12), hardPlan(pushUp, 8).copy(addedKg = 5.0)),
+                1_000,
+            ).skipExercise().load,
+        )
+    }
 }

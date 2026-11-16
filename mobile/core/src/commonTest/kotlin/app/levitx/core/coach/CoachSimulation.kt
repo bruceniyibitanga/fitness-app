@@ -51,7 +51,7 @@ internal class SimulatedAthlete(
     private fun doSet(plan: ExercisePlan, target: Int, isBestEffort: Boolean): LoggedSet {
         val able = (capacity(plan) * capacityFactor).roundToInt().coerceAtLeast(0)
         val done = if (isBestEffort) able else minOf(target, able)
-        return LoggedSet(value = done, repsInReserve = able - done, isBestEffort = isBestEffort)
+        return LoggedSet(value = done, repsInReserve = able - done, isBestEffort = isBestEffort, addedKg = plan.addedKg)
     }
 
     /** The most they could do in one set of this exercise today. */
@@ -65,7 +65,10 @@ internal class SimulatedAthlete(
             val exercise = plan.exercise
             val rung = ExerciseCatalogue.ladder(exercise.pattern).rungs.indexOfFirst { exercise in it.options }
             val above = (strength[exercise.pattern] ?: 0.0) - rung
-            exercise.range.first + above * (exercise.range.last - exercise.range.first)
+            val reps = exercise.range.first + above * (exercise.range.last - exercise.range.first)
+            // Weight and a slow lowering each cost reps.
+            val slowed = if (plan.slowLowerSeconds != null) reps * SLOW_LOWERING_SHARE else reps
+            slowed - plan.addedKg / KG_PER_REP
         }
     }
 
@@ -77,6 +80,12 @@ internal class SimulatedAthlete(
     companion object {
         private const val MILLIS_PER_MINUTE = 60_000L
         private const val LOSS_PER_DAY_OFF = 0.02
+
+        /** Reps a kilogram of added weight costs. */
+        private const val KG_PER_REP = 1.5
+
+        /** Share of their usual reps someone manages with a slow lowering. */
+        private const val SLOW_LOWERING_SHARE = 0.8
 
         /** Someone with the same strength on every pattern. */
         fun even(strength: Double, skill: Double, gain: Double): SimulatedAthlete =

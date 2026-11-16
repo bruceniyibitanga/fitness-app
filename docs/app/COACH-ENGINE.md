@@ -120,6 +120,14 @@ The highest score wins. Nothing is random: the same model at the same time alway
 - **Gate attempts.** Once the best at a gate reaches 80% of its target, or is one short, skill work starts with a fresh attempt at the whole target, then the usual work sets. A set at the end of a session undersells someone that close, and the attempt costs nothing extra: it is the session's best-effort set, moved to the front. The person can put it off ("Not today"), which moves it back to the end. Light days never carry an attempt.
 - **Any strict set passes a gate**, attempt or not. Making someone repeat a set they have just done would be friction for nothing. Because the next gate is harder, a set that would pass asks once whether every rep met the standard (the exercise's form cues) before it counts. A band-assisted set never asks and never passes.
 - **Ladder exercises** are three work sets at a target. Hit every set at an effort that isn't Hard and the target goes up a rep (five seconds for holds), or two when this session and the last were both Easy. At the top of the exercise's range the person moves up a rung. Two sessions in a row short of target ease it back a step.
+- **Past the top of a ladder.** When there's no harder exercise to move to with the person's kit, the target keeps climbing another way, in this order:
+  1. **Weight**, if they have a vest, a dip belt with plates, or plates for bridges, and the exercise takes it. The coach adds the lightest weight the kit can make that is at least 2% of what a rep moves, and never a step over 10% (ACSM's 2 to 10% once the top of the range is beaten). The reps go back to the bottom of the range and build up again. Weight stops at half of bodyweight.
+  2. **More reps**, up to a ceiling: 20 for the upper body, 30 for legs and hips, 60 seconds for holds. Progressing reps instead of load gave similar strength and growth in a randomised trial ([Plotkin et al. 2022](https://doi.org/10.7717/peerj.14142)).
+  3. **A slower lowering**: 3 seconds a rep, from the top of the range. Reps lasting 0.5 to 8 seconds grow muscle about equally ([Schoenfeld et al. 2015](https://doi.org/10.1007/s40279-015-0304-0)), so it makes the same reps harder at no cost.
+- **Easing back undoes them in reverse**: weight comes off a step first, then the lowering goes back to normal, then the person moves down a rung.
+- **Weight is part of the target.** A set done lighter than prescribed doesn't count as hitting it. A person who carries more than prescribed and still hits it keeps that weight as theirs.
+- **Only some exercises take weight.** Pull-ups, chin-ups and dips take a vest or a belt; push-ups, rows, squats and lunges a vest; bridges and hip thrusts plates on the hips. Pistols, Nordic curls, negatives, holds and skill gates never do: they are still being learned or balanced.
+- **Without a bodyweight entered,** steps are sized for 70 kg. Entering it sizes them to the person.
 - **Finding the level.** For the first two sessions on an exercise the last set is a best-effort set. It places the person directly: up a rung if they reach the top of the range (two rungs for double it), down one if they can't reach the bottom, otherwise work sets start at 70% of what they did. This is how the coach learns someone's level from training instead of asking.
 - **Light work never changes a target.** Neither does anything done while weight is falling fast (section 6).
 - **What counts toward the week is sets done, not sets planned.**
@@ -349,6 +357,10 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 | Indirect sets count as | half | Pelland et al. 2026 | Backed |
 | Push-up loads | 41 to 74% of bodyweight | Ebben et al. 2011, measured on a force plate | Measured |
 | Pull-up and dip loads | 95% of bodyweight, plus any belt in full | Everything but the forearms and hands moves. Forearm and hand are about 2.2% of body mass per arm in men and 1.9% in women ([de Leva 1996](https://doi.org/10.1016/0021-9290(95)00178-6)). | Estimate from published segment masses. Changed in this check (was 100%). |
+| Step in added weight | 2 to 10% of the load a rep moves | ACSM 2009: a 2 to 10% increase once the current load can be done for 1 to 2 reps over the target | Backed |
+| Most added weight | half of bodyweight | No study sets it | Our choice, to review |
+| Rep ceilings with nothing harder to do | 20 upper body, 30 legs and hips, 60 s holds | Rep progression works (Plotkin et al. 2022); growth spans a wide range of reps near failure (Schoenfeld et al. 2021). The cut-offs are where sets get long and uncomfortable. | Our choice, within the evidence |
+| Slow lowering | 3 s a rep | Rep durations of 0.5 to 8 s give similar growth (Schoenfeld et al. 2015) | Backed |
 | Fast weight loss | over 1% a week | Ruiz-Castellano et al. 2021; Garthe et al. 2011 (section 6) | Backed |
 | Gate attempt threshold | 80% of the target, or one short | No study sets it. Close enough that an attempt is a real chance, far enough that the best-effort set still has room to move. | Our choice, to review |
 | Lowering time on slow negatives | 5 s a rep | Coaching write-ups on beginner negatives agree on 3 to 5 seconds down. We take the top of that, and the phone's timer paces each rep to it (4 s to get back to the top, then 5 s down). No study sets the number. | Our choice, to review |
@@ -387,6 +399,10 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 - Garber CE et al. (2011). Quantity and quality of exercise for developing and maintaining cardiorespiratory, musculoskeletal, and neuromotor fitness in apparently healthy adults. Med Sci Sports Exerc 43(7):1334-1359.
 - American College of Sports Medicine (2009). Progression models in resistance training for healthy adults. Med Sci Sports Exerc 41(3):687-708.
 - Schoenfeld BJ, Grgic J, Van Every DW, Plotkin DL (2021). Loading recommendations for muscle strength, hypertrophy, and local endurance: a re-examination of the repetition continuum. Sports 9(2):32.
+- Plotkin D et al. (2022). Progressive overload without progressing load? The effects of load or repetition progression on muscular adaptations. PeerJ 10:e14142.
+- Schoenfeld BJ, Ogborn DI, Krieger JW (2015). Effect of repetition duration during resistance training on muscle hypertrophy: a systematic review and meta-analysis. Sports Med 45(4):577-585.
+- Kotarsky CJ et al. (2018). Effect of progressive calisthenic push-up training on muscle strength and thickness. J Strength Cond Res 32(3):651-659.
+- Calatayud J et al. (2015). Bench press and push-up at comparable levels of muscle activity results in similar strength gains. J Strength Cond Res 29(1):246-253.
 - Schoenfeld BJ, Ogborn D, Krieger JW (2017). Dose-response relationship between weekly resistance training volume and increases in muscle mass: a systematic review and meta-analysis. J Sports Sci. doi:10.1080/02640414.2016.1210197.
 - Robinson ZP et al. (2024). Exploring the dose-response relationship between estimated resistance training proximity to failure, strength gain, and muscle hypertrophy: a series of meta-regressions. Sports Med 54(9):2209-2231.
 - Singer A et al. (2024). Give it a rest: a systematic review with Bayesian meta-analysis on the effect of inter-set rest interval duration on muscle hypertrophy. Front Sports Act Living 6:1429789.

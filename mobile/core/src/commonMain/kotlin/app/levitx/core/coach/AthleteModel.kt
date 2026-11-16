@@ -12,7 +12,13 @@ public enum class ProgressNote {
     /** The target went up. */
     TARGET_UP,
 
-    /** The target or the exercise was eased back after two missed sessions. */
+    /** Reps topped out with nothing harder to move to: the lowering slows down instead. */
+    SLOWER,
+
+    /** Weight was added: the reps start again from the bottom of the range. */
+    WEIGHT_UP,
+
+    /** The target, the weight or the exercise was eased back after two missed sessions. */
     EASED_BACK,
 
     /** A new exercise for this block, in place of one that trains the same thing. */
@@ -41,6 +47,11 @@ public data class ExerciseMark(val atEpochMillis: Long, val top: Int, val effort
  * @property timesTrained Hard sessions done. The coach trusts its numbers more as this grows.
  * @property marks The last few hard sessions, oldest first.
  * @property note A change to explain the next time this exercise is planned.
+ * @property addedKg Weight the work sets are done with: a vest, a belt or
+ *   plates. 0 for bodyweight. The coach adds it once there is nothing harder to
+ *   move to, and takes it off first when easing back.
+ * @property slowLowering True once reps topped out with no weight to add, so
+ *   each rep is lowered over [CoachTuning.SLOW_LOWER_SECONDS].
  */
 public data class ExerciseState(
     val target: Int,
@@ -48,6 +59,8 @@ public data class ExerciseState(
     val timesTrained: Int = 0,
     val marks: List<ExerciseMark> = emptyList(),
     val note: ProgressNote? = null,
+    val addedKg: Double = 0.0,
+    val slowLowering: Boolean = false,
 ) {
     /** True while the coach is still finding the person's level on this exercise. */
     val isCalibrating: Boolean

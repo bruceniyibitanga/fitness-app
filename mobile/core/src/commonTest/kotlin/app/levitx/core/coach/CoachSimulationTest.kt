@@ -1,5 +1,6 @@
 package app.levitx.core.coach
 
+import app.levitx.core.load.LoadKit
 import app.levitx.core.pain.PainAdvice
 import app.levitx.core.pain.PainAssessment
 import app.levitx.core.pain.PainReason
@@ -244,5 +245,37 @@ class CoachSimulationTest {
             assertTrue(PainAdvice.SEE_PROFESSIONAL !in advice, "trained an area that needs a professional")
             assertTrue(advice.isEmpty() || !plan.isHard, "hard work on a sore area on day ${day.day}")
         }
+    }
+
+    @Test
+    fun atTheTopOfALadderWeightGoesOnInSensibleSteps() {
+        val top = exercise("horizontal_push.feet_61cm")
+        val share = checkNotNull(top.loadProfile)
+        val strong = SimulatedAthlete.even(strength = 7.5, skill = 0.4, gain = 0.08)
+        val start = newcomer(pullUpProfile().copy(loadKit = LoadKit(vestMaxKg = 20.0, vestStepKg = 1.0)))
+        val (_, log) = simulate(start, strong, trainingDays(16, 0, 2, 4))
+        val weights = log.mapNotNull { it.done }.filterNot { it.isLight }
+            .flatMap { it.plans }.filter { it.exercise == top }.map { it.addedKg }
+
+        assertTrue(weights.max() > 0.0, "weight went on once the ladder ran out")
+        // Without a bodyweight, steps are sized for 70 kg.
+        val bodyweight = CoachTuning.REFERENCE_BODYWEIGHT_KG
+        weights.zipWithNext().filter { (before, after) -> after > before }.forEach { (before, after) ->
+            val moved = bodyweight * share.bodyweightShare + before * share.addedWeightShare
+            val step = (after - before) * share.addedWeightShare / moved
+            assertTrue(step in CoachTuning.MIN_LOAD_STEP_FRACTION..CoachTuning.MAX_LOAD_STEP_FRACTION, "step of $step")
+        }
+        assertTrue(weights.max() <= bodyweight * CoachTuning.MAX_ADDED_SHARE_OF_BODYWEIGHT)
+    }
+
+    @Test
+    fun withNoWeightToAddTheTopOfALadderNeverStalls() {
+        val top = exercise("horizontal_push.feet_61cm")
+        val strong = SimulatedAthlete.even(strength = 7.5, skill = 0.4, gain = 0.08)
+        val (model, _) = simulate(newcomer(), strong, trainingDays(16, 0, 2, 4))
+        val state = model.exercises.getValue(top.id)
+        // Reps kept climbing past the range, and nothing ever passed the ceiling.
+        assertTrue(state.target > top.range.last || state.slowLowering, "target ${state.target}")
+        assertTrue(state.target <= top.ceiling)
     }
 }

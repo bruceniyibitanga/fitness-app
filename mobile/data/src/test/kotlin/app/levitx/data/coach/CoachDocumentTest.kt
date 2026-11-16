@@ -12,6 +12,7 @@ import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WeighIn
+import app.levitx.core.load.LoadKit
 import app.levitx.core.pain.PainAdvice
 import app.levitx.core.pain.PainAssessment
 import app.levitx.core.pain.PainReason
@@ -32,6 +33,7 @@ class CoachDocumentTest {
         sessionsPerWeek = 3,
         sessionMinutes = 40,
         equipment = setOf(Equipment.PULL_UP_BAR, Equipment.BAND),
+        loadKit = LoadKit(vestMaxKg = 10.0, vestStepKg = 1.0, platesKg = listOf(2.5, 5.0), hasBelt = true),
     )
 
     /** A model with something in every field, from two real sessions. */
@@ -45,7 +47,8 @@ class CoachDocumentTest {
             model =
                 coach.record(model, SessionResult(results, at(index * 2), at(index * 2) + HOUR, SuggestionChoice.KEEP))
         }
-        return model
+        val loaded = model.exercises.mapValues { (_, state) -> state.copy(addedKg = 2.5, slowLowering = true) }
+        return model.copy(exercises = loaded)
             .withPain(BodyArea.ELBOW, PainAssessment(PainAdvice.EASE_OFF, PainReason.WORSE_NEXT_MORNING))
             .withWeightNoticeShown()
             .copy(skips = mapOf("squat.bodyweight" to 1), lastEasedAtEpochMillis = at(3))
@@ -60,6 +63,17 @@ class CoachDocumentTest {
         val document = roundTrip(model)
         assertEquals(model, document.toModel())
         assertEquals(days, document.days())
+    }
+
+    @Test
+    fun aDocumentFromBeforeProgressiveOverloadReadsAsBodyweightAtTheUsualPace() {
+        val json = CoachCodec.encode(coachDocumentOf(trained(), days))
+            .replace(Regex(""","loadKit":\{[^}]*\}"""), "")
+            .replace(Regex(""","addedKg":[0-9.]+"""), "")
+            .replace(Regex(""","slowLowering":(true|false)"""), "")
+        val model = CoachCodec.decodeCoach(json).toModel()
+        assertEquals(LoadKit(), model.profile.loadKit)
+        assertTrue(model.exercises.values.all { it.addedKg == 0.0 && !it.slowLowering })
     }
 
     @Test

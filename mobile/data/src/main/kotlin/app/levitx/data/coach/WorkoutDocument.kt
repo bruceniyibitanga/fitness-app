@@ -44,6 +44,9 @@ internal data class StoredPlan(
     val gateId: String? = null,
     // Added after version 1. Older documents read as no attempt, which is what they were.
     val isGateAttempt: Boolean = false,
+    // Added with progressive overload. Older documents read as bodyweight at the usual pace.
+    val addedKg: Double = 0.0,
+    val slowLowerSeconds: Int? = null,
 )
 
 /** A stored `PlannedSet`. */
@@ -119,6 +122,8 @@ private fun storedPlanOf(plan: ExercisePlan): StoredPlan = StoredPlan(
     intensity = plan.intensity.name,
     gateId = plan.gateId,
     isGateAttempt = plan.isGateAttempt,
+    addedKg = plan.addedKg,
+    slowLowerSeconds = plan.slowLowerSeconds,
 )
 
 /**
@@ -137,6 +142,8 @@ private fun sessionOf(plans: List<StoredPlan>): PlannedSession = PlannedSession(
             intensity = checkNotNull(stored.intensity.toEnumOrNull<Intensity>()),
             gateId = stored.gateId,
             isGateAttempt = stored.isGateAttempt,
+            addedKg = stored.addedKg,
+            slowLowerSeconds = stored.slowLowerSeconds,
         )
     },
 )

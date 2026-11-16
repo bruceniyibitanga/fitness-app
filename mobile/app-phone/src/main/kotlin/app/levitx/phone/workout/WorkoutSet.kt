@@ -34,6 +34,7 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.durationText
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.repsLeftLabel
+import app.levitx.phone.ui.weightText
 
 /*
  * The set up next: the counter, how hard to go, the load, what follows, and
@@ -109,6 +110,9 @@ private fun SetHeader(state: WorkoutUiState.Active, load: Double?, value: Int, o
             listOfNotNull(
                 (run.exerciseIndex + 1).toString().padStart(2, '0'),
                 plan.exercise.name,
+                run.load.addedKg.takeIf {
+                    it > 0.0
+                }?.let { stringResource(R.string.workout_added_weight, weightText(it)) },
                 load?.let { stringResource(R.string.kg_per_rep, formatKg(it)) },
             ).joinToString(" · "),
         )
@@ -184,6 +188,14 @@ private fun instructions(state: WorkoutUiState.Active): String = when {
     state.plan.exercise.lowerSeconds != null -> stringResource(
         R.string.workout_negative_instructions,
         measureText(GateMeasure.HOLD_SECONDS, checkNotNull(state.plan.exercise.lowerSeconds)),
+    )
+
+    // The coach slowed the lowering down to make the same reps harder.
+    state.plan.slowLowerSeconds != null -> pluralStringResource(
+        R.plurals.workout_slow_instructions,
+        state.plan.repsInReserve,
+        state.plan.repsInReserve,
+        measureText(GateMeasure.HOLD_SECONDS, checkNotNull(state.plan.slowLowerSeconds)),
     )
 
     else -> pluralStringResource(

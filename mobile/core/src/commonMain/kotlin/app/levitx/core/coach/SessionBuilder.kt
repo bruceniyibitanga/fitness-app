@@ -132,6 +132,11 @@ internal class SessionBuilder(private val templates: List<List<MovementPattern>>
             restSeconds = if (isHold) SessionPlanner.REST_SECONDS_HOLDS else SessionPlanner.REST_SECONDS_REPS,
             repsInReserve = SessionPlanner.TARGET_REPS_IN_RESERVE,
             intensity = Intensity.HARD,
+            // What the kit can make now: weight that has gone since (a vest sold) is dropped, never made up.
+            addedKg = LoadProgression.available(exercise, state.addedKg, context.model.profile.loadKit),
+            slowLowerSeconds = CoachTuning.SLOW_LOWER_SECONDS.takeIf {
+                state.slowLowering && exercise.allowsSlowLowering
+            },
         )
     }
 

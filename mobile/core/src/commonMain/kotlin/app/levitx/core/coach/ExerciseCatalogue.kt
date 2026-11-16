@@ -43,14 +43,14 @@ public object ExerciseCatalogue {
             ),
             Rung(
                 listOf(
-                    pull("vertical_pull.pull_up", "Pull-up", 3..8).moving(LoadCatalogue.pullUp),
-                    pull("vertical_pull.chin_up", "Chin-up", 3..8),
+                    pull("vertical_pull.pull_up", "Pull-up", 3..8).moving(LoadCatalogue.pullUp).hanging(),
+                    pull("vertical_pull.chin_up", "Chin-up", 3..8).hanging(),
                 ),
             ),
             Rung(
                 listOf(
-                    pull("vertical_pull.chest_to_bar", "Chest-to-bar pull-up", 3..8),
-                    pull("vertical_pull.wide_pull_up", "Wide-grip pull-up", 3..8),
+                    pull("vertical_pull.chest_to_bar", "Chest-to-bar pull-up", 3..8).hanging(),
+                    pull("vertical_pull.wide_pull_up", "Wide-grip pull-up", 3..8).hanging(),
                 ),
             ),
         ),
@@ -68,14 +68,14 @@ public object ExerciseCatalogue {
             ),
             Rung(
                 listOf(
-                    row("horizontal_pull.row", "Australian row", 6..12, LOW_BAR),
-                    row("horizontal_pull.ring_row", "Ring row", 6..12, RINGS),
+                    row("horizontal_pull.row", "Australian row", 6..12, LOW_BAR).wearing(),
+                    row("horizontal_pull.ring_row", "Ring row", 6..12, RINGS).wearing(),
                 ),
             ),
             Rung(
                 listOf(
-                    row("horizontal_pull.row_feet_raised", "Australian row, feet raised", 6..12, LOW_BAR),
-                    row("horizontal_pull.ring_row_feet_raised", "Ring row, feet raised", 6..12, RINGS),
+                    row("horizontal_pull.row_feet_raised", "Australian row, feet raised", 6..12, LOW_BAR).wearing(),
+                    row("horizontal_pull.ring_row_feet_raised", "Ring row, feet raised", 6..12, RINGS).wearing(),
                 ),
             ),
         ),
@@ -102,7 +102,8 @@ public object ExerciseCatalogue {
                         .lowering(),
                     reps("vertical_push.dip", "Dip", VERTICAL_PUSH, 5..10, setOf(DIP_BARS))
                         .alsoTraining(HORIZONTAL_PUSH)
-                        .moving(LoadCatalogue.dip),
+                        .moving(LoadCatalogue.dip)
+                        .hanging(),
                 ),
             ),
         ),
@@ -119,13 +120,14 @@ public object ExerciseCatalogue {
             Rung(listOf(pushUp("horizontal_push.hands_30cm", LoadCatalogue.pushUpHandsOn30cmBox).needing(BOX))),
             Rung(
                 listOf(
-                    pushUp("horizontal_push.push_up", LoadCatalogue.pushUp),
+                    pushUp("horizontal_push.push_up", LoadCatalogue.pushUp).wearing(),
                     reps("horizontal_push.close_grip", "Close-grip push-up", HORIZONTAL_PUSH, PUSH_UP_RANGE)
-                        .alsoTraining(VERTICAL_PUSH),
+                        .alsoTraining(VERTICAL_PUSH)
+                        .wearing(),
                 ),
             ),
-            Rung(listOf(pushUp("horizontal_push.feet_30cm", LoadCatalogue.pushUpFeetOn30cmBox).needing(BOX))),
-            Rung(listOf(pushUp("horizontal_push.feet_61cm", LoadCatalogue.pushUpFeetOn61cmBox).needing(BOX))),
+            Rung(listOf(pushUp("horizontal_push.feet_30cm", LoadCatalogue.pushUpFeetOn30cmBox).needing(BOX).wearing())),
+            Rung(listOf(pushUp("horizontal_push.feet_61cm", LoadCatalogue.pushUpFeetOn61cmBox).needing(BOX).wearing())),
         ),
     )
 
@@ -133,17 +135,17 @@ public object ExerciseCatalogue {
         SQUAT,
         listOf(
             Rung(listOf(reps("squat.box", "Squat to a chair", SQUAT, 8..15))),
-            Rung(listOf(reps("squat.bodyweight", "Bodyweight squat", SQUAT, 10..20))),
+            Rung(listOf(reps("squat.bodyweight", "Bodyweight squat", SQUAT, 10..20).wearing())),
             Rung(
                 listOf(
-                    reps("squat.split", "Split squat", SQUAT, 8..12).perSide(),
-                    reps("squat.reverse_lunge", "Reverse lunge", SQUAT, 8..12).perSide(),
+                    reps("squat.split", "Split squat", SQUAT, 8..12).perSide().wearing(),
+                    reps("squat.reverse_lunge", "Reverse lunge", SQUAT, 8..12).perSide().wearing(),
                 ),
             ),
             Rung(
                 listOf(
-                    reps("squat.bulgarian", "Bulgarian split squat", SQUAT, 6..12).perSide(),
-                    reps("squat.step_up", "High step-up", SQUAT, 6..12, setOf(BOX)).perSide(),
+                    reps("squat.bulgarian", "Bulgarian split squat", SQUAT, 6..12).perSide().wearing(),
+                    reps("squat.step_up", "High step-up", SQUAT, 6..12, setOf(BOX)).perSide().wearing(),
                 ),
             ),
             Rung(listOf(reps("squat.pistol_to_chair", "Pistol squat to a chair", SQUAT, 4..8).perSide())),
@@ -154,11 +156,11 @@ public object ExerciseCatalogue {
     private val hinge = Ladder(
         HINGE,
         listOf(
-            Rung(listOf(reps("hinge.glute_bridge", "Glute bridge", HINGE, 10..20))),
+            Rung(listOf(reps("hinge.glute_bridge", "Glute bridge", HINGE, 10..20).platesOnHips())),
             Rung(
                 listOf(
-                    reps("hinge.single_leg_bridge", "Single-leg glute bridge", HINGE, 8..15).perSide(),
-                    reps("hinge.hip_thrust", "Hip thrust, shoulders raised", HINGE, 10..20),
+                    reps("hinge.single_leg_bridge", "Single-leg glute bridge", HINGE, 8..15).perSide().platesOnHips(),
+                    reps("hinge.hip_thrust", "Hip thrust, shoulders raised", HINGE, 10..20).platesOnHips(),
                 ),
             ),
             Rung(listOf(reps("hinge.single_leg_deadlift", "Single-leg deadlift", HINGE, 8..12).perSide())),

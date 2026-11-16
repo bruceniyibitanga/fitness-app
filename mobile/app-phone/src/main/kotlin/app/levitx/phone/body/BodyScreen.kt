@@ -32,6 +32,7 @@ import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.WeighIn
+import app.levitx.core.load.LoadKit
 import app.levitx.core.load.LoadLimits
 import app.levitx.data.equipment.Band
 import app.levitx.design.LevitxColors
@@ -43,6 +44,7 @@ import app.levitx.phone.ui.DecimalInput
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.KitPicker
 import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -61,6 +63,7 @@ private const val DEFAULT_BODYWEIGHT_KG = 70.0
  * @property onChooseEquipment Null clears the kit; a piece is added or taken away.
  * @property onAddBand Adds a band: its name and the kg of help it gives.
  * @property onDeleteBand Removes a band, by id.
+ * @property onChangeLoadKit Saves the vest, belt and plates.
  * @property onOpenSettings Opens Settings.
  */
 data class BodyActions(
@@ -69,6 +72,7 @@ data class BodyActions(
     val onAddBand: (String, Double) -> Unit,
     val onDeleteBand: (String) -> Unit,
     val onOpenSettings: () -> Unit,
+    val onChangeLoadKit: (LoadKit) -> Unit = {},
 )
 
 /** Body tab: connects [BodyViewModel] to [BodyScreen]. */
@@ -83,6 +87,7 @@ fun BodyRoute(onOpenSettings: () -> Unit, viewModel: BodyViewModel = hiltViewMod
             onAddBand = viewModel::addBand,
             onDeleteBand = viewModel::deleteBand,
             onOpenSettings = onOpenSettings,
+            onChangeLoadKit = viewModel::updateLoadKit,
         ),
     )
 }
@@ -90,7 +95,8 @@ fun BodyRoute(onOpenSettings: () -> Unit, viewModel: BodyViewModel = hiltViewMod
 /**
  * The Body tab, laid out as the "Body and load" artboard: bodyweight as one
  * big number with its trend, what that means on the bar for each exercise
- * trained now, then the kit the plan can use and the bands. Weigh in is
+ * trained now, then the kit the plan can use, the weights it can add, and
+ * the bands. Weigh in is
  * pinned to the bottom.
  */
 @Composable
@@ -124,6 +130,7 @@ fun BodyScreen(uiState: BodyUiState, actions: BodyActions, modifier: Modifier = 
                     BodyweightTrend(uiState)
                     OnTheBar(uiState)
                     Kit(uiState.equipment, actions.onChooseEquipment)
+                    Weights(uiState.loadKit, LocalWeightUnit.current, actions.onChangeLoadKit)
                     Bands(
                         bands = uiState.bands,
                         bodyweightKg = uiState.trend?.currentKg,

@@ -4,6 +4,7 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
+import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WorkoutRun
@@ -35,6 +36,15 @@ class WorkoutDocumentTest {
     @Test
     fun aWorkoutInProgressSurvivesStorage() {
         assertEquals(run, roundTrip(run))
+    }
+
+    @Test
+    fun aPrescribedWeightAndSlowLoweringSurviveStorage() {
+        val plans = session.plans.mapIndexed { index, plan ->
+            if (index == 0) plan.copy(addedKg = 7.5, slowLowerSeconds = 3) else plan
+        }
+        val weighted = WorkoutRun("w2", PlannedSession(plans), startedAtEpochMillis = 5)
+        assertEquals(weighted, roundTrip(weighted))
     }
 
     @Test

@@ -118,6 +118,54 @@ public object CoachTuning {
      */
     public const val NEGATIVE_LOWER_SECONDS: Int = 5
 
+    // Progression past the top of a ladder. When there is no harder exercise
+    // to move to with the person's kit, a target keeps climbing by adding
+    // weight, then reps, then a slower lowering, in that order.
+
+    /**
+     * Smallest step up in added weight, as a share of the load moved. Smaller
+     * steps aren't worth a session. ACSM's progression model recommends 2 to
+     * 10% once the top of the rep range is beaten (ACSM 2009).
+     */
+    public const val MIN_LOAD_STEP_FRACTION: Double = 0.02
+
+    /** Biggest step up in added weight, as a share of the load moved (ACSM 2009). */
+    public const val MAX_LOAD_STEP_FRACTION: Double = 0.10
+
+    /**
+     * Most weight the coach adds, as a share of bodyweight. Past it the target
+     * climbs in reps instead. Our conservative choice: no study sets it.
+     */
+    public const val MAX_ADDED_SHARE_OF_BODYWEIGHT: Double = 0.5
+
+    /**
+     * Bodyweight assumed for sizing weight steps when the person hasn't
+     * entered theirs: a typical adult. Entering it sizes steps to them.
+     */
+    public const val REFERENCE_BODYWEIGHT_KG: Double = 70.0
+
+    /**
+     * Highest rep target for upper-body exercises with no harder step or
+     * weight to add. Growth happens across a wide range of reps when sets end
+     * near failure (Schoenfeld et al. 2021), and more reps is a sound way to
+     * progress (Plotkin et al. 2022). Past about 20 the sets get long and
+     * uncomfortable, so this is our cut-off.
+     */
+    public const val UPPER_BODY_REP_CEILING: Int = 20
+
+    /** Highest rep target for legs and hips, which tolerate longer sets. Our choice. */
+    public const val LOWER_BODY_REP_CEILING: Int = 30
+
+    /** Longest hold target, in seconds, when there is no harder version to move to. Our choice. */
+    public const val HOLD_CEILING_SECONDS: Int = 60
+
+    /**
+     * Seconds to take lowering each rep once reps have topped out too. Growth
+     * is similar for reps lasting 0.5 to 8 seconds (Schoenfeld et al. 2015),
+     * so a slower lowering costs nothing and makes the same reps harder.
+     */
+    public const val SLOW_LOWER_SECONDS: Int = 3
+
     // Learning the person
 
     /** Sessions on an exercise during which the coach is still finding the person's level. */

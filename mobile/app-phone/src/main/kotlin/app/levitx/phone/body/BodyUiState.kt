@@ -8,6 +8,7 @@ import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.coach.currentExercise
 import app.levitx.core.load.LoadEvidence
+import app.levitx.core.load.LoadKit
 import app.levitx.core.load.calculateEffectiveLoad
 import app.levitx.data.equipment.Band
 
@@ -28,6 +29,7 @@ sealed interface BodyUiState {
      * @property onTheBar Load per rep of each exercise trained now that has a load figure.
      * @property equipment Kit the plan can use.
      * @property bands Calibrated bands, oldest first.
+     * @property loadKit The vest, belt and plates the coach can add weight with.
      */
     data class Ready(
         val nowEpochMillis: Long,
@@ -36,6 +38,7 @@ sealed interface BodyUiState {
         val onTheBar: List<BarLoad>,
         val equipment: Set<Equipment>,
         val bands: List<Band>,
+        val loadKit: LoadKit = LoadKit(),
     ) : BodyUiState
 }
 
@@ -72,6 +75,7 @@ internal fun bodyState(model: AthleteModel, bands: List<Band>, nowEpochMillis: L
         onTheBar = trend?.let { onTheBar(model, it) }.orEmpty(),
         equipment = model.profile.equipment,
         bands = bands,
+        loadKit = model.profile.loadKit,
     )
 }
 
