@@ -6,6 +6,7 @@ import kotlin.math.roundToLong
 public const val KG_PER_POUND: Double = 0.45359237
 
 private const val HUNDREDTHS_PER_UNIT = 100L
+private const val HUNDREDTHS_PER_TENTH = 10L
 
 /**
  * The unit weights are shown and entered in. Everything is stored in
@@ -36,7 +37,7 @@ public fun formatWeight(kg: Double, unit: WeightUnit): String {
     val part = hundredths % HUNDREDTHS_PER_UNIT
     return when {
         part == 0L -> whole.toString()
-        part % 10L == 0L -> "$whole.${part / 10L}"
+        part % HUNDREDTHS_PER_TENTH == 0L -> "$whole.${part / HUNDREDTHS_PER_TENTH}"
         else -> "$whole.${part.toString().padStart(2, '0')}"
     }
 }
