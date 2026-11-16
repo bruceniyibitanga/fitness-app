@@ -654,7 +654,8 @@ fun DeleteWorkoutScreenshot() {
             ConfirmSheet(
                 title = "Delete the workout from Wed 28 Jan?",
                 body = "Its 7 sets go too, and any best it set goes back to the best before it. " +
-                    "The coach keeps its current targets; they settle again over your next few workouts. This can't be undone.",
+                    "The coach keeps its current targets; they settle again over your next few workouts. " +
+                    "This can't be undone.",
                 keepLabel = "Keep it",
                 confirmLabel = "Delete",
                 onKeep = {},

@@ -18,6 +18,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.plus
 
 /** File name of the settings store in the app's private files. */
 private const val SETTINGS_FILE = "settings"
