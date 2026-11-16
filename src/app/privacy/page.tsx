@@ -53,7 +53,7 @@ const app: Section[] = [
     title: "Taking it with you, and deleting it",
     body: [
       "Settings has Export everything, which saves all of your data as a zip of JSON and CSV files wherever you choose. The file isn't encrypted, so keep it somewhere private.",
-      "You can delete a single workout from History, or delete everything from Settings. Uninstalling the app also deletes everything on the phone. The watch keeps its copy of your plan until you clear or uninstall Levitx on the watch.",
+      "You can delete a single workout from History, or delete everything from Settings. When you delete everything, your watch deletes its copy too, the next time it's connected to your phone. Uninstalling the app also deletes everything on the phone, but not on the watch, so clear or uninstall Levitx there as well.",
     ],
   },
   {

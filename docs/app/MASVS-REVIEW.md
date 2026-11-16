@@ -74,11 +74,10 @@ Levitx keeps training and bodyweight data, which is health data, so storage and 
 
 **MASVS-PRIVACY-3: data use is transparent. Met.** The privacy policy at levitx.app/privacy covers the app, and the Data safety answers are drafted in [RELEASE.md](RELEASE.md). Notifications are asked for in context, once.
 
-**MASVS-PRIVACY-4: the person controls their data. Met, with one gap.** They can export everything, delete one workout, or delete everything, from Settings and History. The gap: deleting everything on the phone doesn't clear the watch's copy of the plan, which stays until Levitx is cleared on the watch. Settings and the policy both say so.
+**MASVS-PRIVACY-4: the person controls their data. Met.** They can export everything, delete one workout, or delete everything, from Settings and History. Deleting everything on the phone deletes the watch's copy too, the next time the watch is connected. Uninstalling the phone app can't reach the watch, which the privacy policy says.
 
 ## Open items
 
 1. **Turn on Dependabot alerts** (Settings → Code security), so a published vulnerability in a pinned dependency raises an alert without waiting for the next update PR. (Bruce, a repository setting.)
-2. **Clear the watch on delete everything.** Send a "forget" message over the Data Layer so the watch drops its copy too. Small, and it closes the PRIVACY-4 gap.
-3. **Password-protected export,** planned with the import for moving to a new phone. The import must validate its input like sync does.
-4. **On a release build on devices:** check the database can't be read with `adb` (it should be encrypted bytes), that nothing personal appears in `adb logcat` during a workout and a sync, and the lock screen content on both devices.
+2. **Password-protected export,** planned with the import for moving to a new phone. The import must validate its input like sync does.
+3. **On a release build on devices:** check the database can't be read with `adb` (it should be encrypted bytes), that nothing personal appears in `adb logcat` during a workout and a sync, and the lock screen content on both devices, and that deleting everything on the phone clears the watch.

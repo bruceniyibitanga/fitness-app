@@ -10,6 +10,13 @@ internal object SyncPaths {
     /** What the watch needs to run a session. Written by the phone; one item. */
     const val STATE = "/levitx/state"
 
+    /**
+     * Put there by the phone when the person deletes everything, and taken
+     * away when the phone has a plan again. While it is there, the watch
+     * deletes its own copy too. Written by the phone; one item, no payload.
+     */
+    const val FORGET = "/levitx/forget"
+
     /** Finished sessions on their way to the phone. Written by the watch; one item per session. */
     const val SESSIONS_PREFIX = "/levitx/sessions/"
 

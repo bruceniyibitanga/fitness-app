@@ -30,6 +30,12 @@ internal class PhoneStateApplier @Inject constructor(
         return changes.any { it }
     }
 
+    /** True when the watch holds anything about the person: a goal, a plan, bests or bands. */
+    suspend fun holdsAnything(): Boolean = goalRepository.observeActiveGoal().first() != null ||
+        nextSessionRepository.observeNext().first() != null ||
+        progressRepository.observeBests().first().isNotEmpty() ||
+        equipmentRepository.observeBands().first().isNotEmpty()
+
     private suspend fun applyGoal(state: PhoneState): Boolean {
         if (goalRepository.observeActiveGoal().first() == state.path) return false
         if (state.path == null) goalRepository.clearActiveGoal() else goalRepository.setActiveGoal(state.path)

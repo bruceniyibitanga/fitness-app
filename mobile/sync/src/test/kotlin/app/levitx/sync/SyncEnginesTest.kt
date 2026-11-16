@@ -15,6 +15,7 @@ import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeGoalRepository
 import app.levitx.testing.FakeNextSessionRepository
+import app.levitx.testing.FakePrivacyRepository
 import app.levitx.testing.FakeProgressRepository
 import app.levitx.testing.FakeSessionRepository
 import app.levitx.testing.FakeTrainingClock
@@ -49,6 +50,15 @@ class SyncEnginesTest {
     private val watchSessions = FakeSessionRepository(watchProgress)
     private val watchNext = FakeNextSessionRepository()
     private val watchWorkouts = FakeWorkoutOutbox(watchProgress, next = watchNext)
+
+    // Deleting everything on the watch empties its fakes, as the real database is emptied.
+    private val watchPrivacy = FakePrivacyRepository {
+        watchGoal.clearActiveGoal()
+        watchNext.replace(null)
+        watchProgress.clear()
+        watchEquipment.replaceBands(emptyList())
+        watchWorkouts.current.forEach { watchWorkouts.markDelivered(it.run.id) }
+    }
     private val watch = watchEngine()
 
     private fun phoneEngine(goal: GoalRepository = phoneGoal, coach: CoachRepository = phoneCoach) = PhoneSyncEngine(
@@ -64,6 +74,7 @@ class SyncEnginesTest {
         PhoneStateApplier(goal, watchProgress, watchEquipment, watchNext),
         watchSessions,
         watchWorkouts,
+        watchPrivacy,
     )
 
     /** What the phone's coach would plan right now. */
@@ -99,6 +110,43 @@ class SyncEnginesTest {
         assertTrue(watchNext.current != null)
         // A second pass finds nothing to do.
         assertEquals(SyncReport(SyncOutcome.DONE), watch.sync())
+    }
+
+    @Test
+    fun deletingEverythingOnThePhoneDeletesTheWatchsCopyOnce() = runTest {
+        publish()
+        watch.sync()
+        finishOnTheWatch(idA)
+        watch.sync()
+
+        phone.forget()
+        assertTrue(watch.sync().stateChanged)
+
+        assertEquals(1, watchPrivacy.deletions)
+        assertNull(watchGoal.current)
+        assertNull(watchNext.current)
+        assertTrue(watchWorkouts.current.isEmpty())
+        // Only the phone's request is left: no plan, and no workout from the watch.
+        assertEquals(listOf(SyncPaths.FORGET), network.paths)
+        // Deleting again would find nothing, so it doesn't happen.
+        assertEquals(SyncReport(SyncOutcome.DONE), watch.sync())
+        assertEquals(1, watchPrivacy.deletions)
+    }
+
+    @Test
+    fun afterSettingUpAgainTheWatchKeepsTheNewPlan() = runTest {
+        publish()
+        watch.sync()
+        phone.forget()
+        watch.sync()
+
+        publish()
+        watch.sync()
+
+        assertEquals(listOf(SyncPaths.STATE), network.paths)
+        assertEquals(path, watchGoal.current)
+        assertEquals(coachsPlan(), watchNext.current)
+        assertEquals(1, watchPrivacy.deletions)
     }
 
     @Test
