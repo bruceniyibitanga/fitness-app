@@ -1,0 +1,17 @@
+# Every permission the watch app's release build asks for, including any a
+# library adds. CI fails if the build's list differs (see mobile-ci.yml).
+# Why each one is there is in docs/app/SECURITY.md.
+
+# Heart rate during a session: BODY_SENSORS up to Wear OS 5, READ_HEART_RATE after.
+android.permission.BODY_SENSORS
+android.permission.health.READ_HEART_RATE
+
+# The session off screen and the rest alert (ADR 0006).
+android.permission.FOREGROUND_SERVICE
+android.permission.FOREGROUND_SERVICE_HEALTH
+android.permission.POST_NOTIFICATIONS
+android.permission.VIBRATE
+android.permission.WAKE_LOCK
+
+# Added by AndroidX: protects the app's own receivers that aren't exported.
+app.levitx.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION

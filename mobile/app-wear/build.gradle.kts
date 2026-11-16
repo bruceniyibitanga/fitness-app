@@ -20,8 +20,7 @@ android {
     defaultConfig {
         applicationId = "app.levitx"
         minSdk = libs.versions.android.minSdk.wear.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        // versionCode and versionName come from gradle.properties, through the convention plugin.
     }
 }
 

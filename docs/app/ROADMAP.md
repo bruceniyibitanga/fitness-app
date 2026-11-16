@@ -26,7 +26,7 @@ Android phone and Wear OS come first, in Kotlin with Jetpack Compose and Compose
 - Encrypted Room database (SQLCipher) with its key protected by the Android Keystore, failing closed when the key is missing. Done.
 - CI runs the encryption tests on an emulator. Done.
 - Test APKs of both apps built in CI on every push to `main`, signed with a shared test key, for installing without Android Studio. Done.
-- Still to do: release app bundles in CI, and trying both apps on a real phone and watch.
+- Release app bundles in CI: done, signed with the upload key in a hand-run workflow ([RELEASE.md](RELEASE.md)). Still to do: trying both apps on a real phone and watch.
 
 **Done when** both apps open on an emulator with the real theme and read and write the encrypted database.
 
@@ -101,9 +101,10 @@ Reading bodyweight from Health Connect moves here from Phase 4, because the coac
 ## Phase 7: Release
 
 - Accessibility, performance and battery passes on real devices.
-- Security review against OWASP MASVS.
-- Privacy policy, Play Console Data safety form, internal testing track.
+- Security review against OWASP MASVS. Done on the code ([MASVS-REVIEW.md](MASVS-REVIEW.md)); its open items and the device checks remain.
+- Privacy policy (done, at levitx.app/privacy), Play Console Data safety form (answers drafted in [RELEASE.md](RELEASE.md)), internal testing track.
 - Play Console foreground service declaration for the phone and watch workout services (type `health`), with a short video of each running with the screen off.
+- Release builds: signed bundles from CI, one version for both apps, and permissions pinned by CI. Done. The Play account, the upload key and the store listing are set up by hand, as [RELEASE.md](RELEASE.md) describes.
 
 ## Later
 

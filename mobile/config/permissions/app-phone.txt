@@ -1,0 +1,15 @@
+# Every permission the phone app's release build asks for, including any a
+# library adds. CI fails if the build's list differs (see mobile-ci.yml).
+# Why each one is there is in docs/app/SECURITY.md.
+
+# The workout off screen (ADR 0008).
+android.permission.FOREGROUND_SERVICE
+android.permission.FOREGROUND_SERVICE_HEALTH
+android.permission.HIGH_SAMPLING_RATE_SENSORS
+android.permission.POST_NOTIFICATIONS
+android.permission.POST_PROMOTED_NOTIFICATIONS
+android.permission.VIBRATE
+android.permission.WAKE_LOCK
+
+# Added by AndroidX: protects the app's own receivers that aren't exported.
+app.levitx.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION

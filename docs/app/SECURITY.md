@@ -68,7 +68,8 @@ The database key is 256 random bits made on the device the first time the app ru
 - **Logs.** No personal data in logs. Log codes and counts, never values.
 - **Release builds.** R8 shrinking, optimisation and obfuscation are on, and CI builds the release variant on every push. SQLCipher's classes are kept from renaming in `:data`'s consumer rules, because its native code looks them up by name.
 - **Fonts and other assets** are bundled, so the apps make no network requests to show text.
-- **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Release builds will use Play App Signing.
+- **Signing keys.** Kept outside the repo; `.gitignore` blocks keystores and `key.properties`. Releases use Play App Signing: Google holds the app signing key, and we sign uploads with an upload key Google can replace. The upload key is a secret of the `release` GitHub environment, which only the hand-run, main-only release workflow can use, after approval. The release build doesn't use the Gradle cache. See [RELEASE.md](RELEASE.md).
+- **Permissions are pinned.** CI reads the permissions out of both release builds, including any a library adds, and fails if they differ from the lists in `mobile/config/permissions`.
 - **The test signing key** signs the APKs CI builds for device testing, so the phone and watch builds match. It lives only in two repository secrets, is written to the runner's temp folder for the build, and is only used by the `Mobile test build` workflow, which runs on `main` and on demand, never on pull requests. It is not the release key. If it leaks, the worst case is someone making an APK that can install over a test build, so it gets replaced rather than worked around.
 - **Dependencies.** Kept few and reviewed before adding. Every version is pinned in `libs.versions.toml`, and Dependabot opens update PRs weekly.
 - **Repositories.** Declared once in `settings.gradle.kts`. Modules can't add their own, and Google's repository may only serve Google and AndroidX groups, so a look-alike package can't be pulled from the wrong place.
@@ -85,7 +86,7 @@ The database key is 256 random bits made on the device the first time the app ru
   - foreground service (type `health`), vibrate and wake lock: granted at install. They keep the session going off-screen and give the rest alert ([ADR 0006](adr/0006-watch-workout-service.md)).
 - **The workout notifications are public** (they show on a locked watch or phone). The watch's only ever says "Exercise 1 of 4, set 2 of 3" or "Rest". The phone's adds the exercise name, a progress bar and the rest or hold clock. Neither shows reps, loads, bodyweight or anything else from the log.
 - **CI.** Uses a read-only token and actions pinned to commit SHAs.
-- **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release.
+- **Release checklist.** [OWASP MASVS](https://mas.owasp.org/MASVS/), worked through before release: see [MASVS-REVIEW.md](MASVS-REVIEW.md).
 
 ## Reporting a problem
 

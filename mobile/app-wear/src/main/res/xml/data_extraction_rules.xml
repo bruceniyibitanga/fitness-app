@@ -7,7 +7,8 @@
   in the Android Keystore. Keystore keys never leave the device, so a copy of
   the data would be unreadable on another device anyway.
 
-  People move their data with the password-protected export instead. See
+  People keep a copy with Export everything in the phone's Settings. A
+  password-protected export for moving to a new phone is planned. See
   docs/app/adr/0002-local-first-encrypted-storage.md.
 
   allowBackup="false" in the manifest turns off cloud backup. These rules
