@@ -107,6 +107,8 @@ jobs:
             apk=$(ls "$app"/build/outputs/apk/release/*.apk | head -n 1)
             actual=$("$aapt2" dump permissions "$apk" | sed -n "s/^uses-permission[^:]*: name='\([^']*\)'.*/\1/p" | sort -u)
             expected=$(grep -v '^#' "config/permissions/$app.txt" | sed '/^$/d' | sort -u)
+            echo "$app asks for:"
+            echo "$actual"
             if [ "$actual" != "$expected" ]; then
               echo "::error::$app's release permissions aren't the ones on its list. If the change is intended, update config/permissions/$app.txt and docs/app/SECURITY.md."
               diff <(echo "$expected") <(echo "$actual") || true
