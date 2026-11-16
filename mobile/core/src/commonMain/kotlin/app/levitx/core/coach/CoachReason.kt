@@ -26,6 +26,22 @@ public sealed interface CoachReason {
     public data class TargetRaised(val exerciseName: String) : Progress
 
     /**
+     * Reps topped out with nothing harder to move to, so the lowering slows
+     * down instead, from the same reps.
+     *
+     * @property exerciseName The exercise.
+     */
+    public data class SlowerLowering(val exerciseName: String) : Progress
+
+    /**
+     * Weight went on, and the reps start again from the bottom of the range.
+     * The apps show how much, in the person's units.
+     *
+     * @property exerciseName The exercise.
+     */
+    public data class WeightAdded(val exerciseName: String) : Progress
+
+    /**
      * The person moved up to a harder exercise, or on to the next gate.
      *
      * @property exerciseName The new exercise.
@@ -156,6 +172,8 @@ internal object ReasonPicker {
         ?.let { (name, note) ->
             when (note) {
                 ProgressNote.TARGET_UP -> CoachReason.TargetRaised(name)
+                ProgressNote.SLOWER -> CoachReason.SlowerLowering(name)
+                ProgressNote.WEIGHT_UP -> CoachReason.WeightAdded(name)
                 ProgressNote.EASED_BACK -> CoachReason.EasedBack(name)
                 ProgressNote.NEW_THIS_BLOCK -> CoachReason.NewThisBlock(name)
                 ProgressNote.MOVED_UP -> CoachReason.MovedUp(name)

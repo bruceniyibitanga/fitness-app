@@ -1,5 +1,6 @@
 package app.levitx.core.coach
 
+import app.levitx.core.load.LoadLimits
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.skills.GateMeasure
 import kotlin.math.roundToInt
@@ -27,8 +28,11 @@ public enum class Intensity {
  * @property gateId The skill gate this trains, when it is the session's skill work.
  * @property isGateAttempt True when the first set is a fresh attempt at the
  *   gate's full target, before the usual work sets.
- * @throws IllegalArgumentException if [sets] is empty, or for an attempt that
- *   isn't skill work.
+ * @property addedKg Weight to do the sets with: a vest, a belt or plates. 0 for bodyweight.
+ * @property slowLowerSeconds Seconds to take lowering each rep, when the coach
+ *   has slowed the exercise down to make it harder. Null for the usual pace.
+ * @throws IllegalArgumentException if [sets] is empty, for an attempt that
+ *   isn't skill work, or for added weight out of range.
  */
 public data class ExercisePlan(
     val exercise: Exercise,
@@ -38,9 +42,13 @@ public data class ExercisePlan(
     val intensity: Intensity,
     val gateId: String? = null,
     val isGateAttempt: Boolean = false,
+    val addedKg: Double = 0.0,
+    val slowLowerSeconds: Int? = null,
 ) {
     init {
         require(sets.isNotEmpty()) { "an exercise needs at least one set" }
+        require(addedKg in 0.0..LoadLimits.MAX_MODIFIER_KG) { "addedKg out of range" }
+        require(slowLowerSeconds == null || slowLowerSeconds > 0) { "slowLowerSeconds must be positive" }
         require(!isGateAttempt || (gateId != null && sets.first().isBestEffort)) {
             "a gate attempt is skill work that starts with the attempt"
         }

@@ -3,6 +3,7 @@ package app.levitx.phone.body
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Equipment
+import app.levitx.core.load.LoadKit
 import app.levitx.core.load.LoadLimits
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.equipment.EquipmentRepository
@@ -68,6 +69,20 @@ class BodyViewModel @Inject constructor(
                     else -> profile.equipment + item
                 }
                 coachRepository.updateProfile(profile.copy(equipment = kit), state.trainingDays)
+            }
+        }
+    }
+
+    /**
+     * Changes the vest, belt and plates the coach can add weight with. The
+     * next plan uses them straight away, and weight the kit can no longer make
+     * comes down rather than being asked for.
+     */
+    fun updateLoadKit(kit: LoadKit) {
+        viewModelScope.launch {
+            kitLock.withLock {
+                val state = coachRepository.observeState().first() ?: return@withLock
+                coachRepository.updateProfile(state.model.profile.copy(loadKit = kit), state.trainingDays)
             }
         }
     }

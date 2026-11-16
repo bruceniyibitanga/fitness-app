@@ -25,7 +25,8 @@ private const val MILLIS_PER_SECOND = 1_000L
  * @property exerciseIndex The exercise up next. Equal to the number of exercises once complete.
  * @property restEndsAtElapsedMillis When the current rest ends on the device's
  *   elapsed (since boot) clock, or null when not resting.
- * @property load The load the next set will be logged with.
+ * @property load The load the next set will be logged with. Each exercise
+ *   starts with the weight its plan prescribes, which the person can change.
  * @throws IllegalArgumentException if [id] is blank or the progress doesn't fit the plan.
  */
 public data class WorkoutRun(
@@ -37,7 +38,7 @@ public data class WorkoutRun(
     val skipped: Set<Int> = emptySet(),
     val exerciseIndex: Int = 0,
     val restEndsAtElapsedMillis: Long? = null,
-    val load: SetLoad = SetLoad.None,
+    val load: SetLoad = session.plans.firstOrNull()?.startingLoad ?: SetLoad.None,
 ) {
     init {
         require(id.isNotBlank()) { "id must not be blank" }
@@ -106,8 +107,8 @@ public data class WorkoutRun(
             logged = logged.replacing(exerciseIndex, done),
             exerciseIndex = nextIndex,
             restEndsAtElapsedMillis = restEndsAt,
-            // Kit is set up per exercise, so a new exercise starts with none.
-            load = if (finishedExercise) SetLoad.None else load,
+            // Kit is set up per exercise, so a new exercise starts with what its plan prescribes.
+            load = if (finishedExercise) loadFor(nextIndex) else load,
         )
     }
 
@@ -123,7 +124,7 @@ public data class WorkoutRun(
             skipped = if (untouched) skipped + exerciseIndex else skipped,
             exerciseIndex = exerciseIndex + 1,
             restEndsAtElapsedMillis = null,
-            load = SetLoad.None,
+            load = loadFor(exerciseIndex + 1),
         )
     }
 
@@ -223,3 +224,10 @@ private fun <T> List<T>.replacing(index: Int, value: T): List<T> = mapIndexed { 
         old
     }
 }
+
+/** The load an exercise starts with: the weight it prescribes, with no band. */
+private val ExercisePlan.startingLoad: SetLoad
+    get() = if (addedKg > 0.0) SetLoad(addedKg = addedKg) else SetLoad.None
+
+/** The load the exercise at [index] starts with, or none past the last. */
+private fun WorkoutRun.loadFor(index: Int): SetLoad = session.plans.getOrNull(index)?.startingLoad ?: SetLoad.None

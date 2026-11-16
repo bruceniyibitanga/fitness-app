@@ -14,6 +14,7 @@ import app.levitx.core.coach.SessionRecord
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.SuggestionOutcome
 import app.levitx.core.coach.TrainingBlock
+import app.levitx.core.load.LoadKit
 import app.levitx.core.pain.PainAdvice
 import java.time.DayOfWeek
 import kotlinx.serialization.Serializable
@@ -58,6 +59,17 @@ internal data class StoredProfile(
     val sessionsPerWeek: Int,
     val sessionMinutes: Int,
     val equipment: List<String> = emptyList(),
+    // Added with progressive overload. Older documents read as no load kit.
+    val loadKit: StoredLoadKit = StoredLoadKit(),
+)
+
+/** A stored `LoadKit`, in kilograms. */
+@Serializable
+internal data class StoredLoadKit(
+    val vestMaxKg: Double = 0.0,
+    val vestStepKg: Double = 0.0,
+    val platesKg: List<Double> = emptyList(),
+    val hasBelt: Boolean = false,
 )
 
 /** A stored `ExerciseState`. */
@@ -68,6 +80,9 @@ internal data class StoredExerciseState(
     val timesTrained: Int = 0,
     val marks: List<StoredMark> = emptyList(),
     val note: String? = null,
+    // Added with progressive overload. Older documents read as bodyweight at the usual pace.
+    val addedKg: Double = 0.0,
+    val slowLowering: Boolean = false,
 )
 
 /** A stored `ExerciseMark`. */
@@ -104,6 +119,7 @@ internal fun coachDocumentOf(model: AthleteModel, trainingDays: Set<DayOfWeek>):
             it.equipment.map { e ->
                 e.name
             },
+            it.loadKit.let { kit -> StoredLoadKit(kit.vestMaxKg, kit.vestStepKg, kit.platesKg, kit.hasBelt) },
         )
     },
     trainingDays = trainingDays.map { it.value }.sorted(),
@@ -115,6 +131,8 @@ internal fun coachDocumentOf(model: AthleteModel, trainingDays: Set<DayOfWeek>):
             timesTrained = state.timesTrained,
             marks = state.marks.map { StoredMark(it.atEpochMillis, it.top, it.effort?.name, it.hitTarget) },
             note = state.note?.name,
+            addedKg = state.addedKg,
+            slowLowering = state.slowLowering,
         )
     },
     gateBests = model.gateBests,
@@ -148,6 +166,7 @@ internal fun CoachDocument.toModel(): AthleteModel = AthleteModel(
         sessionsPerWeek = profile.sessionsPerWeek,
         sessionMinutes = profile.sessionMinutes,
         equipment = profile.equipment.mapNotNull { it.toEnumOrNull<Equipment>() }.toSet(),
+        loadKit = profile.loadKit.let { LoadKit(it.vestMaxKg, it.vestStepKg, it.platesKg, it.hasBelt) },
     ),
     rungs = rungs.withEnumKeys<MovementPattern, Int>(),
     exercises = exercises.mapValues { (_, state) ->
@@ -157,6 +176,8 @@ internal fun CoachDocument.toModel(): AthleteModel = AthleteModel(
             timesTrained = state.timesTrained,
             marks = state.marks.map { ExerciseMark(it.at, it.top, it.effort?.toEnumOrNull<Effort>(), it.hitTarget) },
             note = state.note?.toEnumOrNull<ProgressNote>(),
+            addedKg = state.addedKg,
+            slowLowering = state.slowLowering,
         )
     },
     gateBests = gateBests,

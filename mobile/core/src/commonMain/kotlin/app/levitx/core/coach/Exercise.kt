@@ -1,5 +1,6 @@
 package app.levitx.core.coach
 
+import app.levitx.core.load.LoadCarrier
 import app.levitx.core.load.LoadProfile
 import app.levitx.core.skills.GateMeasure
 
@@ -20,6 +21,9 @@ import app.levitx.core.skills.GateMeasure
  * @property lowerSeconds How long each rep's lowering should take, for slow
  *   negatives, which are only the lowering half of a movement. Null for
  *   everything else. The apps time each lowering against it.
+ * @property carriers How weight can be added to it: a vest, a belt or plates.
+ *   Empty for exercises that never take added weight, such as anything still
+ *   being learned or balanced (pistols, Nordic curls) and holds.
  * @throws IllegalArgumentException if [range] is empty or starts below 1,
  *   [alsoTrains] repeats [pattern], or [lowerSeconds] is set on a hold or isn't positive.
  */
@@ -34,6 +38,7 @@ public data class Exercise(
     val loadProfile: LoadProfile? = null,
     val isPerSide: Boolean = false,
     val lowerSeconds: Int? = null,
+    val carriers: Set<LoadCarrier> = emptySet(),
 ) {
     init {
         require(range.first >= 1 && range.last >= range.first) { "range must start at 1 or more and not be empty" }
@@ -46,6 +51,27 @@ public data class Exercise(
     /** How much a target moves at a time: one rep, or [CoachTuning.HOLD_STEP_SECONDS] for holds. */
     val step: Int
         get() = if (measure == GateMeasure.HOLD_SECONDS) CoachTuning.HOLD_STEP_SECONDS else 1
+
+    /**
+     * The highest target this exercise can climb to when there is no harder
+     * exercise to move to and no weight to add. Slow negatives stay in their
+     * range: their difficulty comes from the lowering.
+     */
+    val ceiling: Int
+        get() = when {
+            lowerSeconds != null -> range.last
+
+            measure == GateMeasure.HOLD_SECONDS -> maxOf(range.last, CoachTuning.HOLD_CEILING_SECONDS)
+
+            pattern == MovementPattern.SQUAT || pattern == MovementPattern.HINGE ->
+                maxOf(range.last, CoachTuning.LOWER_BODY_REP_CEILING)
+
+            else -> maxOf(range.last, CoachTuning.UPPER_BODY_REP_CEILING)
+        }
+
+    /** True when a slower lowering can make it harder: rep exercises that aren't already slow negatives. */
+    val allowsSlowLowering: Boolean
+        get() = measure == GateMeasure.REPS && lowerSeconds == null
 
     /** True when the person has everything this exercise needs. */
     public fun fits(owned: Set<Equipment>): Boolean = owned.containsAll(equipment)

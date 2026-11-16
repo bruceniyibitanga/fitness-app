@@ -24,6 +24,13 @@ public object CoachPhrases {
 
         is CoachReason.TargetRaised -> "${reason.exerciseName}: target up. You hit every set last time."
 
+        is CoachReason.SlowerLowering ->
+            "${reason.exerciseName}: lower each rep over ${CoachTuning.SLOW_LOWER_SECONDS} seconds. " +
+                "Same reps, harder work."
+
+        is CoachReason.WeightAdded ->
+            "${reason.exerciseName}: more weight. Reps start lower and build back up."
+
         is CoachReason.MovedUp -> "${reason.exerciseName}: a step up. You topped out the last one."
 
         is CoachReason.EasedBack ->

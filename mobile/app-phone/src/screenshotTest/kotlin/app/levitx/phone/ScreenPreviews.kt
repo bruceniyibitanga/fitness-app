@@ -25,6 +25,7 @@ import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.history.ExerciseRecord
 import app.levitx.core.history.WorkoutRecord
+import app.levitx.core.load.LoadKit
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.session.SetLoad
@@ -254,7 +255,7 @@ fun RestScreenshot() {
 }
 
 @PreviewTest
-@Preview(name = "11 Body", widthDp = 390, heightDp = 1100)
+@Preview(name = "11 Body", widthDp = 390, heightDp = 1900)
 @Composable
 fun BodyScreenshot() {
     val day = 24L * 60 * 60 * 1_000
@@ -276,6 +277,12 @@ fun BodyScreenshot() {
                     onTheBar = loads,
                     equipment = setOf(Equipment.PULL_UP_BAR, Equipment.BAND),
                     bands = listOf(Band("1", "Red", 22.5)),
+                    loadKit = LoadKit(
+                        vestMaxKg = 20.0,
+                        vestStepKg = 1.0,
+                        platesKg = listOf(2.5, 2.5, 5.0),
+                        hasBelt = true,
+                    ),
                 ),
                 actions = BodyActions({}, {}, { _, _ -> }, {}, {}),
             )
@@ -663,5 +670,28 @@ fun DeleteWorkoutScreenshot() {
                 onConfirm = {},
             )
         }
+    }
+}
+
+@PreviewTest
+@Preview(name = "30 Set with weight and a slow lowering", widthDp = 390, heightDp = 844)
+@Composable
+fun WeightedSetScreenshot() {
+    val session = checkNotNull(Coach().recommend(muscleUp(), 0).session)
+    // A rep exercise first, carrying a vest and lowered slowly.
+    val reps = session.plans.first { it.exercise.allowsSlowLowering && it.gateId == null }
+    val weighted = PlannedSession(
+        listOf(reps.copy(addedKg = 5.0, slowLowerSeconds = 3)) + (session.plans - reps),
+    )
+    LevitxTheme {
+        WorkoutScreen(
+            uiState = WorkoutUiState.Active(
+                WorkoutRun("preview", weighted, startedAtEpochMillis = 0),
+                bodyweightKg = 75.6,
+                bands = emptyList(),
+            ),
+            now = { 0L },
+            actions = noWorkoutActions,
+        )
     }
 }
