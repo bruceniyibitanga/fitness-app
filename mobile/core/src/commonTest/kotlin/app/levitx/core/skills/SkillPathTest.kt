@@ -46,7 +46,9 @@ class SkillPathTest {
     @Test
     fun rejectsDuplicateGateIdsAndTargetsBelowOne() {
         val gate = path.gates.first()
-        assertFailsWith<IllegalArgumentException> { SkillPath("x", "X", listOf(gate, gate)) }
+        assertFailsWith<IllegalArgumentException> {
+            SkillPath("x", "X", listOf(gate, gate), SkillLevel.BEGINNER, weeks = 4, about = "")
+        }
         assertFailsWith<IllegalArgumentException> { gate.copy(target = 0) }
     }
 

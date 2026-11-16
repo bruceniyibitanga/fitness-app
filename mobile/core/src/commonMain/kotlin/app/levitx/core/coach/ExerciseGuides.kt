@@ -419,7 +419,10 @@ public object ExerciseGuides {
     )
 
     /** The guide for the exercise with [exerciseId], or null when there isn't one. */
-    public fun forExercise(exerciseId: String): ExerciseGuide? = byId[exerciseId] ?: advancedGuides[exerciseId]
+    public fun forExercise(exerciseId: String): ExerciseGuide? = byId[exerciseId]
+        ?: advancedGuides[exerciseId]
+        ?: skillGuides[exerciseId]
+        ?: gateGuideSources[exerciseId]?.let(::forExercise)
 }
 
 /** The same guide with its first cue replaced, for a variation that differs only in how it starts. */

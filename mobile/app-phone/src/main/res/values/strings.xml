@@ -68,13 +68,8 @@
     <string name="goal_body">Pick one main goal. You can change it later.</string>
     <string name="goal_skill_label">A SKILL</string>
     <string name="goal_general_label">OR GENERAL FITNESS</string>
-    <plurals name="goal_skill_gates">
-        <item quantity="one">%1$d gate</item>
-        <item quantity="other">%1$d gates</item>
-    </plurals>
     <string name="goal_general">Get stronger all round</string>
     <string name="goal_general_tag">EVERY MOVEMENT</string>
-    <string name="goal_more_coming">Handstand, front lever and pistol squat paths are on the way.</string>
     <string name="how_title">How should we build it?</string>
     <string name="how_plan_label">Your plan</string>
     <string name="how_all_round">All-round</string>
@@ -551,6 +546,22 @@
     <string name="credit_legs">LEGS</string>
     <string name="credit_core">CORE</string>
     <string name="credit_full_body">FULL BODY</string>
+    <string name="credit_first_push_up">FIRST PUSH-UP</string>
+    <string name="credit_twenty_push_ups">TWENTY PUSH-UPS</string>
+    <string name="credit_first_dip">FIRST DIP</string>
+    <string name="credit_ten_pull_ups">TEN PULL-UPS</string>
+    <string name="credit_l_sit">L-SIT</string>
+    <string name="credit_pistol_squat">PISTOL SQUAT</string>
+    <string name="credit_shrimp_squat">SHRIMP SQUAT</string>
+    <string name="credit_handstand">HANDSTAND FOUNDATIONS</string>
+    <string name="credit_nordic_curl">NORDIC CURL</string>
+    <string name="credit_dragon_flag">DRAGON FLAG</string>
+    <string name="credit_handstand_push_up">HANDSTAND PUSH-UP</string>
+    <string name="credit_back_lever">BACK LEVER</string>
+    <string name="credit_one_arm_push_up">ONE-ARM PUSH-UP</string>
+    <string name="credit_tuck_planche">TUCK PLANCHE</string>
+    <string name="credit_front_lever">FRONT LEVER</string>
+    <string name="credit_one_arm_pull_up">ONE-ARM PULL-UP</string>
 
     <!-- Skills -->
     <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>
@@ -623,7 +634,22 @@
 
     <!-- Program -->
     <string name="program_label">SKILL PROGRAM</string>
-    <string name="program_body">You move on when you pass a gate, so there\'s no deadline. The rest of your body keeps training around it.</string>
+    <string name="program_weeks">~%1$d WK</string>
+    <plurals name="program_gate_count">
+        <item quantity="one">%1$d GATE</item>
+        <item quantity="other">%1$d GATES</item>
+    </plurals>
+    <string name="program_level_beginner">BEGINNER</string>
+    <string name="program_level_intermediate">INTERMEDIATE</string>
+    <string name="program_level_advanced">ADVANCED</string>
+    <string name="program_estimate">The weeks are an estimate at three sessions a week. You move on when you pass a gate, not on a date.</string>
+    <string name="kit_short_none">NO KIT</string>
+    <string name="kit_short_bar">BAR</string>
+    <string name="kit_short_low_bar">LOW BAR</string>
+    <string name="kit_short_dip_bars">DIP BARS</string>
+    <string name="kit_short_rings">RINGS</string>
+    <string name="kit_short_band">BAND</string>
+    <string name="kit_short_box">BOX</string>
     <string name="program_gates">GATES</string>
     <string name="program_to_pass">TO PASS</string>
     <string name="program_make_plan">Make this my plan</string>

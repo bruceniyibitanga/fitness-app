@@ -49,8 +49,20 @@ public data class PathProgress(val currentIndex: Int?, val gatesRemaining: Int, 
         get() = currentIndex == null
 }
 
+/** How far along someone should be before starting a program. */
+public enum class SkillLevel {
+    /** For someone new to training, or new to this movement. */
+    BEGINNER,
+
+    /** For someone with a base of strict pull-ups, dips, push-ups and squats. */
+    INTERMEDIATE,
+
+    /** For someone years into training, or with the intermediate skills in hand. */
+    ADVANCED,
+}
+
 /**
- * An ordered list of gates leading to a skill.
+ * An ordered list of gates leading to a skill. On the Train tab it is a program.
  *
  * Gates are passed in order: a later gate never counts while an earlier one is
  * still open, because each gate builds what the next one needs.
@@ -58,12 +70,24 @@ public data class PathProgress(val currentIndex: Int?, val gatesRemaining: Int, 
  * @property id Stable identifier used in storage and sync.
  * @property name Skill name, for example "Muscle-up".
  * @property gates Gates from first to last. The last gate is the skill itself.
- * @throws IllegalArgumentException if [gates] is empty or has duplicate ids.
+ * @property level Who it is for.
+ * @property weeks A rough guide to how long it takes, training three times a
+ *   week. Shown as an estimate: gates pass when they pass, not on a date.
+ * @property about One or two sentences on what the skill is and what to expect.
+ * @throws IllegalArgumentException if [gates] is empty or has duplicate ids, or [weeks] is below 1.
  */
-public data class SkillPath(val id: String, val name: String, val gates: List<Gate>) {
+public data class SkillPath(
+    val id: String,
+    val name: String,
+    val gates: List<Gate>,
+    val level: SkillLevel,
+    val weeks: Int,
+    val about: String,
+) {
     init {
         require(gates.isNotEmpty()) { "a path needs at least one gate" }
         require(gates.map { it.id }.toSet().size == gates.size) { "gate ids must be unique" }
+        require(weeks >= 1) { "weeks must be at least 1" }
     }
 
     /**

@@ -49,6 +49,7 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.gateStatus
 import app.levitx.phone.ui.pathPhoto
+import app.levitx.phone.ui.programDetail
 import kotlinx.coroutines.launch
 
 private val GateRowHeight = 54.dp
@@ -109,7 +110,7 @@ private fun Message(text: String, onBack: () -> Unit) {
     Lede(text, modifier = Modifier.padding(ScreenPadding))
 }
 
-/** The tag, the name, progress so far and how gates work. */
+/** The tag, the name, how long and what kit, progress so far, and what the skill is. */
 @Composable
 private fun Title(state: ProgramUiState.Ready) {
     val gates = state.path.gates.size
@@ -131,11 +132,14 @@ private fun Title(state: ProgramUiState.Ready) {
             color = LevitxColors.Text,
             modifier = Modifier.padding(top = 10.dp).semantics { heading() },
         )
+        Caption(programDetail(state.path), modifier = Modifier.padding(top = 10.dp))
         Caption(
             pluralStringResource(R.plurals.train_program_gates, gates, gates, passed),
-            modifier = Modifier.padding(top = 10.dp),
+            color = LevitxColors.TextMuted,
+            modifier = Modifier.padding(top = 4.dp),
         )
-        Lede(stringResource(R.string.program_body), modifier = Modifier.padding(top = 10.dp))
+        Lede(state.path.about, modifier = Modifier.padding(top = 10.dp))
+        Help(stringResource(R.string.program_estimate), modifier = Modifier.padding(top = 6.dp))
     }
 }
 

@@ -33,6 +33,7 @@ import app.levitx.phone.R
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.focusPhoto
 import app.levitx.phone.ui.pathPhoto
+import app.levitx.phone.ui.programMeta
 
 /*
  * The pieces of the Train tab, sized as on the Train artboard.
@@ -81,12 +82,16 @@ internal fun ProgramCard(program: ProgramSummary, onClick: () -> Unit) {
         ) {
             Text(program.path.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = LevitxColors.Text)
             Text(
-                text = pluralStringResource(
-                    R.plurals.train_program_gates,
-                    program.path.gates.size,
-                    program.path.gates.size,
-                    program.passed,
-                ),
+                text = if (program.passed > 0 || program.isCurrent) {
+                    pluralStringResource(
+                        R.plurals.train_program_gates,
+                        program.path.gates.size,
+                        program.path.gates.size,
+                        program.passed,
+                    )
+                } else {
+                    programMeta(program.path)
+                },
                 style = LevitxType.Micro,
                 color = LevitxColors.TextMuted,
             )
