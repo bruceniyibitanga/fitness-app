@@ -7,8 +7,9 @@ import org.gradle.kotlin.dsl.configure
  * `levitx.android.application`: an Android app with Compose.
  *
  * Applies the SDK levels, Java version, R8 release settings, lint rules and
- * Compose setup both apps share. Each app's build file then only sets its
- * namespace, application id, minimum SDK and dependencies.
+ * Compose setup both apps share, and their version and release signing.
+ * Each app's build file then only sets its namespace, application id,
+ * minimum SDK and dependencies.
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -30,7 +31,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     isShrinkResources = true
                     proguardFiles(optimizeRules, "proguard-rules.pro")
                 }
+                useLevitxVersion(target)
                 useTestSigningWhenProvided(target)
+                useUploadSigningWhenProvided(target)
             }
 
             configureKotlin()

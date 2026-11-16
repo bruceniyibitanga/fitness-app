@@ -95,6 +95,26 @@ jobs:
         # --continue runs every task it can, so one run reports every failure.
         run: ./gradlew check assembleDebug assembleRelease --continue --warning-mode all
 
+      # Every permission in the release builds, including any a library adds,
+      # must be on the app's list in mobile/config/permissions. A new one fails
+      # the build until it is added there on purpose, and SECURITY.md with it.
+      - name: Check permissions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: |
+          aapt2="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)/aapt2"
+          status=0
+          for app in app-phone app-wear; do
+            apk=$(ls "$app"/build/outputs/apk/release/*.apk | head -n 1)
+            actual=$("$aapt2" dump permissions "$apk" | sed -n "s/^uses-permission[^:]*: name='\([^']*\)'.*/\1/p" | sort -u)
+            expected=$(grep -v '^#' "config/permissions/$app.txt" | sed '/^$/d' | sort -u)
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::$app's release permissions aren't the ones on its list. If the change is intended, update config/permissions/$app.txt and docs/app/SECURITY.md."
+              diff <(echo "$expected") <(echo "$actual") || true
+              status=1
+            fi
+          done
+          exit $status
+
       # Room writes the database schema during the build. Each version must be
       # committed so migrations can be written and tested against it. The new
       # schema is printed so it can be copied in.

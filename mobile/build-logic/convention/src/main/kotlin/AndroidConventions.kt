@@ -120,3 +120,62 @@ internal fun ApplicationExtension.useTestSigningWhenProvided(project: Project) {
     }
     if (!label.isNullOrBlank()) debug.versionNameSuffix = "-$label"
 }
+
+/** How many form factors share one release number in the version code: the phone and the watch. */
+private const val FORM_FACTORS = 10
+
+/** The last digit of the phone's version code. */
+private const val PHONE_DIGIT = 0
+
+/** The last digit of the watch's version code. */
+private const val WATCH_DIGIT = 1
+
+/**
+ * Sets the version from gradle.properties, the same for both apps.
+ *
+ * Google Play needs every bundle uploaded to one app to have its own version
+ * code, and the phone and watch apps are one app there (same application id).
+ * So the code is the release number times ten, plus 0 for the phone and 1 for
+ * the watch: release 7 is 70 on the phone and 71 on the watch. Both still go
+ * up with every release, which is all Play asks of each.
+ */
+internal fun ApplicationExtension.useLevitxVersion(project: Project) {
+    val release = project.providers.gradleProperty("levitx.release").get().toInt()
+    val formFactor = if (project.name == "app-wear") WATCH_DIGIT else PHONE_DIGIT
+    defaultConfig.versionCode = release * FORM_FACTORS + formFactor
+    defaultConfig.versionName = project.providers.gradleProperty("levitx.versionName").get()
+}
+
+/** Path to the upload key. Set by the release workflow only. */
+private const val UPLOAD_KEYSTORE_ENV = "LEVITX_UPLOAD_KEYSTORE"
+
+/** Password for the upload key. Set by the release workflow only, from a GitHub secret. */
+private const val UPLOAD_KEYSTORE_PASSWORD_ENV = "LEVITX_UPLOAD_KEYSTORE_PASSWORD"
+
+/** The upload key's alias inside the keystore. Not secret. */
+private const val UPLOAD_KEY_ALIAS = "levitx-upload"
+
+/**
+ * Signs release builds with the upload key when the release workflow provides it.
+ *
+ * With Play App Signing, Google holds the key that signs what people install.
+ * This upload key only proves to Google that a bundle came from us, and Google
+ * can replace it if it is ever lost or leaked. It never sits in the repo or on
+ * a laptop's build: it is a secret in the "release" GitHub environment,
+ * written to the runner's temp folder for one build.
+ *
+ * With the variables unset (every local build, and every other CI build),
+ * release builds stay unsigned.
+ */
+internal fun ApplicationExtension.useUploadSigningWhenProvided(project: Project) {
+    val keystore = project.providers.environmentVariable(UPLOAD_KEYSTORE_ENV).orNull
+    val password = project.providers.environmentVariable(UPLOAD_KEYSTORE_PASSWORD_ENV).orNull
+    if (keystore.isNullOrBlank() || password.isNullOrBlank()) return
+    val upload = signingConfigs.create("levitxUpload")
+    upload.storeFile = project.file(keystore)
+    upload.storePassword = password
+    upload.keyAlias = UPLOAD_KEY_ALIAS
+    // PKCS12 keystores use one password for the store and the key.
+    upload.keyPassword = password
+    buildTypes.getByName("release").signingConfig = upload
+}
