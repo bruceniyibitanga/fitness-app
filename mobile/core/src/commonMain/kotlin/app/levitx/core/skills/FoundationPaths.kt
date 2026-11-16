@@ -91,8 +91,7 @@ internal val firstPullUp = SkillPath(
     level = SkillLevel.BEGINNER,
     weeks = 8,
     about =
-        "Built for people at zero. You move up when you pass a gate, so the weeks are an " +
-            "estimate, not a deadline.",
+        "Built for people at zero: from hanging on the bar to your first strict rep.",
     gates = listOf(
         hold("$FIRST_PULL_UP.dead_hang", "30 s dead hang", 30, "Grip strength and comfortable shoulders under load."),
         reps(
