@@ -4,6 +4,7 @@ import app.levitx.core.skills.SkillCatalogue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SessionPlannerTest {
@@ -51,5 +52,28 @@ class SessionPlannerTest {
     @Test
     fun rejectsANegativeBest() {
         assertFailsWith<IllegalArgumentException> { SessionPlanner.planFor(pullUps, best = -1) }
+    }
+
+    @Test
+    fun closeToTheGateTheSessionStartsWithAnAttemptAtTheWholeTarget() {
+        val plan = SessionPlanner.planFor(pullUps, best = 8)
+        assertTrue(plan.isAttempt)
+        assertEquals(PlannedSet(target = pullUps.target, isBestEffort = true), plan.sets.first())
+        assertTrue(plan.sets.drop(1).none { it.isBestEffort })
+        assertEquals(SessionPlanner.WORK_SETS, plan.sets.size - 1)
+    }
+
+    @Test
+    fun furtherAwayOrAlreadyPassedThereIsNoAttempt() {
+        assertFalse(SessionPlanner.planFor(pullUps, best = 7).isAttempt)
+        assertFalse(SessionPlanner.planFor(pullUps, best = pullUps.target).isAttempt)
+    }
+
+    @Test
+    fun aSingleRepGateIsAttemptedEverySessionUntilPassed() {
+        val muscleUp = SkillCatalogue.muscleUp.gates.last()
+        assertEquals(1, muscleUp.target)
+        assertTrue(SessionPlanner.isCloseTo(muscleUp, best = 0))
+        assertFalse(SessionPlanner.isCloseTo(muscleUp, best = 1))
     }
 }

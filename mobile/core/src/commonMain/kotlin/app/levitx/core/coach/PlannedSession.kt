@@ -19,12 +19,16 @@ public enum class Intensity {
  * One exercise in a session, with its sets.
  *
  * @property exercise What to do.
- * @property sets The sets, in order. A best-effort set, if there is one, comes last.
+ * @property sets The sets, in order. A best-effort set, if there is one, comes
+ *   last, except in a gate attempt, where the attempt comes first.
  * @property restSeconds Rest between sets.
  * @property repsInReserve Reps to leave in the tank on the work sets.
  * @property intensity Whether this is hard or light work.
  * @property gateId The skill gate this trains, when it is the session's skill work.
- * @throws IllegalArgumentException if [sets] is empty.
+ * @property isGateAttempt True when the first set is a fresh attempt at the
+ *   gate's full target, before the usual work sets.
+ * @throws IllegalArgumentException if [sets] is empty, or for an attempt that
+ *   isn't skill work.
  */
 public data class ExercisePlan(
     val exercise: Exercise,
@@ -33,9 +37,13 @@ public data class ExercisePlan(
     val repsInReserve: Int,
     val intensity: Intensity,
     val gateId: String? = null,
+    val isGateAttempt: Boolean = false,
 ) {
     init {
         require(sets.isNotEmpty()) { "an exercise needs at least one set" }
+        require(!isGateAttempt || (gateId != null && sets.first().isBestEffort)) {
+            "a gate attempt is skill work that starts with the attempt"
+        }
     }
 
     /** True for hard work. */
@@ -55,8 +63,9 @@ public data class ExercisePlan(
         get() = if (isHard) exercise.setsByPattern(sets.size) else emptyMap()
 
     /**
-     * The same exercise as light work: no best-effort set, at most
-     * [CoachTuning.LIGHT_SETS_PER_EXERCISE] sets, a lower target and shorter rest.
+     * The same exercise as light work: no best-effort set and no gate
+     * attempt, at most [CoachTuning.LIGHT_SETS_PER_EXERCISE] sets, a lower
+     * target and shorter rest.
      */
     public fun lightened(): ExercisePlan {
         val target = (workTarget * CoachTuning.LIGHT_TARGET_FRACTION).roundToInt().coerceAtLeast(1)
@@ -65,6 +74,7 @@ public data class ExercisePlan(
             restSeconds = CoachTuning.LIGHT_REST_SECONDS,
             repsInReserve = CoachTuning.LIGHT_REPS_IN_RESERVE,
             intensity = Intensity.LIGHT,
+            isGateAttempt = false,
         )
     }
 

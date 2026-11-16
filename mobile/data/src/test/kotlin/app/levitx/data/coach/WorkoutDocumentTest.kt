@@ -8,8 +8,10 @@ import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.session.SetLoad
+import app.levitx.core.skills.SkillCatalogue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class WorkoutDocumentTest {
@@ -52,5 +54,14 @@ class WorkoutDocumentTest {
         assertNull(CoachCodec.decodeWorkoutOrNull("{not json"))
         val newer = workoutDocumentOf(run).copy(v = WORKOUT_DOCUMENT_VERSION + 1)
         assertNull(CoachCodec.decodeWorkoutOrNull(CoachCodec.encode(newer)))
+    }
+
+    @Test
+    fun aGateAttemptIsStillAnAttemptAfterStorage() {
+        val hang = SkillCatalogue.firstPullUp.gates.first()
+        val close = model.copy(gateBests = mapOf(hang.id to hang.target - 1))
+        val attempt = WorkoutRun("w2", checkNotNull(Coach().recommend(close, 0).session), startedAtEpochMillis = 5)
+        assertTrue(checkNotNull(attempt.current).isGateAttempt)
+        assertEquals(attempt, roundTrip(attempt))
     }
 }

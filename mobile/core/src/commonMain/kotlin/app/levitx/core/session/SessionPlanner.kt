@@ -17,11 +17,19 @@ public data class PlannedSet(val target: Int, val isBestEffort: Boolean)
  * Today's session for one gate.
  *
  * @property gate The gate being trained.
- * @property sets Work sets first, best-effort set last.
+ * @property sets Work sets first and the best-effort set last, or the
+ *   attempt first when the person is close to the gate.
  * @property restSeconds Rest between sets.
  * @property repsInReserve How many reps to leave in the tank on work sets.
+ * @property isAttempt True when the first set is an attempt at the gate's whole target.
  */
-public data class SessionPlan(val gate: Gate, val sets: List<PlannedSet>, val restSeconds: Int, val repsInReserve: Int)
+public data class SessionPlan(
+    val gate: Gate,
+    val sets: List<PlannedSet>,
+    val restSeconds: Int,
+    val repsInReserve: Int,
+    val isAttempt: Boolean = false,
+)
 
 /**
  * Builds a session from the person's current best at a gate.
@@ -56,6 +64,9 @@ public object SessionPlanner {
     /** Reps to leave in reserve on work sets. */
     public const val TARGET_REPS_IN_RESERVE: Int = 2
 
+    /** Share of a gate's target at which sessions start with an attempt at it. */
+    public const val ATTEMPT_FRACTION: Double = 0.8
+
     /**
      * Plans a session for [gate] given the person's [best] result there.
      *
@@ -68,13 +79,30 @@ public object SessionPlanner {
         val workTarget = maxOf(minimum, (best * WORK_FRACTION).roundToInt())
         // Aim one past the current best, without going past the gate itself.
         val bestEffortTarget = (best + 1).coerceAtLeast(minimum).coerceAtMost(gate.target)
-        val sets = List(WORK_SETS) { PlannedSet(workTarget, isBestEffort = false) } +
-            PlannedSet(bestEffortTarget, isBestEffort = true)
+        val work = List(WORK_SETS) { PlannedSet(workTarget, isBestEffort = false) }
+        val isAttempt = isCloseTo(gate, best)
+        // Close to the gate, the best-effort set becomes a fresh attempt at the
+        // whole target, done first. Otherwise it aims one past the best, last.
+        val sets = if (isAttempt) {
+            listOf(PlannedSet(gate.target, isBestEffort = true)) + work
+        } else {
+            work + PlannedSet(bestEffortTarget, isBestEffort = true)
+        }
         return SessionPlan(
             gate = gate,
             sets = sets,
             restSeconds = if (isHold) REST_SECONDS_HOLDS else REST_SECONDS_REPS,
             repsInReserve = TARGET_REPS_IN_RESERVE,
+            isAttempt = isAttempt,
         )
     }
+
+    /**
+     * True when [best] is close enough to [gate]'s target to try for it: at
+     * [ATTEMPT_FRACTION] of it, or one short. One short covers single-rep
+     * gates like a first pull-up, where every session's best effort is
+     * already the whole target.
+     */
+    public fun isCloseTo(gate: Gate, best: Int): Boolean =
+        best < gate.target && (best >= gate.target * ATTEMPT_FRACTION || best + 1 >= gate.target)
 }

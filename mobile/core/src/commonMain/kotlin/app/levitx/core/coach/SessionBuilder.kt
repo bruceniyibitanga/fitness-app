@@ -74,8 +74,19 @@ internal class SessionBuilder(private val templates: List<List<MovementPattern>>
             val plan = SessionPlanner.planFor(gate, context.model.gateBests[gate.id] ?: 0)
             // A focused plan does more of the skill each session.
             val isFocused = context.model.profile.style == PlanStyle.FOCUSED
-            val extra = plan.sets.take(if (isFocused) CoachTuning.FOCUSED_EXTRA_SKILL_SETS else 0)
-            ExercisePlan(it, extra + plan.sets, plan.restSeconds, plan.repsInReserve, Intensity.HARD, gateId = gate.id)
+            val extra = plan.sets.filterNot { set -> set.isBestEffort }
+                .take(if (isFocused) CoachTuning.FOCUSED_EXTRA_SKILL_SETS else 0)
+            // An attempt stays first, while the person is fresh.
+            val sets = if (plan.isAttempt) plan.sets.take(1) + extra + plan.sets.drop(1) else extra + plan.sets
+            ExercisePlan(
+                exercise = it,
+                sets = sets,
+                restSeconds = plan.restSeconds,
+                repsInReserve = plan.repsInReserve,
+                intensity = Intensity.HARD,
+                gateId = gate.id,
+                isGateAttempt = plan.isAttempt,
+            )
         }
     }
 

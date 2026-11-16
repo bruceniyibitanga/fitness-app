@@ -1,6 +1,8 @@
 package app.levitx.core.coach
 
+import app.levitx.core.session.PlannedSet
 import app.levitx.core.session.SetLoad
+import app.levitx.core.skills.SkillCatalogue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -179,5 +181,39 @@ class WorkoutRunTest {
         val afterRest = start.logSet(8, 2, 0).endRest()
         assertEquals(afterRest, afterRest.undoLastSet())
         assertEquals(start, start.undoLastSet())
+    }
+
+    private val gate = checkNotNull(SkillCatalogue.gateById("muscle_up.pull_ups"))
+    private val attempt = ExercisePlan(
+        exercise = checkNotNull(SkillTraining.exerciseFor(gate)),
+        sets = listOf(PlannedSet(10, isBestEffort = true)) + List(3) { PlannedSet(6, isBestEffort = false) },
+        restSeconds = 120,
+        repsInReserve = 2,
+        intensity = Intensity.HARD,
+        gateId = gate.id,
+        isGateAttempt = true,
+    )
+
+    @Test
+    fun puttingOffAnAttemptMovesItToTheEndAsAnOrdinaryBestEffort() {
+        val run = WorkoutRun("w", sessionOf(attempt), startedAtEpochMillis = 0)
+        val plan = checkNotNull(run.deferAttempt().current)
+        assertFalse(plan.isGateAttempt)
+        assertEquals(6, plan.sets.first().target)
+        assertEquals(PlannedSet(10, isBestEffort = true), plan.sets.last())
+    }
+
+    @Test
+    fun anAttemptCantBePutOffOnceStarted() {
+        val started = WorkoutRun("w", sessionOf(attempt), startedAtEpochMillis = 0).logSet(9, null, 0)
+        assertEquals(started, started.deferAttempt())
+        assertEquals(start, start.deferAttempt())
+    }
+
+    @Test
+    fun lightWorkNeverCarriesAnAttempt() {
+        val light = attempt.lightened()
+        assertFalse(light.isGateAttempt)
+        assertTrue(light.sets.none { it.isBestEffort })
     }
 }

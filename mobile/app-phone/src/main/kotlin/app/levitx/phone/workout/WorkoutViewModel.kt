@@ -54,31 +54,70 @@ class WorkoutViewModel @Inject constructor(
                 } else {
                     // Read once, so every set in the workout uses the same figure.
                     val bodyweight = bodyweightTrend(coach.model.weighIns, clock.currentTimeMillis())?.currentKg
-                    state.value = WorkoutUiState.Active(run, bodyweight, equipmentRepository.observeBands().first())
+                    state.value = WorkoutUiState.Active(
+                        run = run,
+                        bodyweightKg = bodyweight,
+                        bands = equipmentRepository.observeBands().first(),
+                        gateBests = coach.model.gateBests,
+                    )
                 }
             }
         }
     }
 
-    /** Milliseconds on the rest clock, for the screen's countdown. */
-    fun elapsedRealtimeMillis(): Long = clock.elapsedRealtimeMillis()
+    /** Milliseconds on the device's elapsed clock, for the screen's timers. */
+    val elapsedRealtimeMillis: () -> Long = clock::elapsedRealtimeMillis
 
     /**
      * Records the set just done. Starts rest, or saves the workout if it was the last set.
+     * A set that would pass a gate waits for the person to confirm it met the standard.
      *
      * @param value Reps or seconds done.
      * @param repsInReserve Reps they felt they had left, or null for holds.
      * @param addedKg Vest or belt weight, 0 for none.
      * @param assistanceKg Band help, 0 for none.
+     * @param confirmed True once the person has said a gate-passing set met the standard.
      */
-    fun logSet(value: Int, repsInReserve: Int?, addedKg: Double = 0.0, assistanceKg: Double = 0.0) {
+    fun logSet(
+        value: Int,
+        repsInReserve: Int?,
+        addedKg: Double = 0.0,
+        assistanceKg: Double = 0.0,
+        confirmed: Boolean = false,
+    ) {
         val active = state.value as? WorkoutUiState.Active ?: return
-        val next = active.run
-            .withLoad(SetLoad(addedKg = addedKg.asModifierKg(), assistanceKg = assistanceKg.asModifierKg()))
-            .logSet(value, repsInReserve, nowElapsedMillis = clock.elapsedRealtimeMillis())
-        // A run that didn't change means the set wasn't accepted (during rest, say).
-        if (next.logged == active.run.logged) return
-        advance(active, next)
+        val load = SetLoad(addedKg = addedKg.asModifierKg(), assistanceKg = assistanceKg.asModifierKg())
+        val next = active.run.withLoad(
+            load,
+        ).logSet(value, repsInReserve, nowElapsedMillis = clock.elapsedRealtimeMillis())
+        when {
+            // A run that didn't change means the set wasn't accepted (during rest, say).
+            next.logged == active.run.logged -> Unit
+
+            !confirmed && passesGate(active, value, load) ->
+                state.value = active.copy(pending = PendingSet(value, repsInReserve, load))
+
+            else -> advance(afterSet(active, value, load), next)
+        }
+    }
+
+    /**
+     * Puts off today's gate attempt, confirms or takes back a set that would
+     * pass a gate, or closes the gate-passed screen.
+     */
+    fun gate(action: GateAction) {
+        val active = state.value as? WorkoutUiState.Active ?: return
+        when (action) {
+            GateAction.DEFER -> advance(active, active.run.deferAttempt())
+
+            GateAction.CONFIRM -> active.pending?.let {
+                logSet(it.value, it.repsInReserve, it.load.addedKg, it.load.assistanceKg, confirmed = true)
+            }
+
+            GateAction.RECOUNT -> state.value = active.copy(pending = null)
+
+            GateAction.CARRY_ON -> state.value = active.copy(passed = null)
+        }
     }
 
     /**

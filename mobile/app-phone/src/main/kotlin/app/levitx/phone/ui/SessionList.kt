@@ -64,16 +64,26 @@ fun SessionList(session: PlannedSession, bodyweightKg: Double?, onExerciseClick:
     }
 }
 
-/** "2 × 6 reps, then a best effort", with "skill" or "light" after it when it is. */
+/**
+ * "2 × 6 reps, then a best effort", or "Gate test at 10 reps, then 3 × 6
+ * reps", with "skill" or "light" after it when it is.
+ */
 @Composable
 fun planDetail(plan: ExercisePlan): String {
     val target = measureText(plan.exercise.measure, plan.workTarget)
-    val hasBestEffort = plan.sets.last().isBestEffort && plan.sets.size > 1
-    val workSets = if (hasBestEffort) plan.sets.size - 1 else plan.sets.size
-    val sets = if (hasBestEffort) {
-        stringResource(R.string.today_sets_then_best, workSets, target)
-    } else {
-        stringResource(R.string.today_sets, workSets, target)
+    val hasBestEffort = plan.sets.any { it.isBestEffort } && plan.sets.size > 1
+    val workSets = plan.sets.count { !it.isBestEffort }.coerceAtLeast(1)
+    val sets = when {
+        plan.isGateAttempt -> stringResource(
+            R.string.plan_detail_attempt,
+            measureText(plan.exercise.measure, plan.sets.first().target),
+            workSets,
+            target,
+        )
+
+        hasBestEffort -> stringResource(R.string.today_sets_then_best, workSets, target)
+
+        else -> stringResource(R.string.today_sets, workSets, target)
     }
     return when {
         !plan.isHard -> stringResource(R.string.plan_detail_tagged, sets, stringResource(R.string.plan_tag_light))
