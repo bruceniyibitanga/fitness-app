@@ -1,5 +1,6 @@
 package app.levitx.core.coach
 
+import app.levitx.core.load.LoadCarrier
 import app.levitx.core.load.LoadKit
 import app.levitx.core.pain.PainAdvice
 import app.levitx.core.pain.PainAssessment
@@ -248,31 +249,44 @@ class CoachSimulationTest {
     }
 
     @Test
-    fun atTheTopOfALadderWeightGoesOnInSensibleSteps() {
-        val top = exercise("horizontal_push.feet_61cm")
-        val share = checkNotNull(top.loadProfile)
-        val strong = SimulatedAthlete.even(strength = 7.5, skill = 0.4, gain = 0.08)
+    fun withAVestWeightGoesOnInSensibleSteps() {
+        // Strong enough to be past the easy rungs, so loadable push-ups, rows and squats come up early.
+        val strong = SimulatedAthlete.even(strength = 4.2, skill = 0.4, gain = 0.08)
         val start = newcomer(pullUpProfile().copy(loadKit = LoadKit(vestMaxKg = 20.0, vestStepKg = 1.0)))
         val (_, log) = simulate(start, strong, trainingDays(16, 0, 2, 4))
-        val weights = log.mapNotNull { it.done }.filterNot { it.isLight }
-            .flatMap { it.plans }.filter { it.exercise == top }.map { it.addedKg }
-
-        assertTrue(weights.max() > 0.0, "weight went on once the ladder ran out")
+        val plans = log.mapNotNull { it.done }.filterNot { it.isLight }.flatMap { it.plans }
+        val weighted = plans.filter { it.addedKg > 0.0 }
+        assertTrue(weighted.isNotEmpty(), "weight went on")
+        assertTrue(weighted.all { LoadCarrier.VEST in it.exercise.carriers }, "only on exercises that take a vest")
         // Without a bodyweight, steps are sized for 70 kg.
         val bodyweight = CoachTuning.REFERENCE_BODYWEIGHT_KG
-        weights.zipWithNext().filter { (before, after) -> after > before }.forEach { (before, after) ->
-            val moved = bodyweight * share.bodyweightShare + before * share.addedWeightShare
-            val step = (after - before) * share.addedWeightShare / moved
-            assertTrue(step in CoachTuning.MIN_LOAD_STEP_FRACTION..CoachTuning.MAX_LOAD_STEP_FRACTION, "step of $step")
+        plans.groupBy { it.exercise }.forEach { (exercise, its) ->
+            val share = exercise.loadProfile
+            its.map {
+                it.addedKg
+            }.zipWithNext().filter { (before, after) -> after > before }.forEach { (before, after) ->
+                val moved = if (share == null) {
+                    bodyweight + before
+                } else {
+                    bodyweight * share.bodyweightShare + before * share.addedWeightShare
+                }
+                val step = (after - before) * (share?.addedWeightShare ?: 1.0) / moved
+                assertTrue(
+                    step in CoachTuning.MIN_LOAD_STEP_FRACTION..CoachTuning.MAX_LOAD_STEP_FRACTION,
+                    "${exercise.id} step of $step",
+                )
+            }
         }
-        assertTrue(weights.max() <= bodyweight * CoachTuning.MAX_ADDED_SHARE_OF_BODYWEIGHT)
+        assertTrue(weighted.maxOf { it.addedKg } <= bodyweight * CoachTuning.MAX_ADDED_SHARE_OF_BODYWEIGHT)
     }
 
     @Test
     fun withNoWeightToAddTheTopOfALadderNeverStalls() {
-        val top = exercise("horizontal_push.feet_61cm")
-        val strong = SimulatedAthlete.even(strength = 7.5, skill = 0.4, gain = 0.08)
-        val (model, _) = simulate(newcomer(), strong, trainingDays(16, 0, 2, 4))
+        val top = exercise("horizontal_push.one_arm")
+        val rung = ExerciseCatalogue.ladder(top.pattern).rungs.indexOfFirst { top in it.options }
+        val strong = SimulatedAthlete.even(strength = 12.0, skill = 0.4, gain = 0.08)
+        val start = newcomer().copy(rungs = mapOf(top.pattern to rung))
+        val (model, _) = simulate(start, strong, trainingDays(16, 0, 2, 4))
         val state = model.exercises.getValue(top.id)
         // Reps kept climbing past the range, and nothing ever passed the ceiling.
         assertTrue(state.target > top.range.last || state.slowLowering, "target ${state.target}")

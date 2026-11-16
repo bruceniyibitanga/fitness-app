@@ -27,11 +27,12 @@ private sealed interface Change {
 /**
  * How someone moves along a ladder.
  *
- * Reps go up first. At the top of an exercise's range the person moves up a
- * rung. At the top of the ladder, or of what their kit allows, the target keeps
- * climbing another way: weight first if they have it, then more reps, then a
- * slower lowering. Two sessions in a row short of target ease it back, undoing
- * those in reverse: the weight first, then the slow lowering, then the rung.
+ * Reps go up first. At the top of an exercise's range, weight goes on if the
+ * exercise takes it and the kit has a step; when it can't, the person moves up
+ * a rung. At the top of the ladder, or of what their kit allows, the target
+ * keeps climbing another way: more reps, then a slower lowering. Two
+ * sessions in a row short of target ease it back, undoing those in reverse:
+ * the weight first, then the slow lowering, then the rung.
  * While the coach is still finding their level, a best-effort set places them
  * directly. Fast weight loss holds targets where they are.
  */
@@ -116,7 +117,12 @@ internal object LadderProgression {
     /**
      * Moves the person along the ladder when [exercise] is the one they train
      * at their current rung and there is a rung to move to with their kit.
-     * At the top, moving up becomes [topOut]. Otherwise only the target changes.
+     *
+     * Moving up adds weight first, when the exercise takes it and the kit has
+     * a step of the right size: the same movement, heavier, is the most direct
+     * overload there is. Only when the weight runs out does the person move to
+     * the harder variation, at bodyweight. At the top, moving up becomes
+     * [topOut]. Otherwise only the target changes.
      */
     private fun moveRungs(
         model: AthleteModel,
@@ -124,6 +130,9 @@ internal object LadderProgression {
         change: Change.Rungs,
         context: CoachContext,
     ): AthleteModel {
+        if (change.by > 0 && !change.placing) {
+            model.heavier(exercise, context.weightTrend?.currentKg)?.let { return it }
+        }
         val current = model.rung(exercise.pattern)
         val destination = destination(model, exercise, change.by)
         val moved = model.copy(rungs = model.rungs + (exercise.pattern to (destination ?: current)))
@@ -135,7 +144,7 @@ internal object LadderProgression {
                 moved.copy(exercises = moved.exercises + (arrival.id to state.copy(note = note)))
             }
 
-            change.by > 0 && model.isAtTop(exercise) -> topOut(model, exercise, change, context)
+            change.by > 0 && model.isAtTop(exercise) -> topOut(model, exercise, change)
 
             // A best-effort set that topped the range, on an exercise they can't move up from here.
             change.placing -> model.withState(exercise) { it.copy(target = exercise.range.last, note = null) }
@@ -147,28 +156,13 @@ internal object LadderProgression {
     }
 
     /**
-     * Makes [exercise] harder when there is nowhere higher to go: weight if the
-     * kit allows a step of the right size, else more reps up to the
-     * exercise's ceiling, else a slower lowering. A best-effort set only
-     * places the target; it never adds weight.
+     * Makes [exercise] harder when there is nowhere higher to go and no more
+     * weight to add: more reps up to the exercise's ceiling, else a slower
+     * lowering. A best-effort set only places the target.
      */
-    private fun topOut(
-        model: AthleteModel,
-        exercise: Exercise,
-        change: Change.Rungs,
-        context: CoachContext,
-    ): AthleteModel {
-        val bodyweight = context.weightTrend?.currentKg
-        return model.withState(exercise) { state ->
-            val heavier = if (change.placing) {
-                null
-            } else {
-                LoadProgression.nextUp(exercise, state.addedKg, model.profile.loadKit, bodyweight)
-            }
+    private fun topOut(model: AthleteModel, exercise: Exercise, change: Change.Rungs): AthleteModel =
+        model.withState(exercise) { state ->
             when {
-                heavier != null ->
-                    state.copy(addedKg = heavier, target = exercise.range.first, note = ProgressNote.WEIGHT_UP)
-
                 change.placing -> state.copy(target = change.target.coerceIn(exercise.range.first, exercise.ceiling))
 
                 state.target < exercise.ceiling ->
@@ -180,7 +174,6 @@ internal object LadderProgression {
                 else -> state.copy(target = exercise.ceiling, note = null)
             }
         }
-    }
 
     /** The rung [by] steps from the person's current one, or null when they can't or shouldn't move. */
     private fun destination(model: AthleteModel, exercise: Exercise, by: Int): Int? {
@@ -204,6 +197,20 @@ private fun AthleteModel.isOnCurrentRung(exercise: Exercise): Boolean =
 /** True when [exercise] is on the person's rung and there is nothing higher they have the kit for. */
 private fun AthleteModel.isAtTop(exercise: Exercise): Boolean = isOnCurrentRung(exercise) &&
     ExerciseCatalogue.ladder(exercise.pattern).usableRungAbove(rung(exercise.pattern), profile.equipment) == null
+
+/**
+ * [exercise] with the next weight step and its reps back at the bottom of the
+ * range, or null when it takes no weight, the kit has no step of the right
+ * size left, or it isn't the exercise on the person's rung.
+ */
+private fun AthleteModel.heavier(exercise: Exercise, bodyweightKg: Double?): AthleteModel? {
+    val state = exercises.getValue(exercise.id)
+    val next = LoadProgression.nextUp(exercise, state.addedKg, profile.loadKit, bodyweightKg)
+        ?.takeIf { isOnCurrentRung(exercise) }
+    return next?.let { kg ->
+        withState(exercise) { it.copy(addedKg = kg, target = exercise.range.first, note = ProgressNote.WEIGHT_UP) }
+    }
+}
 
 /**
  * When the person did every work set with more weight than prescribed and

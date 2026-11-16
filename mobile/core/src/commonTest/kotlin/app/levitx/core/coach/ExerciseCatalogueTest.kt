@@ -80,9 +80,12 @@ class ExerciseCatalogueTest {
         assertEquals(
             setOf(
                 "vertical_pull.negative",
+                "vertical_pull.one_arm_negative",
                 "vertical_push.negative_dip",
                 "vertical_push.wall_negative",
                 "hinge.nordic_negative",
+                "core.tuck_dragon_flag_negative",
+                "core.dragon_flag_negative",
             ),
             timed,
         )
