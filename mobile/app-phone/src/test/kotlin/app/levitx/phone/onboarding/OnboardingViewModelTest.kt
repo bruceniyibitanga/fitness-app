@@ -138,10 +138,10 @@ class OnboardingViewModelTest {
         assertEquals("horizontal_push.push_up", viewModel.uiState.value.testStart?.first?.id)
         viewModel.next()
         viewModel.answer(SetupAnswer.TestCount(-3))
-        assertEquals(0, viewModel.uiState.value.testCount, "never below none")
+        assertEquals("never below none", 0, viewModel.uiState.value.testCount)
         assertNull(viewModel.uiState.value.testStart)
         assertTrue(viewModel.back())
-        assertEquals(9, viewModel.uiState.value.testCount, "back keeps the count")
+        assertEquals("back keeps the count", 9, viewModel.uiState.value.testCount)
         viewModel.next()
         viewModel.next()
         viewModel.next(skipTest = true)
@@ -151,7 +151,7 @@ class OnboardingViewModelTest {
         assertTrue(viewModel.finish())
         val model = checkNotNull(coachRepository.current).model
         assertEquals(PUSH_UP_RUNG, model.rung(MovementPattern.HORIZONTAL_PUSH))
-        assertEquals(0, model.rung(MovementPattern.VERTICAL_PULL), "none counted beats the yes")
+        assertEquals("none counted beats the yes", 0, model.rung(MovementPattern.VERTICAL_PULL))
     }
 
     @Test
