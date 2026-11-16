@@ -81,17 +81,19 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
     OnboardingScreen(
         uiState = uiState,
         actions = OnboardingActions(
-            onNext = viewModel::next,
+            onNext = { viewModel.next() },
             onBack = { viewModel.back() },
-            onChooseGoal = viewModel::chooseGoal,
-            onChooseStyle = viewModel::chooseStyle,
-            onAnswerPullUp = viewModel::answerPullUp,
-            onTypeBodyweight = { viewModel.typeBodyweight(it, unit) },
-            onToggleDay = viewModel::toggleDay,
-            onChooseMinutes = viewModel::chooseMinutes,
-            onToggleEquipment = { viewModel.chooseEquipment(it) },
-            onChooseNoEquipment = { viewModel.chooseEquipment(null) },
+            onChooseGoal = { viewModel.answer(SetupAnswer.Goal(it)) },
+            onChooseStyle = { viewModel.answer(SetupAnswer.Style(it)) },
+            onAnswerPullUp = { viewModel.answer(SetupAnswer.PullUp(it)) },
+            onTypeBodyweight = { viewModel.answer(SetupAnswer.Bodyweight(it, unit)) },
+            onToggleDay = { viewModel.answer(SetupAnswer.Day(it)) },
+            onChooseMinutes = { viewModel.answer(SetupAnswer.Minutes(it)) },
+            onToggleEquipment = { viewModel.answer(SetupAnswer.Kit(it)) },
+            onChooseNoEquipment = { viewModel.answer(SetupAnswer.Kit(null)) },
             onFinish = { scope.launch { if (viewModel.finish()) onFinished() } },
+            onCountTest = { viewModel.answer(SetupAnswer.TestCount(it)) },
+            onSkipTest = { viewModel.next(skipTest = true) },
         ),
     )
 }
@@ -100,7 +102,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
  * Everything the person can do during setup, grouped so the screen takes one parameter for them.
  *
  * @property onNext Moves to the next step.
- * @property onBack Goes back a step.
+ * @property onBack Goes back a step, or a movement in the quick test.
  * @property onChooseGoal Picks a skill path by id, or general fitness with null.
  * @property onChooseStyle Picks all-round or focused.
  * @property onAnswerPullUp Answers "Can you do a strict pull-up?".
@@ -110,6 +112,8 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
  * @property onToggleEquipment Adds or removes a piece of kit.
  * @property onChooseNoEquipment Says they have no kit.
  * @property onFinish Saves the answers and starts training.
+ * @property onCountTest Sets the reps counted for the quick test movement on screen.
+ * @property onSkipTest Skips the rest of the quick test.
  */
 data class OnboardingActions(
     val onNext: () -> Unit,
@@ -123,6 +127,8 @@ data class OnboardingActions(
     val onToggleEquipment: (Equipment) -> Unit,
     val onChooseNoEquipment: () -> Unit,
     val onFinish: () -> Unit,
+    val onCountTest: (Int) -> Unit = {},
+    val onSkipTest: () -> Unit = {},
 )
 
 /**
@@ -162,6 +168,7 @@ fun OnboardingScreen(uiState: OnboardingUiState, actions: OnboardingActions, mod
                         OnboardingStep.GOAL -> GoalStep(uiState, actions)
                         OnboardingStep.HOW -> HowStep(uiState, actions)
                         OnboardingStep.WEEK -> WeekStep(uiState, actions)
+                        OnboardingStep.TEST -> QuickTestStep(uiState, actions)
                         OnboardingStep.READY -> ReadyStep(uiState)
                         OnboardingStep.WELCOME -> Unit
                     }
@@ -173,20 +180,29 @@ fun OnboardingScreen(uiState: OnboardingUiState, actions: OnboardingActions, mod
                         )
                     }
                 }
-                AccentBar(
-                    text = stringResource(
-                        when (uiState.step) {
-                            OnboardingStep.WEEK -> R.string.week_build
-                            OnboardingStep.READY -> R.string.ready_start
-                            else -> R.string.continue_button
-                        },
-                    ),
-                    onClick = if (uiState.step == OnboardingStep.READY) actions.onFinish else actions.onNext,
-                    enabled = uiState.canContinue && !uiState.saving,
+                StepBar(
+                    uiState,
+                    actions,
                     modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, bottom = ScreenPadding),
                 )
             }
         }
+    }
+}
+
+/** The main action pinned under a step: on, start, or in the quick test, on or skip. */
+@Composable
+private fun StepBar(uiState: OnboardingUiState, actions: OnboardingActions, modifier: Modifier = Modifier) {
+    if (uiState.step == OnboardingStep.TEST) {
+        QuickTestBar(uiState, actions, modifier = modifier)
+    } else {
+        val ready = uiState.step == OnboardingStep.READY
+        AccentBar(
+            text = stringResource(if (ready) R.string.ready_start else R.string.continue_button),
+            onClick = if (ready) actions.onFinish else actions.onNext,
+            enabled = uiState.canContinue && !uiState.saving,
+            modifier = modifier,
+        )
     }
 }
 

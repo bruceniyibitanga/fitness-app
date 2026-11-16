@@ -18,6 +18,7 @@ import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.Intensity
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SkillTraining
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.WorkoutFocus
@@ -149,6 +150,26 @@ fun HowScreenshot() = onboarding(
 @Composable
 fun WeekScreenshot() = onboarding(
     OnboardingUiState(step = OnboardingStep.WEEK, goalChosen = true, goalPathId = "muscle_up"),
+)()
+
+@PreviewTest
+@Preview(name = "04b Quick test, pull-ups", widthDp = 390, heightDp = 844)
+@Composable
+fun QuickTestScreenshot() = onboarding(
+    OnboardingUiState(
+        step = OnboardingStep.TEST,
+        goalChosen = true,
+        equipment = setOf(Equipment.PULL_UP_BAR, Equipment.DIP_BARS),
+        testIndex = 1,
+        testCounts = mapOf(QuickTest.PULL_UPS to 6),
+    ),
+)()
+
+@PreviewTest
+@Preview(name = "04c Quick test, none yet", widthDp = 390, heightDp = 844)
+@Composable
+fun QuickTestNoneScreenshot() = onboarding(
+    OnboardingUiState(step = OnboardingStep.TEST, goalChosen = true, testIndex = 0),
 )()
 
 @PreviewTest

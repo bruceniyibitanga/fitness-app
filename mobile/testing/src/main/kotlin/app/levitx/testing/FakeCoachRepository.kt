@@ -5,6 +5,7 @@ import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.pain.PainAssessment
 import app.levitx.data.coach.CoachRepository
@@ -41,8 +42,13 @@ class FakeCoachRepository(
 
     override fun observeState(): Flow<CoachState?> = state.asStateFlow()
 
-    override suspend fun start(profile: CoachProfile, pullUp: PullUpAnswer, trainingDays: Set<DayOfWeek>) {
-        state.value = CoachState(AthleteModel.starting(profile, pullUp), trainingDays)
+    override suspend fun start(
+        profile: CoachProfile,
+        pullUp: PullUpAnswer,
+        trainingDays: Set<DayOfWeek>,
+        tested: Map<QuickTest, Int>,
+    ) {
+        state.value = CoachState(AthleteModel.starting(profile, pullUp, tested), trainingDays)
     }
 
     override suspend fun updateProfile(profile: CoachProfile, trainingDays: Set<DayOfWeek>) {

@@ -7,6 +7,7 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.CoachTuning
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.history.Forgetting
 import app.levitx.core.pain.PainAssessment
@@ -50,11 +51,16 @@ internal class RoomCoachRepository @Inject constructor(
         )
     }.distinctUntilChanged()
 
-    override suspend fun start(profile: CoachProfile, pullUp: PullUpAnswer, trainingDays: Set<DayOfWeek>) {
+    override suspend fun start(
+        profile: CoachProfile,
+        pullUp: PullUpAnswer,
+        trainingDays: Set<DayOfWeek>,
+        tested: Map<QuickTest, Int>,
+    ) {
         val database = databaseProvider.database()
         val now = clock.currentTimeMillis()
         database.withTransaction {
-            database.write(AthleteModel.starting(profile, pullUp), trainingDays, now)
+            database.write(AthleteModel.starting(profile, pullUp, tested), trainingDays, now)
             database.writeGoal(profile.goalPathId, now)
         }
     }
