@@ -40,6 +40,7 @@ import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.design.LevitxColors
 import app.levitx.phone.R
+import app.levitx.phone.live.LiveWorkoutEffects
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Rule
@@ -48,10 +49,14 @@ import app.levitx.phone.ui.ScreenPadding
 /** The bottom bars, as on the artboard. */
 internal val BottomBarHeight = 64.dp
 
-/** Workout destination: connects [WorkoutViewModel] to [WorkoutScreen]. */
+/**
+ * Workout destination: connects [WorkoutViewModel] to [WorkoutScreen], and
+ * keeps the workout going when the screen is off or another app is in front.
+ */
 @Composable
 fun WorkoutRoute(onDone: () -> Unit, viewModel: WorkoutViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LiveWorkoutEffects(active = uiState is WorkoutUiState.Active)
     WorkoutScreen(
         uiState = uiState,
         now = viewModel.elapsedRealtimeMillis,

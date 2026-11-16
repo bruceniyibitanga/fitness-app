@@ -54,6 +54,9 @@ dependencies {
     // For WearableListenerService, which each app's sync listener extends.
     implementation(libs.play.services.wearable)
 
+    // The workout notification as a Live Update. Declared directly, as it would
+    // otherwise come in at whatever version other libraries happen to need.
+    implementation(libs.androidx.core)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)

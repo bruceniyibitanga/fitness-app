@@ -1,5 +1,9 @@
 package app.levitx.phone.settings
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -24,10 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -35,7 +41,9 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.data.settings.LEAD_IN_CHOICES
 import app.levitx.design.LevitxColors
@@ -57,6 +65,7 @@ private const val EXPORT_FILE_NAME = "levitx-export.zip"
  * @property onLeadIn Sets the count-in, in seconds.
  * @property onSounds Turns beeps on or off.
  * @property onBuzzes Turns buzzes on or off.
+ * @property onOpenNotifications Opens Android's notification settings for Levitx.
  * @property onExport Writes the export to the chosen file's uri.
  * @property onDeleteEverything Deletes everything, once confirmed.
  */
@@ -64,6 +73,7 @@ data class SettingsActions(
     val onLeadIn: (Int) -> Unit,
     val onSounds: (Boolean) -> Unit,
     val onBuzzes: (Boolean) -> Unit,
+    val onOpenNotifications: () -> Unit,
     val onExport: (String) -> Unit,
     val onDeleteEverything: () -> Unit,
 )
@@ -81,12 +91,21 @@ fun SettingsRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(uiState.task) { if (uiState.task == DataTask.DELETED) onDeleted() }
+    val context = LocalContext.current
+    var notificationsOn by remember { mutableStateOf(true) }
+    // Read each time Settings comes back to the front: the person may have just changed it in Android's settings.
+    LifecycleResumeEffect(context) {
+        notificationsOn = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        onPauseOrDispose {}
+    }
     SettingsScreen(
         uiState = uiState,
+        notificationsOn = notificationsOn,
         actions = SettingsActions(
             onLeadIn = viewModel::setLeadInSeconds,
             onSounds = viewModel::setSounds,
             onBuzzes = viewModel::setBuzzes,
+            onOpenNotifications = { openNotificationSettings(context) },
             onExport = viewModel::export,
             onDeleteEverything = viewModel::deleteEverything,
         ),
@@ -97,11 +116,13 @@ fun SettingsRoute(
 
 /**
  * Settings, as the Settings artboard, with only what works today: the
- * count-in, sounds and buzzes, the person's data, and about.
+ * count-in, sounds, buzzes and the workout notification, the person's data,
+ * and about. [notificationsOn] is whether Android lets Levitx notify.
  */
 @Composable
 fun SettingsScreen(
     uiState: SettingsUiState,
+    notificationsOn: Boolean,
     actions: SettingsActions,
     onBack: () -> Unit,
     onOpenCredits: () -> Unit,
@@ -124,7 +145,7 @@ fun SettingsScreen(
             BackHeader(stringResource(R.string.settings_title), onBack)
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Training(uiState, actions)
-                Sounds(uiState, actions)
+                Sounds(uiState, notificationsOn, actions)
                 YourData(
                     task = uiState.task,
                     onExport = { saveExport.launch(EXPORT_FILE_NAME) },
@@ -184,9 +205,9 @@ private fun Training(state: SettingsUiState, actions: SettingsActions) {
     Rule()
 }
 
-/** Beeps and buzzes for timers and rest. */
+/** Beeps and buzzes for timers and rest, and the workout notification. */
 @Composable
-private fun Sounds(state: SettingsUiState, actions: SettingsActions) {
+private fun Sounds(state: SettingsUiState, notificationsOn: Boolean, actions: SettingsActions) {
     Group(stringResource(R.string.settings_sounds_group))
     SwitchRow(
         title = stringResource(R.string.settings_sounds),
@@ -200,6 +221,26 @@ private fun Sounds(state: SettingsUiState, actions: SettingsActions) {
         checked = state.settings.buzzes,
         onChange = actions.onBuzzes,
     )
+    LinkRow(
+        title = stringResource(R.string.settings_notification),
+        note = stringResource(R.string.settings_notification_note),
+        status = stringResource(if (notificationsOn) R.string.settings_on else R.string.settings_off),
+        onClick = actions.onOpenNotifications,
+    )
+}
+
+/**
+ * Android's notification settings for Levitx, where the workout notification
+ * is turned on or off. Nothing happens on the rare phone without that screen.
+ */
+private fun openNotificationSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    try {
+        context.startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        // A phone maker removed the screen. The person can still find it in Android's own settings.
+    }
 }
 
 /** Where the data lives, the export, and deleting everything. */

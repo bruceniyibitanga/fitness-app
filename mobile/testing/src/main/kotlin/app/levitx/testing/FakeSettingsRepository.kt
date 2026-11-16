@@ -27,6 +27,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
         settings.update { it.copy(buzzes = on) }
     }
 
+    override suspend fun markNotificationsAsked() {
+        settings.update { it.copy(notificationsAsked = true) }
+    }
+
     override suspend fun clear() {
         settings.value = AppSettings()
     }

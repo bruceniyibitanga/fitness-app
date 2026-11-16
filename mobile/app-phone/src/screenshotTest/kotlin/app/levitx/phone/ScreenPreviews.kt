@@ -623,7 +623,8 @@ fun SettingsScreenshot() {
                     AppSettings(leadInSeconds = 5, sounds = true, buzzes = false),
                     DataTask.EXPORTED,
                 ),
-                actions = SettingsActions({}, {}, {}, {}, {}),
+                notificationsOn = false,
+                actions = SettingsActions({}, {}, {}, {}, {}, {}),
                 onBack = {},
                 onOpenCredits = {},
             )

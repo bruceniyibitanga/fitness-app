@@ -43,6 +43,17 @@ The number is also in the app's version name (for example `0.1.0-test.12`), show
 
 Later builds install the same way and keep your data.
 
+### Checking a workout with the phone locked
+
+The first workout asks to show notifications. Allow it for these checks, then try once more after turning it off in Settings.
+
+- Start a workout, log a set, and lock the phone. Rest should count down on the lock screen and, on Android 16, in the status bar. The three beeps and the long one at the end should come on time.
+- Do the same with the phone in a pocket for a few minutes, and again with a music app in front instead of locking.
+- Start a hold, lock the phone during the count-in, and listen for the go beep and the ones every five seconds.
+- Swipe the notification away mid-workout. It shouldn't come back until the next workout, and the beeps should carry on.
+- Finish the workout. The notification should go.
+- Note the battery level before and after a full workout.
+
 ## Installing on the watch
 
 The watch has no browser, so the APK goes over Wi-Fi from your computer.

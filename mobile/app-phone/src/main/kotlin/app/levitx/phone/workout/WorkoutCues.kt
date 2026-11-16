@@ -1,34 +1,27 @@
 package app.levitx.phone.workout
 
-import android.media.AudioManager
 import android.media.ToneGenerator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 /*
- * Beeps and buzzes for the timers and rest. The phone is usually on the floor
- * or a bench during a set, out of reach and often out of sight, so sound
- * carries the timing and the buzz is a bonus for a phone in a pocket.
+ * What beeps and buzzes when, for the timers and rest. The phone is usually on
+ * the floor or a bench during a set, out of reach and often out of sight, so
+ * sound carries the timing and the buzz is a bonus for a phone in a pocket.
+ *
+ * These are only the rules. WorkoutCuer in the live package plays them, on
+ * the device's clock, whether the screen is on or not.
  */
-
-/** Beep volume, as a percentage of the media volume, so it follows the person's own setting. */
-private const val TONE_VOLUME = 80
 
 private const val SECONDS_PER_BEEP = 5
 
 /** Beeps in the last seconds of rest, before the one at zero. */
-private const val REST_COUNTDOWN_SECONDS = 3
+internal const val REST_COUNTDOWN_SECONDS = 3
 
 /* Tone lengths, in milliseconds: short for counting, long for "go". */
 private const val SHORT_TONE = 120
@@ -38,25 +31,37 @@ private const val PROMPT_TONE = 200
 private const val DOUBLE_TONE = 300
 private const val DONE_TONE = 400
 
+/** How strong a buzz is. */
+internal enum class Buzz {
+    /** A light tick, for counting. */
+    TICK,
+
+    /** A firm click, for a new phase. */
+    CLICK,
+
+    /** A heavy click, for go and for done. */
+    HEAVY,
+}
+
 /** A sound with the buzz that goes with it. */
-internal enum class Cue(val tone: Int, val millis: Int, val haptic: HapticFeedbackType) {
+internal enum class Cue(val tone: Int, val millis: Int, val buzz: Buzz) {
     /** A count-in second. */
-    COUNT(ToneGenerator.TONE_PROP_BEEP, SHORT_TONE, HapticFeedbackType.SegmentTick),
+    COUNT(ToneGenerator.TONE_PROP_BEEP, SHORT_TONE, Buzz.CLICK),
 
     /** Go: the hold starts, or get to the top. */
-    GO(ToneGenerator.TONE_PROP_BEEP, LONG_TONE, HapticFeedbackType.Confirm),
+    GO(ToneGenerator.TONE_PROP_BEEP, LONG_TONE, Buzz.HEAVY),
 
     /** A second passing while lowering, or every few seconds of a hold. */
-    TICK(ToneGenerator.TONE_PROP_BEEP, TICK_TONE, HapticFeedbackType.SegmentFrequentTick),
+    TICK(ToneGenerator.TONE_PROP_BEEP, TICK_TONE, Buzz.TICK),
 
     /** Start lowering. */
-    LOWER(ToneGenerator.TONE_PROP_PROMPT, PROMPT_TONE, HapticFeedbackType.SegmentTick),
+    LOWER(ToneGenerator.TONE_PROP_PROMPT, PROMPT_TONE, Buzz.CLICK),
 
     /** The hold reached its target. */
-    TARGET(ToneGenerator.TONE_PROP_BEEP2, DOUBLE_TONE, HapticFeedbackType.Confirm),
+    TARGET(ToneGenerator.TONE_PROP_BEEP2, DOUBLE_TONE, Buzz.HEAVY),
 
-    /** Every rep paced. */
-    DONE(ToneGenerator.TONE_PROP_ACK, DONE_TONE, HapticFeedbackType.Confirm),
+    /** Every rep paced, or a gate passed. */
+    DONE(ToneGenerator.TONE_PROP_ACK, DONE_TONE, Buzz.HEAVY),
 }
 
 /**
@@ -104,19 +109,6 @@ internal fun restBeat(secondsLeft: Int): Beat = Beat(
     },
 )
 
-/** Plays [beat]'s cue once: the sound when [sounds], the buzz when [buzzes]. */
-@Composable
-internal fun PlayCue(beat: Beat, sounds: Boolean, buzzes: Boolean) {
-    val haptics = LocalHapticFeedback.current
-    val tones by rememberTones(sounds)
-    LaunchedEffect(beat) {
-        val cue = beat.cue ?: return@LaunchedEffect
-        if (buzzes) haptics.performHapticFeedback(cue.haptic)
-        // Starts the tone and returns: the sound plays without holding up the screen.
-        if (sounds) tones?.startTone(cue.tone, cue.millis)
-    }
-}
-
 /**
  * The device's elapsed clock, read every [tickMillis] while on screen. Timers
  * work from this, never by adding up ticks, so they stay right if a frame is
@@ -132,30 +124,6 @@ internal fun rememberElapsedNow(now: () -> Long, tickMillis: Long): Long {
         }
     }
     return millis
-}
-
-/**
- * A tone generator while [enabled], or null. Made off the main thread, since
- * it opens an audio track, and released when it leaves the screen.
- */
-@Composable
-private fun rememberTones(enabled: Boolean): State<ToneGenerator?> = produceState<ToneGenerator?>(null, enabled) {
-    val tones = if (enabled) withContext(Dispatchers.Default) { newTones() } else null
-    value = tones
-    awaitDispose { tones?.release() }
-}
-
-/**
- * A tone generator on the media stream, or null if the device can't make one.
- * Sound is a nicety here: the timers still show and buzz without it.
- */
-// ToneGenerator's constructor throws a bare RuntimeException when the audio
-// system can't start it, and the only sensible response is to go quiet.
-@Suppress("TooGenericExceptionCaught", "SwallowedException")
-private fun newTones(): ToneGenerator? = try {
-    ToneGenerator(AudioManager.STREAM_MUSIC, TONE_VOLUME)
-} catch (e: RuntimeException) {
-    null
 }
 
 private const val MILLIS_PER_SECOND = 1_000L

@@ -11,6 +11,7 @@ import app.levitx.core.session.PlannedSet
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.settings.AppSettings
 import app.levitx.phone.MainDispatcherRule
+import app.levitx.phone.live.LiveWorkout
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeSettingsRepository
@@ -32,8 +33,9 @@ class WorkoutViewModelTest {
     private val clock = FakeTrainingClock()
     private val drafts = FakeWorkoutDraftRepository(startedWorkout(nowEpochMillis = clock.now))
     private val coachRepository = FakeCoachRepository(coachState(), drafts)
+    private val live = LiveWorkout()
     private val viewModel by lazy {
-        WorkoutViewModel(coachRepository, drafts, FakeEquipmentRepository(), clock, FakeSettingsRepository())
+        WorkoutViewModel(coachRepository, drafts, FakeEquipmentRepository(), clock, FakeSettingsRepository(), live)
     }
 
     private val active: WorkoutUiState.Active
@@ -43,8 +45,26 @@ class WorkoutViewModelTest {
     fun withNoWorkoutInProgressThereIsNothingToShow() {
         val empty = FakeWorkoutDraftRepository()
         val viewModel =
-            WorkoutViewModel(coachRepository, empty, FakeEquipmentRepository(), clock, FakeSettingsRepository())
+            WorkoutViewModel(coachRepository, empty, FakeEquipmentRepository(), clock, FakeSettingsRepository(), live)
         assertEquals(WorkoutUiState.NoWorkout, viewModel.uiState.value)
+        assertNull(live.session.value)
+    }
+
+    @Test
+    fun theLiveSessionFollowsTheWorkoutAndEndsWithIt() {
+        val first = checkNotNull(live.session.value.takeIf { viewModel.uiState.value is WorkoutUiState.Active })
+        assertEquals(1, first.setNumber)
+        assertEquals(0, first.setsBehind)
+        assertNull(first.restEndsAtElapsedMillis)
+
+        viewModel.logSet(active.nextSet.target, Effort.RIGHT.repsInReserve)
+        val resting = checkNotNull(live.session.value)
+        assertEquals(active.run.restEndsAtElapsedMillis, resting.restEndsAtElapsedMillis)
+        assertEquals(1, resting.setsBehind)
+        assertEquals(active.run.nextSetIndex + 1, resting.setNumber)
+
+        viewModel.finish()
+        assertNull(live.session.value)
     }
 
     @Test
@@ -187,6 +207,7 @@ class WorkoutViewModelTest {
             FakeEquipmentRepository(),
             clock,
             FakeSettingsRepository(),
+            LiveWorkout(),
         )
     }
 
@@ -259,6 +280,7 @@ class WorkoutViewModelTest {
             FakeEquipmentRepository(),
             clock,
             FakeSettingsRepository(),
+            LiveWorkout(),
         )
     }
 
@@ -273,6 +295,7 @@ class WorkoutViewModelTest {
                 FakeEquipmentRepository(),
                 clock,
                 settings,
+                LiveWorkout(),
             )
         val active = chosen.uiState.value as WorkoutUiState.Active
         assertEquals(false, active.soundsOn)

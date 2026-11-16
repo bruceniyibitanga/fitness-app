@@ -75,6 +75,7 @@ Trying the Phase 2 and 3 builds showed the app needs to work like a trainer, not
 3. Rebuild the phone screens to the approved design. Setup, Today, the workout, Skills, the tab bar and the Train library (programs, single workouts, exercise detail) are done, driven by the coach. Still to come: the Health Connect weight reading and a weekly weigh-in prompt.
 4. Bring the watch in line. Done: it runs the coach's sessions and sends finished workouts back to it.
 5. Bundle exercise and onboarding photos.
+6. Keep the phone workout going off screen: beeps with the phone locked or another app in front, and the rest clock as a Live Update on the lock screen and in the status bar ([ADR 0008](adr/0008-phone-workout-off-screen.md)). Done, pending a try on a real phone.
 
 Reading bodyweight from Health Connect moves here from Phase 4, because the coach uses the trend.
 
@@ -102,6 +103,7 @@ Reading bodyweight from Health Connect moves here from Phase 4, because the coac
 - Accessibility, performance and battery passes on real devices.
 - Security review against OWASP MASVS.
 - Privacy policy, Play Console Data safety form, internal testing track.
+- Play Console foreground service declaration for the phone and watch workout services (type `health`), with a short video of each running with the screen off.
 
 ## Later
 

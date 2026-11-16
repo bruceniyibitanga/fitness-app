@@ -40,7 +40,6 @@ import app.levitx.phone.ui.StatStrip
  */
 @Composable
 internal fun ColumnScope.GatePassed(state: WorkoutUiState.Active, pass: GatePass, onGate: (GateAction) -> Unit) {
-    PlayCue(Beat("pass", pass.number, 0, Cue.DONE), state.soundsOn, state.buzzesOn)
     Column(
         modifier = Modifier
             .weight(1f)
