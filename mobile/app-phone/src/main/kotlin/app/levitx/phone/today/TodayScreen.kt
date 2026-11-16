@@ -42,7 +42,6 @@ import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.Suggestion
 import app.levitx.core.coach.SuggestionChoice
-import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -59,6 +58,8 @@ import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.Wordmark
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightNumber
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -177,8 +178,8 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
 private fun WeekFigures(state: TodayUiState.Ready, sessionMinutes: Int?, onOpenProgress: () -> Unit) {
     StatStrip(
         figures = listOf(
-            (state.bodyweightKg?.let(::formatKg) ?: stringResource(R.string.no_value)) to
-                stringResource(R.string.today_body_kg),
+            (state.bodyweightKg?.let { weightNumber(it) } ?: stringResource(R.string.no_value)) to
+                stringResource(R.string.today_body_kg, unitCaps()),
             stringResource(R.string.today_week_count, state.sessionsLastWeek, state.sessionsPerWeek) to
                 stringResource(R.string.today_last_seven_days),
             (sessionMinutes?.let { stringResource(R.string.minutes_short, it) } ?: stringResource(R.string.no_value)) to

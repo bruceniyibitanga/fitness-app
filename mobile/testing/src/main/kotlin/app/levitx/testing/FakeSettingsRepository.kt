@@ -1,5 +1,6 @@
 package app.levitx.testing
 
+import app.levitx.core.load.WeightUnit
 import app.levitx.data.settings.AppSettings
 import app.levitx.data.settings.LEAD_IN_CHOICES
 import app.levitx.data.settings.SettingsRepository
@@ -25,6 +26,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setBuzzes(on: Boolean) {
         settings.update { it.copy(buzzes = on) }
+    }
+
+    override suspend fun setUnits(unit: WeightUnit) {
+        settings.update { it.copy(units = unit) }
     }
 
     override suspend fun markNotificationsAsked() {

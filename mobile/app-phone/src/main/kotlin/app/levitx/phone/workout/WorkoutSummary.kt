@@ -32,12 +32,15 @@ import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SetSquare
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.TabHeader
 import app.levitx.phone.ui.measureText
+import app.levitx.phone.ui.unitCaps
+import kotlin.math.roundToInt
 
 /**
  * The workout is saved: how much was done, new bests, every set, and what
@@ -91,8 +94,11 @@ private fun Headline(report: SessionReport) {
     StatStrip(
         figures = listOfNotNull(
             report.kgMoved?.let {
-                stringResource(R.string.workout_summary_kg, it) to
-                    stringResource(R.string.workout_summary_kg_label)
+                stringResource(
+                    R.string.workout_summary_kg,
+                    LocalWeightUnit.current.fromKg(it.toDouble()).roundToInt(),
+                ) to
+                    stringResource(R.string.workout_summary_kg_label, unitCaps())
             },
             stringResource(R.string.workout_summary_minutes, report.minutes) to
                 stringResource(R.string.workout_summary_time_label),

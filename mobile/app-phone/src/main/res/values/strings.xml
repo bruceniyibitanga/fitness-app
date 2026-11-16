@@ -13,10 +13,10 @@
         <item quantity="one">%1$d rep</item>
         <item quantity="other">%1$d reps</item>
     </plurals>
-    <string name="kg_per_rep">%1$s kg</string>
+    <string name="kg_per_rep">%1$s %2$s</string>
     <string name="percent">%1$d%%</string>
     <string name="step_of">%1$d / %2$d</string>
-    <string name="figure_kg_per_rep">KG PER REP</string>
+    <string name="figure_kg_per_rep">%1$s PER REP</string>
     <string name="figure_of_bodyweight">OF BODYWEIGHT</string>
     <string name="figure_hold">HOLD</string>
     <string name="plan_detail_tagged">%1$s · %2$s</string>
@@ -43,7 +43,6 @@
     <string name="kit_band">Bands</string>
     <string name="kit_box">Box or step</string>
     <string name="kit_none">Nothing yet</string>
-    <string name="kg">KG</string>
 
     <!-- Tabs -->
     <string name="tab_today">TODAY</string>
@@ -55,12 +54,11 @@
     <!-- Onboarding -->
     <string name="welcome_kicker">CALISTHENICS, MEASURED</string>
     <string name="welcome_title">Earn the skill.\nSee every step.</string>
-    <string name="welcome_body">A coach that plans every session for you. Every rep shows its load in kg, and every skill has a gate you can see and pass.</string>
+    <string name="welcome_body">A coach that plans every session for you. Every rep shows its load in %1$s, and every skill has a gate you can see and pass.</string>
     <string name="welcome_start">Build my plan</string>
     <string name="welcome_minutes">2 MIN</string>
     <string name="welcome_photo_description">Someone hanging from an outdoor pull-up bar</string>
-    <string name="welcome_fact_kg">kg</string>
-    <string name="welcome_fact_kg_caption">PER REP</string>
+        <string name="welcome_fact_kg_caption">PER REP</string>
     <string name="welcome_fact_gates">Gates</string>
     <string name="welcome_fact_gates_caption">NOT DAYS</string>
     <string name="welcome_fact_watch">Watch</string>
@@ -91,10 +89,10 @@
     <string name="how_pull_up_note">Your first sessions measure the rest, so there\'s nothing else to guess.</string>
     <string name="how_bodyweight_label">Bodyweight</string>
     <string name="how_optional">OPTIONAL</string>
-    <string name="how_bodyweight_description">Bodyweight in kilograms</string>
+    <string name="how_bodyweight_description">Bodyweight in %1$s</string>
     <string name="how_bodyweight_hint">e.g. 74.2</string>
-    <string name="how_bodyweight_note">Turns every rep into kg. Encrypted on this phone, never sent to your watch.</string>
-    <string name="how_bodyweight_invalid">Enter a weight between 20 and 350 kg, or leave it empty.</string>
+    <string name="how_bodyweight_note">Turns every rep into a load you can see. Encrypted on this phone, never sent to your watch.</string>
+    <string name="how_bodyweight_invalid">Enter a weight between %1$s and %2$s, or leave it empty.</string>
     <string name="week_title">When will you train?</string>
     <string name="week_body">We\'ll remind you on these days. Miss one and your plan just moves to the next session. Nothing breaks.</string>
     <string name="week_days_label">Days</string>
@@ -135,7 +133,7 @@
     <string name="today_sets_then_best">%1$d × %2$s, then a best effort</string>
     <string name="today_start">Start session</string>
     <string name="no_value">None</string>
-    <string name="today_body_kg">BODY KG</string>
+    <string name="today_body_kg">BODY %1$s</string>
     <string name="today_week_count">%1$d/%2$d</string>
     <string name="today_last_seven_days">LAST 7 DAYS</string>
     <string name="today_session_length">THIS SESSION</string>
@@ -173,7 +171,7 @@
     <string name="today_weight_label">ABOUT YOUR WEIGHT</string>
     <string name="today_weight_body" formatted="false">Your weight has been falling faster than about 1% a week. That makes it harder to keep strength, so your targets will hold steady until it settles. If you aren\'t trying to lose weight, it\'s worth talking to a GP.</string>
     <string name="today_weight_ok">Got it</string>
-    <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see kilograms per rep.</string>
+    <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see the load of every rep.</string>
 
     <!-- Workout -->
     <plurals name="workout_slow_instructions">
@@ -205,10 +203,10 @@
     <string name="workout_last_set">Last set of the workout</string>
     <string name="workout_rest_label">REST</string>
     <string name="workout_skip_rest">Skip rest</string>
-    <string name="workout_added_weight_label">ADDED WEIGHT (VEST OR BELT), KG</string>
+    <string name="workout_added_weight_label">ADDED WEIGHT (VEST OR BELT), %1$s</string>
     <string name="workout_band_label">BAND</string>
     <string name="workout_band_none">None</string>
-    <string name="workout_band_choice">%1$s · %2$s kg</string>
+    <string name="workout_band_choice">%1$s · %2$s</string>
     <string name="workout_band_note">Band-assisted sets build toward a gate but don\'t pass it.</string>
     <string name="workout_saved_label">WORKOUT SAVED</string>
     <string name="workout_done">Done</string>
@@ -302,7 +300,7 @@
         <item quantity="other">sets</item>
     </plurals>
     <string name="workout_summary_kg">%1$,d</string>
-    <string name="workout_summary_kg_label">KG MOVED</string>
+    <string name="workout_summary_kg_label">%1$s MOVED</string>
     <string name="workout_summary_minutes">%1$d min</string>
     <string name="workout_summary_time_label">TIME</string>
     <string name="workout_summary_exercises_label">EXERCISES</string>
@@ -356,14 +354,14 @@
     <string name="progress_empty">Your progress shows here after your first workout.</string>
     <string name="progress_load_label">%1$s · LOAD PER REP</string>
     <string name="progress_load_label_none">LOAD PER REP</string>
-    <string name="progress_no_load">Kilograms per rep show here once you\'ve logged your bodyweight on the Body tab and trained a movement that has a load figure.</string>
-    <string name="progress_since">KG SINCE %1$s</string>
+    <string name="progress_no_load">Load per rep shows here once you\'ve logged your bodyweight on the Body tab and trained a movement that has a load figure.</string>
+    <string name="progress_since">%2$s SINCE %1$s</string>
     <string name="progress_squares">SQUARES = NEW RUNG</string>
     <string name="progress_today">LATEST</string>
-    <string name="progress_load_note">Each step up is a harder exercise or more reps of weight. The line is kilograms per rep at the time, so weight lost along the way shows here too.</string>
+    <string name="progress_load_note">Each step up is a harder exercise or more reps of weight. The line is the load per rep at the time, so weight lost along the way shows here too.</string>
     <plurals name="progress_chart_description">
-        <item quantity="one">Kilograms per rep: %1$s in %3$d workout.</item>
-        <item quantity="other">Kilograms per rep went from %1$s to %2$s over %3$d workouts.</item>
+        <item quantity="one">Load per rep: %1$s in %3$d workout.</item>
+        <item quantity="other">Load per rep went from %1$s to %2$s over %3$d workouts.</item>
     </plurals>
     <string name="progress_moves">EVERY MOVEMENT</string>
     <string name="progress_week_sets">HARD SETS · LAST 7 DAYS</string>
@@ -428,14 +426,14 @@
         <item quantity="one">%1$d set</item>
         <item quantity="other">%1$d sets</item>
     </plurals>
-    <string name="past_workout_moved">%1$,d KG MOVED</string>
-    <string name="past_workout_kg">%1$s KG PER REP</string>
+    <string name="past_workout_moved">%1$,d %2$s MOVED</string>
+    <string name="past_workout_kg">%1$s %2$s PER REP</string>
     <string name="past_workout_set">SET</string>
     <string name="past_workout_done">DONE</string>
     <string name="past_workout_left">LEFT</string>
     <string name="past_workout_load">LOAD</string>
-    <string name="past_workout_added">+%1$s kg</string>
-    <string name="past_workout_band">%1$s kg band help</string>
+    <string name="past_workout_added">+%1$s</string>
+    <string name="past_workout_band">%1$s band help</string>
 
     <!-- Progress: too little for a chart -->
     <plurals name="progress_not_enough">
@@ -458,6 +456,10 @@
     <!-- Weights -->
     <string name="unit_kg">kg</string>
     <string name="unit_lb">lb</string>
+    <string name="unit_kg_one">kilo</string>
+    <string name="unit_lb_one">pound</string>
+    <string name="unit_kg_name">kilograms</string>
+    <string name="unit_lb_name">pounds</string>
     <string name="weight_value">%1$s %2$s</string>
     <string name="body_weights_label">WEIGHTS</string>
     <string name="body_weights_note">A weighted vest and plates. When there\'s no harder version of an exercise for you, the coach adds weight in small steps.</string>
@@ -474,6 +476,8 @@
     <string name="settings_lead_in">Count-in</string>
     <string name="settings_lead_in_note">Before a hold or slow negatives, so you can get in position.</string>
     <string name="settings_seconds">%1$d S</string>
+    <string name="settings_units">Weights in</string>
+    <string name="settings_units_note">Your bodyweight, your plates and vest, and the load of every rep.</string>
     <string name="settings_sounds_group">DURING A WORKOUT</string>
     <string name="settings_sounds">Sounds</string>
     <string name="settings_sounds_note">Beeps for timers and the end of rest, at your media volume. You can also turn them off for one workout from its menu.</string>
@@ -569,7 +573,7 @@
     <string name="focus_workout_in_progress">You already have a workout in progress. Finish or end it first.</string>
 
     <!-- Exercise -->
-    <string name="exercise_kg_per_rep">KG / REP</string>
+    <string name="exercise_kg_per_rep">%1$s / REP</string>
     <string name="exercise_share_measured">BW · MEASURED</string>
     <string name="exercise_share_estimate">BW · ESTIMATE</string>
     <string name="exercise_target">TARGET</string>
@@ -616,32 +620,31 @@
 
     <!-- Equipment -->
     <string name="body_trend_label">BODYWEIGHT · TREND</string>
-    <string name="body_kg_per_week">KG / WEEK</string>
+    <string name="body_kg_per_week">%1$s / WEEK</string>
     <string name="body_no_weight">Weigh in to start your trend. Your weight stays on this phone, encrypted.</string>
     <string name="body_trend_waiting">Weigh in a few more times over the next week or two and your trend shows here.</string>
-    <string name="body_chart_description">Your recent weigh-ins, with the trend now at %1$s kg.</string>
+    <string name="body_chart_description">Your recent weigh-ins, with the trend now at %1$s.</string>
     <string name="body_today">TODAY</string>
     <string name="body_on_the_bar">ON THE BAR</string>
-    <string name="body_kg_per_rep">KG PER REP</string>
     <string name="body_share_measured">%1$d%% BW · MEASURED</string>
     <string name="body_share_estimated">%1$d%% BW · EST</string>
-    <string name="body_kilo_note">Every kilo you lose makes each of these about %1$s%% lighter. Your plan already counts it.</string>
+    <string name="body_kilo_note">Every %2$s you lose makes each of these about %1$s%% lighter. Your plan already counts it.</string>
     <string name="body_kit_label">YOUR KIT</string>
     <string name="body_kit_note">Your plan only uses what is picked here. A wall, a chair and the floor are always there.</string>
     <string name="body_weigh_in">Weigh in</string>
-    <string name="body_weigh_in_label">BODYWEIGHT, KG</string>
+    <string name="body_weigh_in_label">BODYWEIGHT, %1$s</string>
     <string name="body_weigh_in_save">Save</string>
     <string name="body_weigh_in_cancel">Cancel</string>
     <string name="equipment_bands_label">BANDS</string>
-    <string name="equipment_band_help">HELPS ABOUT %1$s KG</string>
+    <string name="equipment_band_help">HELPS ABOUT %1$s</string>
     <string name="equipment_band_remove">Remove</string>
     <string name="equipment_band_needs_bodyweight">Save your bodyweight first. Calibrating a band needs it.</string>
     <string name="equipment_band_add">Add a band</string>
     <string name="equipment_calibrate_label">CALIBRATE WITH A BATHROOM SCALE</string>
     <string name="equipment_calibrate_steps">1. Loop the band over the bar.\n2. Stand on a bathroom scale under it and put one foot in the band.\n3. Bend your knees until your chin is about where it would be halfway up a pull-up.\n4. Keep your hands off the bar and read the scale.</string>
     <string name="equipment_band_name">Name, like its colour</string>
-    <string name="equipment_scale_reading">SCALE READING, KG</string>
-    <string name="equipment_band_result">This band helps by about %1$s kg</string>
+    <string name="equipment_scale_reading">SCALE READING, %1$s</string>
+    <string name="equipment_band_result">This band helps by about %1$s</string>
     <string name="equipment_band_result_invalid">The reading should be lower than your bodyweight.</string>
     <string name="equipment_band_save">Save band</string>
 

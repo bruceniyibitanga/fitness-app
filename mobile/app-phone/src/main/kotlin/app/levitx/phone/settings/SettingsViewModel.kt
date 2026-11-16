@@ -2,6 +2,7 @@ package app.levitx.phone.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.levitx.core.load.WeightUnit
 import app.levitx.data.settings.AppSettings
 import app.levitx.data.settings.SettingsRepository
 import app.levitx.phone.handlingDataFailures
@@ -70,6 +71,11 @@ class SettingsViewModel @Inject constructor(
     /** Sets the count-in before holds and negatives. */
     fun setLeadInSeconds(seconds: Int) {
         viewModelScope.launch { settings.setLeadInSeconds(seconds) }
+    }
+
+    /** Shows and takes weights in [unit] from now on. */
+    fun setUnits(unit: WeightUnit) {
+        viewModelScope.launch { settings.setUnits(unit) }
     }
 
     /** Turns beeps on or off. */

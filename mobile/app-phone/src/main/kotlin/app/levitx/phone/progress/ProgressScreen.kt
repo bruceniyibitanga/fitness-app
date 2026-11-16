@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.history.LoadPoint
-import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -48,7 +47,10 @@ import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.shortDate
-import app.levitx.phone.ui.signedKg
+import app.levitx.phone.ui.signedWeight
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightNumber
+import app.levitx.phone.ui.weightWithUnit
 
 /**
  * Workouts in range before the load chart is drawn. Two or three points draw
@@ -161,19 +163,25 @@ private fun HeadlineSection(headline: Headline?) {
         Caption(stringResource(R.string.progress_load_label, patternName(headline.pattern)))
         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 12.dp)) {
             Text(
-                text = formatKg(headline.nowKg),
+                text = weightNumber(headline.nowKg),
                 style = LevitxType.Hero.copy(fontSize = 96.sp, lineHeight = 80.sp),
                 color = LevitxColors.Text,
             )
-            Caption(stringResource(R.string.kg), modifier = Modifier.padding(start = 6.dp, bottom = 8.dp))
+            Caption(unitCaps(), modifier = Modifier.padding(start = 6.dp, bottom = 8.dp))
             Spacer(Modifier.weight(1f))
             Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(bottom = 6.dp)) {
                 Text(
-                    text = signedKg(headline.changeKg),
+                    text = signedWeight(headline.changeKg),
                     style = LevitxType.Figure,
                     color = if (headline.changeKg >= KG_CHANGE_SHOWN) LevitxColors.Accent else LevitxColors.TextMuted,
                 )
-                Caption(stringResource(R.string.progress_since, shortDate(headline.points.first().atEpochMillis)))
+                Caption(
+                    stringResource(
+                        R.string.progress_since,
+                        shortDate(headline.points.first().atEpochMillis),
+                        unitCaps(),
+                    ),
+                )
             }
         }
         if (headline.points.size < MIN_TREND_POINTS) {
@@ -227,8 +235,8 @@ private fun LoadChart(points: List<LoadPoint>, modifier: Modifier = Modifier) {
     val description = pluralStringResource(
         R.plurals.progress_chart_description,
         points.size,
-        formatKg(points.first().kgPerRep),
-        formatKg(points.last().kgPerRep),
+        weightWithUnit(points.first().kgPerRep),
+        weightWithUnit(points.last().kgPerRep),
         points.size,
     )
     Canvas(

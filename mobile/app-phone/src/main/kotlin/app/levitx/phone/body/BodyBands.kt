@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.core.load.LoadLimits
 import app.levitx.core.load.bandAssistanceFromScale
-import app.levitx.core.load.formatKg
 import app.levitx.data.equipment.Band
 import app.levitx.data.equipment.MAX_BAND_NAME_LENGTH
 import app.levitx.design.LevitxColors
@@ -39,6 +38,8 @@ import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightText
 
 /*
  * Bands on the Body tab: the ones calibrated so far, and calibrating a new
@@ -70,7 +71,7 @@ internal fun Bands(
             Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.weight(1f)) {
                 Text(band.name, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
                 Text(
-                    text = stringResource(R.string.equipment_band_help, formatKg(band.assistanceKg)),
+                    text = stringResource(R.string.equipment_band_help, weightText(band.assistanceKg)),
                     style = LevitxType.Micro,
                     color = LevitxColors.TextFaint,
                 )
@@ -126,11 +127,11 @@ private fun AddBand(bodyweightKg: Double, onAddBand: (String, Double) -> Unit) {
         DecimalInput(
             value = reading,
             onValueChange = { reading = it },
-            label = stringResource(R.string.equipment_scale_reading),
+            label = stringResource(R.string.equipment_scale_reading, unitCaps()),
             max = LoadLimits.MAX_BODYWEIGHT_KG,
         )
         Text(
-            text = assistance?.let { stringResource(R.string.equipment_band_result, formatKg(it)) }
+            text = assistance?.let { stringResource(R.string.equipment_band_result, weightText(it)) }
                 ?: stringResource(R.string.equipment_band_result_invalid),
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,

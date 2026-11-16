@@ -22,7 +22,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -32,6 +31,8 @@ import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.StatStrip
+import app.levitx.phone.ui.perRepCaption
+import app.levitx.phone.ui.weightNumber
 
 /**
  * A gate passed, marked properly before the session carries on: the figure,
@@ -51,7 +52,7 @@ internal fun ColumnScope.GatePassed(state: WorkoutUiState.Active, pass: GatePass
             figures = listOfNotNull(
                 stringResource(R.string.gate_passed_gain, pass.value - pass.was) to
                     stringResource(R.string.gate_passed_gain_label),
-                load?.let { formatKg(it) to stringResource(R.string.figure_kg_per_rep) },
+                load?.let { weightNumber(it) to perRepCaption() },
                 (pass.path.gates.size - pass.number).toString() to stringResource(R.string.gate_passed_left_label),
             ),
             modifier = Modifier.padding(horizontal = ScreenPadding),

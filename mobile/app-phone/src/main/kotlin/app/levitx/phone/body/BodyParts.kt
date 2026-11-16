@@ -27,14 +27,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.core.coach.WeighIn
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Help
+import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.perRepCaption
+import app.levitx.phone.ui.signedWeight
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightNumber
+import app.levitx.phone.ui.weightWithUnit
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -67,16 +74,16 @@ internal fun BodyweightTrend(state: BodyUiState.Ready) {
         Caption(stringResource(R.string.body_trend_label))
         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 12.dp)) {
             Text(
-                text = trend?.let { formatKg(it.currentKg) } ?: stringResource(R.string.no_value),
+                text = trend?.let { weightNumber(it.currentKg) } ?: stringResource(R.string.no_value),
                 style = LevitxType.Hero.copy(fontSize = 96.sp, lineHeight = 80.sp),
                 color = if (trend == null) LevitxColors.TextFaint else LevitxColors.Text,
             )
-            Caption(stringResource(R.string.kg), modifier = Modifier.padding(start = 8.dp, bottom = 6.dp).weight(1f))
+            Caption(unitCaps(), modifier = Modifier.padding(start = 8.dp, bottom = 6.dp).weight(1f))
             trend?.weeklyChange?.let { change ->
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(bottom = 4.dp)) {
-                    Text(signedKg(change * trend.currentKg), style = LevitxType.Figure, color = LevitxColors.Text)
+                    Text(signedWeight(change * trend.currentKg), style = LevitxType.Figure, color = LevitxColors.Text)
                     Text(
-                        stringResource(R.string.body_kg_per_week),
+                        stringResource(R.string.body_kg_per_week, unitCaps()),
                         style = LevitxType.Micro,
                         color = LevitxColors.TextMuted,
                     )
@@ -101,7 +108,7 @@ internal fun BodyweightTrend(state: BodyUiState.Ready) {
  */
 @Composable
 private fun TrendChart(weighIns: List<WeighIn>, nowEpochMillis: Long, currentKg: Double) {
-    val description = stringResource(R.string.body_chart_description, formatKg(currentKg))
+    val description = stringResource(R.string.body_chart_description, weightWithUnit(currentKg))
     val start = weighIns.first().atEpochMillis
     val low = weighIns.minOf { it.kg } - CHART_PADDING_KG
     val high = weighIns.maxOf { it.kg } + CHART_PADDING_KG
@@ -163,13 +170,6 @@ private fun shortDate(epochMillis: Long): String {
     return Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).format(formatter).uppercase()
 }
 
-/** "−0.3" or "+0.2": a change in kg with its sign, using a real minus. */
-private fun signedKg(kg: Double): String = when {
-    kg < 0 -> "−" + formatKg(-kg)
-    kg > 0 -> "+" + formatKg(kg)
-    else -> formatKg(0.0)
-}
-
 /**
  * "ON THE BAR": each exercise trained now, the share of bodyweight it moves,
  * its kilograms per rep, and how that is changing a week.
@@ -186,7 +186,7 @@ internal fun OnTheBar(state: BodyUiState.Ready) {
             .padding(horizontal = ScreenPadding),
     ) {
         Caption(stringResource(R.string.body_on_the_bar), modifier = Modifier.weight(1f))
-        Caption(stringResource(R.string.body_kg_per_rep), color = LevitxColors.TextFaint)
+        Caption(perRepCaption(), color = LevitxColors.TextFaint)
     }
     Rule()
     state.onTheBar.forEach { load ->
@@ -195,7 +195,19 @@ internal fun OnTheBar(state: BodyUiState.Ready) {
     }
     state.trend?.let { trend ->
         Help(
-            text = stringResource(R.string.body_kilo_note, formatKg(PERCENT / trend.currentKg)),
+            text = stringResource(
+                R.string.body_kilo_note,
+                formatKg(PERCENT * LocalWeightUnit.current.toKg(1.0) / trend.currentKg),
+                stringResource(
+                    if (LocalWeightUnit.current ==
+                        WeightUnit.KG
+                    ) {
+                        R.string.unit_kg_one
+                    } else {
+                        R.string.unit_lb_one
+                    },
+                ),
+            ),
             modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 12.dp, bottom = 14.dp),
         )
         Rule()
@@ -224,9 +236,9 @@ private fun LoadRow(load: BarLoad) {
                 color = LevitxColors.TextFaint,
             )
         }
-        Text(formatKg(load.kgPerRep), style = LevitxType.Figure, color = LevitxColors.Text)
+        Text(weightNumber(load.kgPerRep), style = LevitxType.Figure, color = LevitxColors.Text)
         Text(
-            text = load.kgPerWeek?.let(::signedKg).orEmpty(),
+            text = load.kgPerWeek?.let { signedWeight(it) }.orEmpty(),
             style = LevitxType.Micro,
             color = LevitxColors.Accent,
             textAlign = TextAlign.End,

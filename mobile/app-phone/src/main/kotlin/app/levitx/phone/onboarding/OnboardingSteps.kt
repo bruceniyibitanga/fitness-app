@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.sp
 import app.levitx.core.coach.CoachPhrases
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.load.LoadLimits
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
@@ -45,6 +47,7 @@ import app.levitx.phone.ui.ChoiceRow
 import app.levitx.phone.ui.ChoiceStyle
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.KitPicker
+import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.PhotoTile
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -52,6 +55,8 @@ import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.pathPhoto
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightWithUnit
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 
@@ -152,9 +157,15 @@ internal fun HowStep(state: OnboardingUiState, actions: OnboardingActions) {
     Question(
         text = stringResource(R.string.how_bodyweight_label),
         trailing = stringResource(R.string.how_optional),
-        help = stringResource(
-            if (state.bodyweightInvalid) R.string.how_bodyweight_invalid else R.string.how_bodyweight_note,
-        ),
+        help = if (state.bodyweightInvalid) {
+            stringResource(
+                R.string.how_bodyweight_invalid,
+                weightWithUnit(LoadLimits.MIN_BODYWEIGHT_KG),
+                weightWithUnit(LoadLimits.MAX_BODYWEIGHT_KG),
+            )
+        } else {
+            stringResource(R.string.how_bodyweight_note)
+        },
     ) {
         KgField(state.bodyweightText, actions.onTypeBodyweight, invalid = state.bodyweightInvalid)
     }
@@ -202,7 +213,10 @@ private fun StyleOption(title: String, badge: String?, body: String, selected: B
 /** A kilogram field with "KG" in its own cell on the right, as on the artboard. */
 @Composable
 private fun KgField(text: String, onChange: (String) -> Unit, invalid: Boolean) {
-    val description = stringResource(R.string.how_bodyweight_description)
+    val description = stringResource(
+        R.string.how_bodyweight_description,
+        stringResource(if (LocalWeightUnit.current == WeightUnit.KG) R.string.unit_kg_name else R.string.unit_lb_name),
+    )
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -244,7 +258,7 @@ private fun KgField(text: String, onChange: (String) -> Unit, invalid: Boolean) 
                 .background(LevitxColors.Tick),
         )
         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 14.dp).height(52.dp)) {
-            Caption(stringResource(R.string.kg))
+            Caption(unitCaps())
         }
     }
 }

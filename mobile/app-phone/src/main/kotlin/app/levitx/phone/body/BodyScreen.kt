@@ -49,6 +49,7 @@ import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.TabHeader
+import app.levitx.phone.ui.unitCaps
 
 /** The bottom bars, as on the artboard. */
 internal val BodyBarHeight = 64.dp
@@ -178,7 +179,7 @@ private fun WeighInBar(startKg: Double, onSave: (Double) -> Unit, onCancel: () -
     DecimalInput(
         value = entry,
         onValueChange = { entry = it },
-        label = stringResource(R.string.body_weigh_in_label),
+        label = stringResource(R.string.body_weigh_in_label, unitCaps()),
         max = LoadLimits.MAX_BODYWEIGHT_KG,
         modifier = Modifier.padding(ScreenPadding),
     )

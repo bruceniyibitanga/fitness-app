@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.load.calculateEffectiveLoad
-import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
@@ -25,6 +24,8 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.patternName
+import app.levitx.phone.ui.perRepCaption
+import app.levitx.phone.ui.weightNumber
 import kotlin.math.roundToInt
 
 private const val PERCENT = 100
@@ -58,8 +59,8 @@ internal fun Lead(plan: ExercisePlan, bodyweightKg: Double?) {
             )
             when {
                 profile != null && bodyweightKg != null -> LeadFigure(
-                    formatKg(calculateEffectiveLoad(bodyweightKg, profile).totalKg),
-                    stringResource(R.string.figure_kg_per_rep),
+                    weightNumber(calculateEffectiveLoad(bodyweightKg, profile).totalKg),
+                    perRepCaption(),
                 )
 
                 profile != null -> LeadFigure(

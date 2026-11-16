@@ -631,7 +631,7 @@ fun SettingsScreenshot() {
                     DataTask.EXPORTED,
                 ),
                 notificationsOn = false,
-                actions = SettingsActions({}, {}, {}, {}, {}, {}),
+                actions = SettingsActions({}, {}, {}, {}, {}, {}, {}),
                 onBack = {},
                 onOpenCredits = {},
             )

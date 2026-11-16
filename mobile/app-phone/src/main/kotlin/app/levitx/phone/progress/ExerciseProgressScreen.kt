@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.history.ExerciseVisit
-import app.levitx.core.load.formatKg
 import app.levitx.core.skills.GateMeasure
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
@@ -48,7 +47,10 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SetSquare
 import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.measureText
+import app.levitx.phone.ui.perRepCaption
 import app.levitx.phone.ui.shortDate
+import app.levitx.phone.ui.unitLabel
+import app.levitx.phone.ui.weightNumber
 
 /** Exercise progress destination: connects [ExerciseProgressViewModel] to [ExerciseProgressScreen]. */
 @Composable
@@ -108,8 +110,8 @@ fun ExerciseProgressScreen(
                 BestSets(uiState)
                 StatStrip(
                     figures = listOf(
-                        (uiState.kgPerRep?.let(::formatKg) ?: stringResource(R.string.no_value)) to
-                            stringResource(R.string.figure_kg_per_rep),
+                        (uiState.kgPerRep?.let { weightNumber(it) } ?: stringResource(R.string.no_value)) to
+                            perRepCaption(),
                         (
                             uiState.nextTarget?.let { measureText(uiState.measure, it) }
                                 ?: stringResource(R.string.no_value)
@@ -204,7 +206,7 @@ private fun RecordsSection(state: ExerciseProgressUiState.Ready) {
             RecordRow(
                 stringResource(R.string.exercise_progress_record_heaviest),
                 it.atEpochMillis,
-                stringResource(R.string.kg_per_rep, formatKg(it.value)),
+                stringResource(R.string.kg_per_rep, weightNumber(it.value), unitLabel()),
             )
         }
         RecordRow(

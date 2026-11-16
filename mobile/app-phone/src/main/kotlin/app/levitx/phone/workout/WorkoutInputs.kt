@@ -34,7 +34,6 @@ import app.levitx.core.load.BandAssistance
 import app.levitx.core.load.LoadLimits
 import app.levitx.core.load.LoadModifier
 import app.levitx.core.load.calculateEffectiveLoad
-import app.levitx.core.load.formatKg
 import app.levitx.data.equipment.Band
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
@@ -47,6 +46,8 @@ import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.MAX_REPS_LEFT
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.repsLeftLabel
+import app.levitx.phone.ui.unitCaps
+import app.levitx.phone.ui.weightText
 
 /** Largest number the counter goes to. No one does 999 reps in a set. */
 private const val MAX_ENTRY = 999
@@ -156,7 +157,7 @@ internal fun LoadChooser(
         DecimalInput(
             value = addedKg,
             onValueChange = onAddedKgChange,
-            label = stringResource(R.string.workout_added_weight_label),
+            label = stringResource(R.string.workout_added_weight_label, unitCaps()),
             max = LoadLimits.MAX_MODIFIER_KG,
         )
         if (state.bands.isNotEmpty()) {
@@ -166,7 +167,7 @@ internal fun LoadChooser(
                     pair.forEach { band ->
                         ChoiceBar(
                             text = band?.let {
-                                stringResource(R.string.workout_band_choice, it.name, formatKg(it.assistanceKg))
+                                stringResource(R.string.workout_band_choice, it.name, weightText(it.assistanceKg))
                             } ?: stringResource(R.string.workout_band_none),
                             selected = bandId == band?.id,
                             onClick = { onBandChange(band?.id) },

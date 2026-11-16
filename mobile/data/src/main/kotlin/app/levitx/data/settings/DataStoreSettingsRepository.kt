@@ -5,6 +5,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import app.levitx.core.load.WeightUnit
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +18,14 @@ private val LEAD_IN = intPreferencesKey("lead_in_seconds")
 private val SOUNDS = booleanPreferencesKey("sounds")
 private val BUZZES = booleanPreferencesKey("buzzes")
 private val NOTIFICATIONS_ASKED = booleanPreferencesKey("notifications_asked")
+private val UNITS = stringPreferencesKey("units")
+
+/** Countries where people weigh themselves and their plates in pounds. */
+private val POUND_COUNTRIES = setOf("US", "LR", "MM")
+
+/** Pounds where the phone is set to a pound country, kilograms everywhere else, until the person picks. */
+private fun defaultUnits(): WeightUnit =
+    if (Locale.getDefault().country in POUND_COUNTRIES) WeightUnit.LB else WeightUnit.KG
 
 /**
  * [SettingsRepository] on Jetpack DataStore. DataStore reads and writes off
@@ -31,6 +42,8 @@ internal class DataStoreSettingsRepository @Inject constructor(private val store
                 sounds = prefs[SOUNDS] ?: true,
                 buzzes = prefs[BUZZES] ?: true,
                 notificationsAsked = prefs[NOTIFICATIONS_ASKED] ?: false,
+                units = prefs[UNITS]?.let { stored -> WeightUnit.entries.firstOrNull { it.name == stored } }
+                    ?: defaultUnits(),
             )
         }
         .distinctUntilChanged()
@@ -45,6 +58,10 @@ internal class DataStoreSettingsRepository @Inject constructor(private val store
 
     override suspend fun setBuzzes(on: Boolean) {
         store.edit { it[BUZZES] = on }
+    }
+
+    override suspend fun setUnits(unit: WeightUnit) {
+        store.edit { it[UNITS] = unit.name }
     }
 
     override suspend fun markNotificationsAsked() {
