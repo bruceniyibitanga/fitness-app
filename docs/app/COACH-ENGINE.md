@@ -121,6 +121,7 @@ The highest score wins. Nothing is random: the same model at the same time alway
 - **Finding the level.** For the first two sessions on an exercise the last set is a best-effort set. It places the person directly: up a rung if they reach the top of the range (two rungs for double it), down one if they can't reach the bottom, otherwise work sets start at 70% of what they did. This is how the coach learns someone's level from training instead of asking.
 - **Light work never changes a target.** Neither does anything done while weight is falling fast (section 6).
 - **What counts toward the week is sets done, not sets planned.**
+- **Timed sets are counted by the timer, then checked by the person.** A hold counts whole seconds from the end of a 3 second count-in until the person taps to stop. Slow negatives are paced by sound, since nobody can tap a phone while hanging from a bar, and count only the reps fully lowered. Either way the count fills in the set, and the person corrects it before logging, so the coach learns from what they say they did.
 
 ### Variation
 
@@ -347,6 +348,7 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 | Push-up loads | 41 to 74% of bodyweight | Ebben et al. 2011, measured on a force plate | Measured |
 | Pull-up and dip loads | 95% of bodyweight, plus any belt in full | Everything but the forearms and hands moves. Forearm and hand are about 2.2% of body mass per arm in men and 1.9% in women ([de Leva 1996](https://doi.org/10.1016/0021-9290(95)00178-6)). | Estimate from published segment masses. Changed in this check (was 100%). |
 | Fast weight loss | over 1% a week | Ruiz-Castellano et al. 2021; Garthe et al. 2011 (section 6) | Backed |
+| Lowering time on slow negatives | 5 s a rep | Coaching write-ups on beginner negatives agree on 3 to 5 seconds down. We take the top of that, and the phone's timer paces each rep to it (4 s to get back to the top, then 5 s down). No study sets the number. | Our choice, to review |
 | Effort taps | Easy 4, Right 2, Hard 0 reps in reserve | Zourdos et al. 2016; Helms et al. 2018 (section 2) | Backed |
 | Skill gate targets | e.g. 30 s hang, 10 pull-ups and 10 dips before a muscle-up | Coaching practice: the RR wiki lists chest-to-bar pull-ups and deep dips as muscle-up prerequisites. No study sets the exact numbers. | Our choice, to review |
 | Block length, signals for a suggestion, scoring weights | see `CoachTuning` | No study gives these | Our choice, to review |
