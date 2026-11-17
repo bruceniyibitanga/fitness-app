@@ -2,6 +2,7 @@ package app.levitx.phone.body
 
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.MovementPattern
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.coach.WeighIn
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
@@ -89,6 +90,16 @@ class BodyViewModelTest {
         viewModel.chooseEquipment(null)
         assertTrue(ready.equipment.isEmpty())
         assertEquals("training days are kept", coachState().trainingDays, checkNotNull(coach.current).trainingDays)
+    }
+
+    @Test
+    fun theTrainingAimIsSavedToTheProfile() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        assertEquals(TrainingAim.BALANCED, ready.aim)
+        viewModel.updateAim(TrainingAim.STRENGTH)
+        assertEquals(TrainingAim.STRENGTH, ready.aim)
+        assertEquals(TrainingAim.STRENGTH, checkNotNull(coach.current).model.profile.aim)
     }
 
     @Test

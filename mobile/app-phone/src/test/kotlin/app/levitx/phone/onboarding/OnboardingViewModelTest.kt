@@ -5,6 +5,7 @@ import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.load.WeightUnit
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.testing.FakeCoachRepository
@@ -103,6 +104,7 @@ class OnboardingViewModelTest {
         viewModel.answer(SetupAnswer.Goal("first_pull_up"))
         viewModel.next()
         viewModel.answer(SetupAnswer.PullUp(PullUpAnswer.NOT_YET))
+        viewModel.answer(SetupAnswer.Aim(TrainingAim.MUSCLE))
         viewModel.answer(SetupAnswer.Bodyweight("74.5"))
         viewModel.next()
         viewModel.answer(SetupAnswer.Day(DayOfWeek.FRIDAY))
@@ -115,6 +117,7 @@ class OnboardingViewModelTest {
         assertTrue(viewModel.finish())
         val state = checkNotNull(coachRepository.current)
         assertEquals("first_pull_up", state.model.profile.goalPathId)
+        assertEquals(TrainingAim.MUSCLE, state.model.profile.aim)
         assertEquals(setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY), state.trainingDays)
         assertEquals(74.5, equipment.observeBodyweightKg().first())
     }

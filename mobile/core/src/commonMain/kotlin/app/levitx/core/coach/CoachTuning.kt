@@ -105,9 +105,6 @@ public object CoachTuning {
     /** Seconds one rep is assumed to take, for estimating session length. */
     public const val SECONDS_PER_REP: Int = 4
 
-    /** Seconds an average set plus its rest takes, for sizing weekly targets to the time available. */
-    public const val AVERAGE_SET_SECONDS: Int = 150
-
     /** Hold targets move in steps of this many seconds. Rep targets move one rep at a time. */
     public const val HOLD_STEP_SECONDS: Int = 5
 

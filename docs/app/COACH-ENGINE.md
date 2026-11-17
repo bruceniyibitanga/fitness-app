@@ -299,6 +299,23 @@ The datasets were useful for names and kit, and not much else. Their difficulty 
 
 Rungs are only ever added at the top of a ladder or as another option on an existing rung. The coach stores the rung number, so inserting one lower down would quietly move everyone.
 
+### Training aims
+
+Alongside any skill goal, the person picks what the ladder work is for. It's chosen at setup and can be changed on the Body tab. Only the top of each exercise's range moves, never the bottom, so a stored target stays valid when someone switches.
+
+| Aim | Rest (reps / holds) | Reps in reserve | Moves on at | Weekly sets |
+|---|---|---|---|---|
+| Balanced (default) | 2 min / 90 s | 2 | top of the range | as planned |
+| Muscle | 2 min / 90 s | 1 | top of the range | a third more, up to 20 a pattern |
+| Strength | 3 min / 2 min | 2 | middle of the range | as planned |
+| Conditioning | 1 min / 45 s | 2 | half the range past the top, up to the ceiling | as planned |
+
+- **Strength** moves on at the middle of the range, so weight or the harder variation comes sooner and sets stay lower in reps. Heavier loads build more strength, while light and heavy grow muscle about equally when taken close to failure ([Schoenfeld et al. 2017](https://doi.org/10.1519/JSC.0000000000002200)). ACSM puts strength rest at 2 to 3 minutes, and 3 minutes beat 1 for strength and growth in trained men ([Schoenfeld et al. 2016](https://doi.org/10.1519/JSC.0000000000001272)).
+- **Muscle** adds weekly sets, because more sets grow more muscle ([Schoenfeld, Ogborn and Krieger 2017](https://doi.org/10.1080/02640414.2016.1210197)), and stops one rep short of failure instead of two. Growth improves as sets end closer to failure, while strength gains are similar across a wide range of reps in reserve ([Robinson et al. 2024](https://doi.org/10.1007/s40279-024-02069-2)).
+- **Conditioning** climbs past the range before moving on and rests a minute. ACSM's endurance guidance is higher reps with short rest.
+- Weekly targets are sized to the time available using the aim's rest, so short rest fits more sets into the same week and long rest fewer.
+- Placement from a best-effort set and the quick test ignores the aim. It measures where someone is, which doesn't depend on what they're training for.
+
 ### The programs
 
 Eighteen skill programs, each a path of gates that pass in order. The gates follow the same sources as the ladders (the RR and the BWF chart), plus common coaching practice for the hand balancing and straight-arm skills. The weeks are rough estimates at three sessions a week and the app says so: a gate passes when it passes. Straight-arm skills (levers, planche) get short holds and long estimates, because tendons adapt over months while muscle adapts over weeks.

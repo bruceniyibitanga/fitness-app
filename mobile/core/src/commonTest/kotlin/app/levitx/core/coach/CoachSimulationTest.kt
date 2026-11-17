@@ -292,4 +292,24 @@ class CoachSimulationTest {
         assertTrue(state.target > top.range.last || state.slowLowering, "target ${state.target}")
         assertTrue(state.target <= top.ceiling)
     }
+
+    @Test
+    fun everyAimKeepsProgressingForSixteenWeeks() {
+        val athlete = SimulatedAthlete.even(strength = 3.0, skill = 0.4, gain = 0.06)
+        val finals = TrainingAim.entries.associateWith { aim ->
+            simulate(newcomer(pullUpProfile().copy(aim = aim)), athlete, trainingDays(16, 0, 2, 4)).first
+        }
+        finals.forEach { (aim, model) ->
+            assertTrue(model.rungs.values.sum() > 0, "${aim.name} moved up somewhere")
+            model.exercises.forEach { (id, state) ->
+                val exercise = ExerciseCatalogue.byId(id) ?: return@forEach
+                assertTrue(state.target <= exercise.ceiling, "${aim.name} $id target ${state.target}")
+            }
+        }
+        // Moving on sooner, strength ends at least as high up the ladders as balanced.
+        assertTrue(
+            finals.getValue(TrainingAim.STRENGTH).rungs.values.sum() >=
+                finals.getValue(TrainingAim.BALANCED).rungs.values.sum(),
+        )
+    }
 }

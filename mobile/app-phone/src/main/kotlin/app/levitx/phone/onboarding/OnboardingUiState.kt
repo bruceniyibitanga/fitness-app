@@ -10,6 +10,7 @@ import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SkillTraining
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.load.LoadLimits
 import app.levitx.core.load.WeightUnit
 import app.levitx.core.skills.SkillCatalogue
@@ -53,6 +54,7 @@ val SessionLengths: List<Int> = listOf(20, 30, 45, 60)
  * @property days Training days.
  * @property minutes Time per session.
  * @property equipment Kit they have. Empty until they pick some: nothing is assumed.
+ * @property aim What the ladder work is tuned for.
  * @property testIndex Which of [tests] is on screen during the quick test.
  * @property testCounts Reps counted for each test so far. A test not in here counts as none.
  * @property testsDone How many of [tests] were confirmed with "next". Only these
@@ -72,6 +74,7 @@ data class OnboardingUiState(
     val days: Set<DayOfWeek> = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
     val minutes: Int = CoachProfile.DEFAULT_SESSION_MINUTES,
     val equipment: Set<Equipment> = emptySet(),
+    val aim: TrainingAim = TrainingAim.BALANCED,
     val testIndex: Int = 0,
     val testCounts: Map<QuickTest, Int> = emptyMap(),
     val testsDone: Int = 0,
@@ -153,5 +156,6 @@ data class OnboardingUiState(
             ),
             sessionMinutes = minutes,
             equipment = equipment,
+            aim = aim,
         )
 }

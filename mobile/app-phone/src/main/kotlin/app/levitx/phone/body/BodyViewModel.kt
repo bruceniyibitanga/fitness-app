@@ -3,6 +3,7 @@ package app.levitx.phone.body
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Equipment
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.load.LoadKit
 import app.levitx.core.load.LoadLimits
 import app.levitx.data.coach.CoachRepository
@@ -83,6 +84,16 @@ class BodyViewModel @Inject constructor(
             kitLock.withLock {
                 val state = coachRepository.observeState().first() ?: return@withLock
                 coachRepository.updateProfile(state.model.profile.copy(loadKit = kit), state.trainingDays)
+            }
+        }
+    }
+
+    /** Tunes the ladder work for [aim] from the next session on. Stored targets stay valid. */
+    fun updateAim(aim: TrainingAim) {
+        viewModelScope.launch {
+            kitLock.withLock {
+                val state = coachRepository.observeState().first() ?: return@withLock
+                coachRepository.updateProfile(state.model.profile.copy(aim = aim), state.trainingDays)
             }
         }
     }
