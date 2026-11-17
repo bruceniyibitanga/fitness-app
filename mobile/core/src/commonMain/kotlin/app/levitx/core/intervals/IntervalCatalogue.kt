@@ -158,6 +158,9 @@ public object IntervalCatalogue {
 
     private val byId: Map<String, IntervalWorkout> = all.associateBy { it.id }
 
+    /** Every move interval workouts are built from. */
+    public val moves: List<Exercise> = intervalMoves
+
     private val movesById: Map<String, Exercise> = intervalMoves.associateBy { it.id }
 
     /** Finds a workout by its [IntervalWorkout.id], or returns null. */

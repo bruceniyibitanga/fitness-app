@@ -38,6 +38,7 @@ import app.levitx.phone.path.PathRoute
 import app.levitx.phone.skills.SkillsRoute
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.today.TodayRoute
+import app.levitx.phone.train.TrainNavigation
 import app.levitx.phone.train.TrainRoute
 
 /** Material's minimum touch target, so every tab is easy to hit. */
@@ -87,9 +88,14 @@ fun MainRoute(navigation: MainNavigation) {
             )
 
             MainTab.TRAIN -> TrainRoute(
-                onOpenWorkout = navigation.onOpenFocusWorkout,
-                onOpenProgram = navigation.onOpenProgram,
-                onOpenInterval = navigation.onOpenInterval,
+                TrainNavigation(
+                    onOpenWorkout = navigation.onOpenFocusWorkout,
+                    onOpenProgram = navigation.onOpenProgram,
+                    onOpenInterval = navigation.onOpenInterval,
+                    onOpenExercise = navigation.onOpenExercise,
+                    onOpenSearch = navigation.onOpenSearch,
+                    onOpenAllPrograms = navigation.onOpenAllPrograms,
+                ),
             )
 
             MainTab.PLAN -> PathRoute(
@@ -115,6 +121,8 @@ fun MainRoute(navigation: MainNavigation) {
  * @property onOpenProgram Opens a skill program, by id.
  * @property onOpenProgress Opens Progress.
  * @property onOpenSettings Opens Settings.
+ * @property onOpenSearch Opens search, from the Train tab.
+ * @property onOpenAllPrograms Opens every program, from the Train tab.
  */
 data class MainNavigation(
     val onOpenWorkout: () -> Unit,
@@ -124,6 +132,8 @@ data class MainNavigation(
     val onOpenProgram: (String) -> Unit,
     val onOpenProgress: () -> Unit,
     val onOpenSettings: () -> Unit,
+    val onOpenSearch: () -> Unit,
+    val onOpenAllPrograms: () -> Unit,
 )
 
 /** The tab bar around [content]. Stateless, so it previews and tests without the tabs' data. */

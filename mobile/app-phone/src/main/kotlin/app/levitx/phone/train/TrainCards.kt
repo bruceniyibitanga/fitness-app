@@ -28,12 +28,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.levitx.core.coach.Exercise
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.focusPhoto
+import app.levitx.phone.ui.kitShort
 import app.levitx.phone.ui.pathPhoto
+import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.programMeta
 
 /*
@@ -44,6 +47,7 @@ private val ProgramCardWidth = 220.dp
 private val ProgramPhotoHeight = 112.dp
 private val WorkoutRowHeight = 68.dp
 private val WorkoutThumbSize = 52.dp
+private val ExerciseRowHeight = 56.dp
 
 /**
  * A skill program as a card: its photo with a tag in the corner, then its
@@ -124,9 +128,18 @@ internal fun WorkoutRow(workout: WorkoutSummary, onClick: () -> Unit) {
     PhotoListRow(focusPhoto(workout.focus), focusName(workout.focus), meta, onClick)
 }
 
-/** A row of the Train list: a square [photo], a [title] over its [meta] line, and a chevron. */
+/**
+ * A row of the Train list: a square [photo], a [title] over its [meta] line,
+ * and a chevron. A [tag], like YOUR PLAN, sits after the title.
+ */
 @Composable
-internal fun PhotoListRow(@DrawableRes photo: Int, title: String, meta: String, onClick: () -> Unit) {
+internal fun PhotoListRow(
+    @DrawableRes photo: Int,
+    title: String,
+    meta: String,
+    onClick: () -> Unit,
+    tag: String? = null,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -143,9 +156,61 @@ internal fun PhotoListRow(@DrawableRes photo: Int, title: String, meta: String, 
             modifier = Modifier.size(WorkoutThumbSize),
         )
         Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
+                if (tag != null) Tag(tag)
+            }
             Text(meta, style = LevitxType.Micro, color = LevitxColors.TextMuted)
         }
         Icon(painterResource(R.drawable.ic_chevron_forward), contentDescription = null, tint = LevitxColors.TextFaint)
     }
+}
+
+/** A program as a list row, tagged YOUR PLAN when it's the person's goal. */
+@Composable
+internal fun ProgramRow(program: ProgramSummary, onClick: () -> Unit) {
+    PhotoListRow(
+        photo = pathPhoto(program.path.id),
+        title = program.path.name,
+        meta = programMeta(program.path),
+        onClick = onClick,
+        tag = if (program.isCurrent) stringResource(R.string.train_current_program) else null,
+    )
+}
+
+/** An exercise as a text row: its name, then its movement and kit. */
+@Composable
+internal fun ExerciseRow(exercise: Exercise, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = ExerciseRowHeight)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = ScreenPadding, vertical = 8.dp),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.weight(1f)) {
+            Text(exercise.name, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
+            Text(
+                text = listOf(
+                    patternName(exercise.pattern).uppercase(),
+                    kitShort(exercise.equipment),
+                ).joinToString(" · "),
+                style = LevitxType.Micro,
+                color = LevitxColors.TextMuted,
+            )
+        }
+        Icon(painterResource(R.drawable.ic_chevron_forward), contentDescription = null, tint = LevitxColors.TextFaint)
+    }
+}
+
+/** A small orange label, like YOUR PLAN. */
+@Composable
+private fun Tag(text: String) {
+    Text(
+        text = text,
+        style = LevitxType.Micro,
+        color = LevitxColors.Background,
+        modifier = Modifier.background(LevitxColors.Accent).padding(horizontal = 5.dp, vertical = 2.dp),
+    )
 }

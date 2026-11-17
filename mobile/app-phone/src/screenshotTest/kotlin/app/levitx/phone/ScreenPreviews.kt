@@ -242,12 +242,7 @@ fun TrainScreenshot() {
     val workouts = WorkoutFocus.entries.map { WorkoutSummary(it, Coach().workout(model, it, 0)) }
     LevitxTheme {
         MainScreen(selected = MainTab.TRAIN, onSelect = {}) {
-            TrainScreen(
-                TrainUiState.Ready(programs, workouts),
-                onOpenWorkout = {},
-                onOpenProgram = {},
-                onOpenInterval = {},
-            )
+            TrainScreen(TrainUiState.Ready(programs, workouts), noTrainNavigation)
         }
     }
 }

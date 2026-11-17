@@ -34,6 +34,14 @@ sealed interface Destination : NavKey {
     @Serializable
     data class FocusWorkout(val focus: String) : Destination
 
+    /** Search across exercises, programs and workouts. The query isn't part of the key. */
+    @Serializable
+    data object Search : Destination
+
+    /** Every skill program, by level. */
+    @Serializable
+    data object AllPrograms : Destination
+
     /**
      * A cardio or mobility workout picked from the Train tab, before it starts.
      *
