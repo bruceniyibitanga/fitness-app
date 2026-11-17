@@ -226,7 +226,10 @@
     </plurals>
     <string name="review_all_done">Every planned session.</string>
     <string name="review_more_done">More than you planned.</string>
-    <string name="review_short">%1$d short of your plan. One week doesn\'t undo anything.</string>
+    <plurals name="review_short">
+        <item quantity="one">%1$d session short of your plan. One week doesn\'t undo anything.</item>
+        <item quantity="other">%1$d sessions short of your plan. One week doesn\'t undo anything.</item>
+    </plurals>
     <string name="review_bests">NEW BESTS</string>
     <string name="review_gates">GATES PASSED</string>
     <string name="review_hard_sets">HARD SETS</string>

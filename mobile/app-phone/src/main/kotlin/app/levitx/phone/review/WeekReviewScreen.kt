@@ -161,7 +161,9 @@ private fun Sessions(review: WeekReview) {
             text = when {
                 review.sessionsDone > review.sessionsPlanned -> stringResource(R.string.review_more_done)
                 review.sessionsDone == review.sessionsPlanned -> stringResource(R.string.review_all_done)
-                else -> stringResource(R.string.review_short, review.sessionsPlanned - review.sessionsDone)
+                else -> (review.sessionsPlanned - review.sessionsDone).let { short ->
+                    pluralStringResource(R.plurals.review_short, short, short)
+                }
             },
             fontSize = 15.sp,
             lineHeight = 20.sp,
