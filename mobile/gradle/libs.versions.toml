@@ -29,7 +29,7 @@ ksp = "2.3.13"
 
 # Kotlin libraries
 kotlinx-coroutines = "1.11.0"
-kotlinx-serialization = "1.12.0"
+kotlinx-serialization = "1.13.0"
 
 # Google Play services: the Wearable Data Layer, which links the phone and the watch.
 play-services-wearable = "20.0.1"
