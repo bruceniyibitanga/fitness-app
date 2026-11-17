@@ -214,6 +214,18 @@
     <string name="today_weight_body" formatted="false">Your weight has been falling faster than about 1% a week. That makes it harder to keep strength, so your targets will hold steady until it settles. If you aren\'t trying to lose weight, it\'s worth talking to a GP.</string>
     <string name="today_weight_ok">Got it</string>
     <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see the load of every rep.</string>
+    <string name="weighin_label">QUICK WEIGH-IN</string>
+    <string name="weighin_title">Still about the same?</string>
+    <string name="weighin_title_first">What do you weigh today?</string>
+    <string name="weighin_body">Keeps your load per rep accurate. You\'re only asked when there\'s no reading this week.</string>
+    <string name="weighin_field">Bodyweight in %1$s</string>
+    <string name="weighin_less">Down 0.1 %1$s</string>
+    <string name="weighin_more">Up 0.1 %1$s</string>
+    <string name="weighin_last">LAST · %1$s · %2$s</string>
+    <string name="weighin_range">Between %1$s and %2$s.</string>
+    <string name="weighin_save">Save and start</string>
+    <string name="weighin_skip">Skip this week</string>
+    <string name="weighin_private">Stays on this phone, encrypted. It never goes to the watch.</string>
 
     <!-- Workout -->
     <plurals name="workout_slow_instructions">

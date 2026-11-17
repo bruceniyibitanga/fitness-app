@@ -103,7 +103,8 @@ internal class RoomCoachRepository @Inject constructor(
         it.withPain(area, assessment)
     }
 
-    override suspend fun markWeightNoticeShown() = update { it.withWeightNoticeShown() }
+    override suspend fun markShown(prompt: CoachPrompt, atEpochMillis: Long) =
+        update { it.withShown(prompt, atEpochMillis) }
 
     override suspend fun deleteWorkout(workoutId: String): Boolean {
         val database = databaseProvider.database()

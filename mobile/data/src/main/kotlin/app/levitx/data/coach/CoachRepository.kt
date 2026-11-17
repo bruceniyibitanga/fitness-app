@@ -71,8 +71,13 @@ interface CoachRepository {
     /** Records the advice from a pain check-in for [area]. */
     suspend fun recordPain(area: BodyArea, assessment: PainAssessment)
 
-    /** Records that the fast weight loss notice has been shown, so it isn't shown again this spell. */
-    suspend fun markWeightNoticeShown()
+    /**
+     * Records that [prompt] was shown at [atEpochMillis], so it isn't shown
+     * again until its own rule says so.
+     *
+     * @throws app.levitx.data.DataUnavailableException if the data can't be read or written.
+     */
+    suspend fun markShown(prompt: CoachPrompt, atEpochMillis: Long)
 
     /**
      * Deletes a finished workout and every set in it, and takes it back out
@@ -87,3 +92,18 @@ interface CoachRepository {
 
 /** How many recent workout ids [CoachRepository.observeRecentWorkoutIds] reports. */
 const val RECENT_WORKOUTS = 10
+
+/** Things the coach says or asks once, then remembers it did. */
+enum class CoachPrompt {
+    /** The fast weight loss notice: once per spell of fast loss. */
+    WEIGHT_NOTICE,
+
+    /** The quick weigh-in before a session: at most once a week, saved or skipped. */
+    WEIGH_IN,
+}
+
+/** [this] with [prompt] noted as shown at [atEpochMillis]. */
+fun AthleteModel.withShown(prompt: CoachPrompt, atEpochMillis: Long): AthleteModel = when (prompt) {
+    CoachPrompt.WEIGHT_NOTICE -> withWeightNoticeShown()
+    CoachPrompt.WEIGH_IN -> withWeighInAsked(atEpochMillis)
+}

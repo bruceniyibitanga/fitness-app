@@ -3,6 +3,7 @@ package app.levitx.phone.today
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -79,6 +80,9 @@ fun TodayRoute(
         uiState = uiState,
         actions = TodayActions(
             onStart = { choice -> scope.launch { if (viewModel.start(choice)) onOpenWorkout() } },
+            onAnswerWeighIn = { kg, choice ->
+                scope.launch { if (viewModel.answerWeighIn(kg, choice)) onOpenWorkout() }
+            },
             onRest = viewModel::rest,
             onAcknowledgeWeightNotice = viewModel::acknowledgeWeightNotice,
             onOpenExercise = onOpenExercise,
@@ -91,6 +95,7 @@ fun TodayRoute(
  * Everything the person can do on Today, grouped so the screen takes one parameter for them.
  *
  * @property onStart Starts the session; the choice is what they picked when the coach offered an easier day.
+ * @property onAnswerWeighIn Saves the weigh-in in kg, or skips it when null, then starts with the choice.
  * @property onRest Takes the rest day the coach offered.
  * @property onAcknowledgeWeightNotice Marks the weight notice as read.
  * @property onOpenExercise Opens an exercise's detail by id.
@@ -98,6 +103,7 @@ fun TodayRoute(
  */
 data class TodayActions(
     val onStart: (SuggestionChoice?) -> Unit,
+    val onAnswerWeighIn: (Double?, SuggestionChoice?) -> Unit,
     val onRest: () -> Unit,
     val onAcknowledgeWeightNotice: () -> Unit,
     val onOpenExercise: (String) -> Unit,
@@ -108,21 +114,52 @@ data class TodayActions(
  * The next session as the coach planned it, laid out as the Today artboard:
  * the first exercise big, with its load per rep; the week at a glance; the
  * coach's reason; the session; and Start pinned to the bottom. When the coach
- * noticed something, the choice to ease off comes first.
+ * noticed something, the choice to ease off comes first. When a weigh-in is
+ * due, Start asks for it first.
  */
 @Composable
 fun TodayScreen(uiState: TodayUiState, actions: TodayActions, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxSize()) {
-        when (uiState) {
-            TodayUiState.Loading -> Unit
+    // Which start is waiting on the weigh-in. Null choice means a plain start, so it needs its own flag.
+    var asking by rememberSaveable { mutableStateOf(false) }
+    var pending by rememberSaveable { mutableStateOf<SuggestionChoice?>(null) }
+    val weighIn = (uiState as? TodayUiState.Ready)?.weighIn
+    val starting = actions.copy(
+        onStart = { choice ->
+            if (weighIn == null) {
+                actions.onStart(choice)
+            } else {
+                pending = choice
+                asking = true
+            }
+        },
+    )
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            when (uiState) {
+                TodayUiState.Loading -> Unit
 
-            TodayUiState.Unavailable -> Text(
-                text = stringResource(R.string.data_unavailable),
-                color = LevitxColors.TextMuted,
-                modifier = Modifier.padding(ScreenPadding),
+                TodayUiState.Unavailable -> Text(
+                    text = stringResource(R.string.data_unavailable),
+                    color = LevitxColors.TextMuted,
+                    modifier = Modifier.padding(ScreenPadding),
+                )
+
+                is TodayUiState.Ready -> Ready(uiState, starting)
+            }
+        }
+        if (asking && weighIn != null) {
+            WeighInSheet(
+                ask = weighIn,
+                onSave = { kg ->
+                    asking = false
+                    actions.onAnswerWeighIn(kg, pending)
+                },
+                onSkip = {
+                    asking = false
+                    actions.onAnswerWeighIn(null, pending)
+                },
+                onDismiss = { asking = false },
             )
-
-            is TodayUiState.Ready -> Ready(uiState, actions)
         }
     }
 }
@@ -333,8 +370,14 @@ private fun TodayScreenPreview() {
                 bodyweightKg = 74.2,
                 hasWorkoutInProgress = false,
             ),
-            actions = TodayActions(onStart = {
-            }, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}, onOpenProgress = {}),
+            actions = TodayActions(
+                onStart = {},
+                onAnswerWeighIn = { _, _ -> },
+                onRest = {},
+                onAcknowledgeWeightNotice = {},
+                onOpenExercise = {},
+                onOpenProgress = {},
+            ),
         )
     }
 }

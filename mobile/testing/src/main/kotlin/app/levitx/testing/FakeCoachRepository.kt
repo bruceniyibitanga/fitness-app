@@ -8,9 +8,11 @@ import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.pain.PainAssessment
+import app.levitx.data.coach.CoachPrompt
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.CoachState
 import app.levitx.data.coach.RECENT_WORKOUTS
+import app.levitx.data.coach.withShown
 import java.time.DayOfWeek
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +74,8 @@ class FakeCoachRepository(
         it.withPain(area, assessment)
     }
 
-    override suspend fun markWeightNoticeShown() = update { it.withWeightNoticeShown() }
+    override suspend fun markShown(prompt: CoachPrompt, atEpochMillis: Long) =
+        update { it.withShown(prompt, atEpochMillis) }
 
     // Forgets the id only: the fake keeps no sets to take back out of the model.
     override suspend fun deleteWorkout(workoutId: String): Boolean {
