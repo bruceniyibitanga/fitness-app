@@ -52,6 +52,22 @@ private val credits = listOf(
     Credit(R.string.credit_legs, null, "https://unsplash.com/photos/928VXYtfsRI"),
     Credit(R.string.credit_core, null, "https://unsplash.com/photos/Pu7BOaYlYGY"),
     Credit(R.string.credit_full_body, null, "https://unsplash.com/photos/QwAJTPXbj88"),
+    Credit(R.string.credit_first_push_up, "Monika Kab", "https://unsplash.com/photos/JeCVBSpS3xU"),
+    Credit(R.string.credit_twenty_push_ups, "Gordon Cowie", "https://unsplash.com/photos/ISg1JhN_vFk"),
+    Credit(R.string.credit_first_dip, "Vitaly Gariev", "https://unsplash.com/photos/u8wayDt6GqU"),
+    Credit(R.string.credit_ten_pull_ups, "Shoham Avisrur", "https://unsplash.com/photos/gywolEHDUqg"),
+    Credit(R.string.credit_l_sit, "Pedro Araújo", "https://unsplash.com/photos/S6zR6btkG-M"),
+    Credit(R.string.credit_pistol_squat, "GMB Fitness", "https://unsplash.com/photos/9v1rPKsE4cU"),
+    Credit(R.string.credit_shrimp_squat, "Pavigym Prama", "https://unsplash.com/photos/PCxkBX24sWo"),
+    Credit(R.string.credit_handstand, "GMB Fitness", "https://unsplash.com/photos/c0Kz-JHWGmQ"),
+    Credit(R.string.credit_nordic_curl, "Shoham Avisrur", "https://unsplash.com/photos/lVNmm3RhMBc"),
+    Credit(R.string.credit_dragon_flag, "Ayo Ogunseinde", "https://unsplash.com/photos/3GFOT3sgg4Y"),
+    Credit(R.string.credit_handstand_push_up, "GMB Fitness", "https://unsplash.com/photos/HxzncziymiM"),
+    Credit(R.string.credit_back_lever, "Kate Trysh", "https://unsplash.com/photos/ZaFT5en14pY"),
+    Credit(R.string.credit_one_arm_push_up, "Fortune Vieyra", "https://unsplash.com/photos/jD4MtXnsJ6w"),
+    Credit(R.string.credit_tuck_planche, "Bogdan Pasca", "https://unsplash.com/photos/UBC4m6KEWcQ"),
+    Credit(R.string.credit_front_lever, "Kate Trysh", "https://unsplash.com/photos/WnXzlISbtY0"),
+    Credit(R.string.credit_one_arm_pull_up, "Amanda Hodge", "https://unsplash.com/photos/Wqn_gieaKyI"),
 )
 
 /** The photos in the app and who took them. Each opens its page on Unsplash in the browser. */

@@ -14,9 +14,25 @@ import app.levitx.phone.R
 private val PathPhotos = mapOf(
     "first_pull_up" to R.drawable.photo_goal_first_pull_up,
     "muscle_up" to R.drawable.photo_goal_muscle_up,
+    "first_push_up" to R.drawable.photo_goal_first_push_up,
+    "twenty_push_ups" to R.drawable.photo_goal_twenty_push_ups,
+    "first_dip" to R.drawable.photo_goal_first_dip,
+    "ten_pull_ups" to R.drawable.photo_goal_ten_pull_ups,
+    "l_sit" to R.drawable.photo_goal_l_sit,
+    "pistol_squat" to R.drawable.photo_goal_pistol_squat,
+    "shrimp_squat" to R.drawable.photo_goal_shrimp_squat,
+    "handstand" to R.drawable.photo_goal_handstand,
+    "nordic_curl" to R.drawable.photo_goal_nordic_curl,
+    "dragon_flag" to R.drawable.photo_goal_dragon_flag,
+    "handstand_push_up" to R.drawable.photo_goal_handstand_push_up,
+    "back_lever" to R.drawable.photo_goal_back_lever,
+    "one_arm_push_up" to R.drawable.photo_goal_one_arm_push_up,
+    "tuck_planche" to R.drawable.photo_goal_tuck_planche,
+    "front_lever" to R.drawable.photo_goal_front_lever,
+    "one_arm_pull_up" to R.drawable.photo_goal_one_arm_pull_up,
 )
 
-/** The photo for a skill program, by its id. A program without its own photo gets the pull-up one. */
+/** The photo for a skill program, by its id. Every built-in program has one; anything else gets the pull-up one. */
 @DrawableRes
 fun pathPhoto(pathId: String): Int = PathPhotos[pathId] ?: R.drawable.photo_goal_first_pull_up
 

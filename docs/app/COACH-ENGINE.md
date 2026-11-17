@@ -299,6 +299,18 @@ The datasets were useful for names and kit, and not much else. Their difficulty 
 
 Rungs are only ever added at the top of a ladder or as another option on an existing rung. The coach stores the rung number, so inserting one lower down would quietly move everyone.
 
+### The programs
+
+Eighteen skill programs, each a path of gates that pass in order. The gates follow the same sources as the ladders (the RR and the BWF chart), plus common coaching practice for the hand balancing and straight-arm skills. The weeks are rough estimates at three sessions a week and the app says so: a gate passes when it passes. Straight-arm skills (levers, planche) get short holds and long estimates, because tendons adapt over months while muscle adapts over weeks.
+
+| Level | Programs |
+|---|---|
+| Beginner | First push-up (~6 wk), first dip (~6 wk, dip bars), first pull-up (~8 wk, bar), twenty push-ups (~8 wk) |
+| Intermediate | L-sit (~10 wk), pistol squat (~10 wk), ten pull-ups (~12 wk, bar), shrimp squat (~12 wk), handstand foundations (~10 wk), Nordic curl (~16 wk) |
+| Advanced | Muscle-up (~20 wk, bar), dragon flag (~16 wk), handstand push-up (~16 wk), back lever (~26 wk, bar), one-arm push-up (~26 wk), tuck planche (~26 wk), front lever (~52 wk, bar), one-arm pull-up (~78 wk, bar) |
+
+Every gate trains as an exercise with its own movement pattern, kit and form cues. Most gates are a ladder exercise under another name and share its guide. The first pull-up and muscle-up programs kept their gate ids, so progress saved before these were added still counts.
+
 ### The exercises
 
 A dash means the dataset has no entry for it. Every exercise is in at least one dataset or in the RR.

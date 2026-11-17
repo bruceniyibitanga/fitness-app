@@ -38,6 +38,8 @@ import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.load.LoadLimits
 import app.levitx.core.load.WeightUnit
 import app.levitx.core.skills.SkillCatalogue
+import app.levitx.core.skills.SkillLevel
+import app.levitx.core.skills.SkillPath
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -45,7 +47,6 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.ChoiceBar
 import app.levitx.phone.ui.ChoiceRow
 import app.levitx.phone.ui.ChoiceStyle
-import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.KitPicker
 import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.PhotoTile
@@ -54,7 +55,9 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
+import app.levitx.phone.ui.levelName
 import app.levitx.phone.ui.pathPhoto
+import app.levitx.phone.ui.programMeta
 import app.levitx.phone.ui.unitCaps
 import app.levitx.phone.ui.weightWithUnit
 import java.time.DayOfWeek
@@ -70,22 +73,10 @@ import java.time.format.TextStyle
 internal fun GoalStep(state: OnboardingUiState, actions: OnboardingActions) {
     StepTitle(stringResource(R.string.goal_title), stringResource(R.string.goal_body))
     Question(stringResource(R.string.goal_skill_label), asCaption = true) {
-        SkillCatalogue.all.chunked(2).forEach { pair ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                pair.forEach { path ->
-                    PhotoTile(
-                        photo = pathPhoto(path.id),
-                        title = path.name,
-                        caption = pluralStringResource(R.plurals.goal_skill_gates, path.gates.size, path.gates.size),
-                        selected = state.goalChosen && state.goalPathId == path.id,
-                        onClick = { actions.onChooseGoal(path.id) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
-            }
+        SkillLevel.entries.forEach { level ->
+            Caption(stringResource(levelName(level)), color = LevitxColors.TextFaint)
+            SkillTiles(SkillCatalogue.all.filter { it.level == level }, state, actions)
         }
-        Help(stringResource(R.string.goal_more_coming))
     }
     Question(stringResource(R.string.goal_general_label), asCaption = true) {
         Column {
@@ -97,6 +88,26 @@ internal fun GoalStep(state: OnboardingUiState, actions: OnboardingActions) {
                 onClick = { actions.onChooseGoal(null) },
             )
             Rule()
+        }
+    }
+}
+
+/** [paths] as photo tiles, two to a row. */
+@Composable
+private fun SkillTiles(paths: List<SkillPath>, state: OnboardingUiState, actions: OnboardingActions) {
+    paths.chunked(2).forEach { pair ->
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            pair.forEach { path ->
+                PhotoTile(
+                    photo = pathPhoto(path.id),
+                    title = path.name,
+                    caption = programMeta(path),
+                    selected = state.goalChosen && state.goalPathId == path.id,
+                    onClick = { actions.onChooseGoal(path.id) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            if (pair.size == 1) Spacer(Modifier.weight(1f))
         }
     }
 }
