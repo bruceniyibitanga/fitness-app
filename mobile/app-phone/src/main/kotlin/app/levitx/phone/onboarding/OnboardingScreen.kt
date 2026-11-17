@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.TrainingAim
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
@@ -85,6 +86,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
             onBack = { viewModel.back() },
             onChooseGoal = { viewModel.answer(SetupAnswer.Goal(it)) },
             onChooseStyle = { viewModel.answer(SetupAnswer.Style(it)) },
+            onChooseAim = { viewModel.answer(SetupAnswer.Aim(it)) },
             onAnswerPullUp = { viewModel.answer(SetupAnswer.PullUp(it)) },
             onTypeBodyweight = { viewModel.answer(SetupAnswer.Bodyweight(it, unit)) },
             onToggleDay = { viewModel.answer(SetupAnswer.Day(it)) },
@@ -114,6 +116,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
  * @property onFinish Saves the answers and starts training.
  * @property onCountTest Sets the reps counted for the quick test movement on screen.
  * @property onSkipTest Skips the rest of the quick test.
+ * @property onChooseAim Picks what the ladder work is tuned for.
  */
 data class OnboardingActions(
     val onNext: () -> Unit,
@@ -128,6 +131,7 @@ data class OnboardingActions(
     val onChooseNoEquipment: () -> Unit,
     val onFinish: () -> Unit,
     val onCountTest: (Int) -> Unit = {},
+    val onChooseAim: (TrainingAim) -> Unit = {},
     val onSkipTest: () -> Unit = {},
 )
 

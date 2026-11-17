@@ -43,6 +43,7 @@ import app.levitx.core.skills.SkillPath
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
+import app.levitx.phone.ui.AimChoices
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.ChoiceBar
 import app.levitx.phone.ui.ChoiceRow
@@ -55,6 +56,7 @@ import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.StatStrip
+import app.levitx.phone.ui.aimNote
 import app.levitx.phone.ui.levelName
 import app.levitx.phone.ui.pathPhoto
 import app.levitx.phone.ui.programMeta
@@ -153,6 +155,9 @@ internal fun HowStep(state: OnboardingUiState, actions: OnboardingActions) {
                 onClick = { actions.onChooseStyle(PlanStyle.FOCUSED) },
             )
         }
+    }
+    Question(stringResource(R.string.aim_label), help = stringResource(aimNote(state.aim))) {
+        AimChoices(state.aim, actions.onChooseAim)
     }
     Question(stringResource(R.string.how_pull_up_label), help = stringResource(R.string.how_pull_up_note)) {
         ChoiceRow {

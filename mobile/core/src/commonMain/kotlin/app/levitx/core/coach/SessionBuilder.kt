@@ -125,12 +125,12 @@ internal class SessionBuilder(private val templates: List<List<MovementPattern>>
         } else {
             List(count) { work }
         }
-        val isHold = exercise.measure == GateMeasure.HOLD_SECONDS
+        val aim = context.model.profile.aim
         return ExercisePlan(
             exercise = exercise,
             sets = sets,
-            restSeconds = if (isHold) SessionPlanner.REST_SECONDS_HOLDS else SessionPlanner.REST_SECONDS_REPS,
-            repsInReserve = SessionPlanner.TARGET_REPS_IN_RESERVE,
+            restSeconds = aim.restFor(exercise),
+            repsInReserve = aim.repsInReserve,
             intensity = Intensity.HARD,
             // What the kit can make now: weight that has gone since (a vest sold) is dropped, never made up.
             addedKg = LoadProgression.available(exercise, state.addedKg, context.model.profile.loadKit),

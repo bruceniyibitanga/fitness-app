@@ -31,6 +31,7 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.load.LoadKit
 import app.levitx.core.load.LoadLimits
@@ -39,6 +40,7 @@ import app.levitx.design.LevitxColors
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
+import app.levitx.phone.ui.AimChoices
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.DecimalInput
 import app.levitx.phone.ui.Help
@@ -49,6 +51,7 @@ import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.TabHeader
+import app.levitx.phone.ui.aimNote
 import app.levitx.phone.ui.unitCaps
 
 /** The bottom bars, as on the artboard. */
@@ -65,6 +68,7 @@ private const val DEFAULT_BODYWEIGHT_KG = 70.0
  * @property onAddBand Adds a band: its name and the kg of help it gives.
  * @property onDeleteBand Removes a band, by id.
  * @property onChangeLoadKit Saves the vest, belt and plates.
+ * @property onChooseAim Saves what the ladder work is tuned for.
  * @property onOpenSettings Opens Settings.
  */
 data class BodyActions(
@@ -74,6 +78,7 @@ data class BodyActions(
     val onDeleteBand: (String) -> Unit,
     val onOpenSettings: () -> Unit,
     val onChangeLoadKit: (LoadKit) -> Unit = {},
+    val onChooseAim: (TrainingAim) -> Unit = {},
 )
 
 /** Body tab: connects [BodyViewModel] to [BodyScreen]. */
@@ -89,6 +94,7 @@ fun BodyRoute(onOpenSettings: () -> Unit, viewModel: BodyViewModel = hiltViewMod
             onDeleteBand = viewModel::deleteBand,
             onOpenSettings = onOpenSettings,
             onChangeLoadKit = viewModel::updateLoadKit,
+            onChooseAim = viewModel::updateAim,
         ),
     )
 }
@@ -130,6 +136,7 @@ fun BodyScreen(uiState: BodyUiState, actions: BodyActions, modifier: Modifier = 
                 Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                     BodyweightTrend(uiState)
                     OnTheBar(uiState)
+                    Aim(uiState.aim, actions.onChooseAim)
                     Kit(uiState.equipment, actions.onChooseEquipment)
                     Weights(uiState.loadKit, LocalWeightUnit.current, actions.onChangeLoadKit)
                     Bands(
@@ -167,6 +174,16 @@ private fun Kit(equipment: Set<Equipment>, onChoose: (Equipment?) -> Unit) {
         Caption(stringResource(R.string.body_kit_label))
         Help(stringResource(R.string.body_kit_note), modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
         KitPicker(equipment, onChooseNone = { onChoose(null) }, onToggle = onChoose)
+    }
+}
+
+/** What the ladder work is tuned for, as on the Body artboard, with a line on what it changes. */
+@Composable
+private fun Aim(aim: TrainingAim, onChoose: (TrainingAim) -> Unit) {
+    Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 22.dp)) {
+        Caption(stringResource(R.string.body_aim_label))
+        AimChoices(aim, onChoose, modifier = Modifier.padding(top = 12.dp))
+        Help(stringResource(aimNote(aim)), modifier = Modifier.padding(top = 8.dp))
     }
 }
 

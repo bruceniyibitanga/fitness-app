@@ -18,6 +18,8 @@ public enum class PatternRole {
  * The hard sets per week the plan aims for on each movement pattern.
  *
  * Goal patterns get the most. In an all-round plan the rest get a proper dose.
+ * Training for muscle raises every target by the aim's volume share, up to
+ * the weekly limit.
  * In a focused plan, patterns that support the goal still do, and the others
  * get enough to hold steady. Targets shrink together when the person's week is
  * too short to fit them, so "done out of target" stays honest for someone with
@@ -28,7 +30,10 @@ public object VolumeTargets {
     public fun weekly(profile: CoachProfile): Map<MovementPattern, Double> {
         val ideal = MovementPattern.entries
             .filter { it in goalPatterns(profile) || hasLadderExercise(it, profile.equipment) }
-            .associateWith { idealSets(roleOf(it, profile), profile.style) }
+            .associateWith {
+                (idealSets(roleOf(it, profile), profile.style) * profile.aim.volumeShare)
+                    .coerceAtMost(CoachTuning.MAX_WEEKLY_HARD_SETS)
+            }
         val scale = (setsThatFit(profile) / ideal.values.sum()).coerceAtMost(1.0)
         return ideal.mapValues { it.value * scale }
     }
@@ -76,6 +81,6 @@ public object VolumeTargets {
     /** Roughly how many sets the person's week has room for. */
     private fun setsThatFit(profile: CoachProfile): Double {
         val workSeconds = (profile.sessionMinutes - CoachTuning.WARM_UP_MINUTES).coerceAtLeast(1) * SECONDS_PER_MINUTE
-        return profile.sessionsPerWeek * workSeconds.toDouble() / CoachTuning.AVERAGE_SET_SECONDS
+        return profile.sessionsPerWeek * workSeconds.toDouble() / profile.aim.averageSetSeconds
     }
 }

@@ -77,6 +77,16 @@
     <string name="how_focused">Focused</string>
     <string name="how_focused_body">More skill work. Everything else gets just enough to hold steady.</string>
     <string name="how_suggested">SUGGESTED</string>
+    <string name="aim_label">Train for</string>
+    <string name="aim_balanced">Balanced</string>
+    <string name="aim_muscle">Muscle</string>
+    <string name="aim_strength">Strength</string>
+    <string name="aim_conditioning">Conditioning</string>
+    <string name="aim_balanced_note">A bit of everything: 2 minutes\' rest, two reps left in the tank.</string>
+    <string name="aim_muscle_note">More sets each week, taken to one rep short of failure.</string>
+    <string name="aim_strength_note">Harder versions sooner, at lower reps, with 3 minutes\' rest.</string>
+    <string name="aim_conditioning_note">More reps before moving on, with a minute\'s rest.</string>
+    <string name="body_aim_label">TRAINING FOR</string>
     <string name="how_pull_up_label">Can you do a strict pull-up?</string>
     <string name="how_pull_up_yes">Yes</string>
     <string name="how_pull_up_not_yet">Not yet</string>

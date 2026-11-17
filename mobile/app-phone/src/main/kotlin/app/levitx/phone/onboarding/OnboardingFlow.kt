@@ -3,6 +3,7 @@ package app.levitx.phone.onboarding
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.load.WeightUnit
 import java.time.DayOfWeek
 
@@ -100,6 +101,13 @@ sealed interface SetupAnswer {
     data class Kit(val equipment: Equipment?) : SetupAnswer
 
     /**
+     * What the ladder work is tuned for.
+     *
+     * @property aim The aim.
+     */
+    data class Aim(val aim: TrainingAim) : SetupAnswer
+
+    /**
      * Reps counted for the quick test movement on screen.
      *
      * @property reps The reps counted.
@@ -116,6 +124,8 @@ internal fun OnboardingUiState.with(answer: SetupAnswer): OnboardingUiState = wh
     is SetupAnswer.Goal -> copy(goalChosen = true, goalPathId = answer.pathId)
 
     is SetupAnswer.Style -> copy(style = answer.style)
+
+    is SetupAnswer.Aim -> copy(aim = answer.aim)
 
     is SetupAnswer.PullUp -> copy(pullUp = answer.answer)
 

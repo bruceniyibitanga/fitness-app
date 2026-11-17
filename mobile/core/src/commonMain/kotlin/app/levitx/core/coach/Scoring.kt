@@ -70,7 +70,7 @@ internal object VolumeTerm : ScoringTerm {
 
     private fun setsThatFit(context: CoachContext): Double {
         val minutes = context.model.profile.sessionMinutes - CoachTuning.WARM_UP_MINUTES
-        return minutes.coerceAtLeast(1) * SECONDS_PER_MINUTE.toDouble() / CoachTuning.AVERAGE_SET_SECONDS
+        return minutes.coerceAtLeast(1) * SECONDS_PER_MINUTE.toDouble() / context.model.profile.aim.averageSetSeconds
     }
 }
 

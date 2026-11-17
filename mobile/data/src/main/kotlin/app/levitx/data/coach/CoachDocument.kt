@@ -13,6 +13,7 @@ import app.levitx.core.coach.ProgressNote
 import app.levitx.core.coach.SessionRecord
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.SuggestionOutcome
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.coach.TrainingBlock
 import app.levitx.core.load.LoadKit
 import app.levitx.core.pain.PainAdvice
@@ -61,6 +62,8 @@ internal data class StoredProfile(
     val equipment: List<String> = emptyList(),
     // Added with progressive overload. Older documents read as no load kit.
     val loadKit: StoredLoadKit = StoredLoadKit(),
+    // Added with training aims. Older documents read as balanced.
+    val aim: String = "BALANCED",
 )
 
 /** A stored `LoadKit`, in kilograms. */
@@ -120,6 +123,7 @@ internal fun coachDocumentOf(model: AthleteModel, trainingDays: Set<DayOfWeek>):
                 e.name
             },
             it.loadKit.let { kit -> StoredLoadKit(kit.vestMaxKg, kit.vestStepKg, kit.platesKg, kit.hasBelt) },
+            it.aim.name,
         )
     },
     trainingDays = trainingDays.map { it.value }.sorted(),
@@ -167,6 +171,7 @@ internal fun CoachDocument.toModel(): AthleteModel = AthleteModel(
         sessionMinutes = profile.sessionMinutes,
         equipment = profile.equipment.mapNotNull { it.toEnumOrNull<Equipment>() }.toSet(),
         loadKit = profile.loadKit.let { LoadKit(it.vestMaxKg, it.vestStepKg, it.platesKg, it.hasBelt) },
+        aim = profile.aim.toEnumOrNull<TrainingAim>() ?: TrainingAim.BALANCED,
     ),
     rungs = rungs.withEnumKeys<MovementPattern, Int>(),
     exercises = exercises.mapValues { (_, state) ->

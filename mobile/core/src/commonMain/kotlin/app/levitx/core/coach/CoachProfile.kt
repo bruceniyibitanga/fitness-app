@@ -41,6 +41,7 @@ public enum class PullUpAnswer {
  * @property sessionMinutes Minutes they have for a session.
  * @property equipment Kit they have told us about.
  * @property loadKit Weight they can add: a vest, plates, a dip belt.
+ * @property aim What the ladder work is tuned for.
  * @throws IllegalArgumentException if [goalPathId] isn't a known path, or a
  *   number is outside its limits.
  */
@@ -51,6 +52,7 @@ public data class CoachProfile(
     val sessionMinutes: Int = DEFAULT_SESSION_MINUTES,
     val equipment: Set<Equipment> = emptySet(),
     val loadKit: LoadKit = LoadKit(),
+    val aim: TrainingAim = TrainingAim.BALANCED,
 ) {
     init {
         require(goalPathId == null || SkillCatalogue.byId(goalPathId) != null) { "goalPathId must be a known path" }

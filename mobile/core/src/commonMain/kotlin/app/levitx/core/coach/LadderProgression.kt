@@ -48,10 +48,11 @@ internal object LadderProgression {
         val state = adopted.exercises.getValue(exercise.id)
         val earlier = state.marks.dropLast(1)
         val wasCalibrating = state.timesTrained <= CoachTuning.CALIBRATION_SESSIONS
+        val top = model.profile.aim.top(exercise)
         val change = when {
-            wasCalibrating && outcome.didBestEffort -> calibrate(exercise, outcome.top)
+            wasCalibrating && outcome.didBestEffort -> calibrate(exercise, outcome.top, top)
             context.holdProgress -> Change.Stay
-            outcome.hitTarget && outcome.effort != Effort.HARD -> raise(exercise, state.target, outcome, earlier)
+            outcome.hitTarget && outcome.effort != Effort.HARD -> raise(exercise, top, state.target, outcome, earlier)
             !outcome.hitTarget && earlier.lastOrNull()?.hitTarget == false -> ease(exercise, state)
             else -> Change.Stay
         }
@@ -65,38 +66,51 @@ internal object LadderProgression {
             Change.Lighter -> adopted.withState(exercise) {
                 it.copy(
                     addedKg = LoadProgression.nextDown(exercise, it.addedKg, adopted.profile.loadKit),
-                    target = exercise.range.last,
+                    target = top,
                     note = ProgressNote.EASED_BACK,
                 )
             }
 
             Change.UsualPace -> adopted.withState(exercise) {
-                it.copy(slowLowering = false, target = exercise.range.last, note = ProgressNote.EASED_BACK)
+                it.copy(slowLowering = false, target = top, note = ProgressNote.EASED_BACK)
             }
         }
     }
 
     /**
-     * Places someone from a best-effort set. Reaching the top of the range
-     * moves them up, twice over for double it. Falling short of the bottom
-     * moves them down. Otherwise work sets start at the usual share of the best.
+     * Places someone from a best-effort set of [best]. Reaching the top of the
+     * range moves them up, twice over for double it. Falling short of the
+     * bottom moves them down. Otherwise work sets start at the usual share of
+     * the best, up to the aim's [top].
+     *
+     * Placement always uses the full range: it measures where someone is,
+     * which doesn't depend on what they're training for.
      */
-    private fun calibrate(exercise: Exercise, top: Int): Change {
-        val workTarget = (top * SessionPlanner.WORK_FRACTION).roundToInt().coerceAtLeast(1)
-        val jump = (top / exercise.range.last).coerceAtMost(CoachTuning.MAX_CALIBRATION_JUMP)
+    private fun calibrate(exercise: Exercise, best: Int, top: Int): Change {
+        val workTarget = (best * SessionPlanner.WORK_FRACTION).roundToInt().coerceAtLeast(1)
+        val jump = (best / exercise.range.last).coerceAtMost(CoachTuning.MAX_CALIBRATION_JUMP)
         return when {
             jump >= 1 -> Change.Rungs(by = jump, target = workTarget, placing = true)
-            top < exercise.range.first -> Change.Rungs(by = -1, target = workTarget)
-            else -> Change.Target(workTarget.coerceIn(exercise.range), note = null)
+            best < exercise.range.first -> Change.Rungs(by = -1, target = workTarget)
+            else -> Change.Target(workTarget.coerceIn(exercise.range.first, top), note = null)
         }
     }
 
-    /** One step up, or two when this session and the one before were both easy. */
-    private fun raise(exercise: Exercise, target: Int, outcome: Outcome, earlier: List<ExerciseMark>): Change {
+    /**
+     * One step up, or two when this session and the one before were both
+     * easy. Past the aim's [top], the person moves on.
+     */
+    private fun raise(
+        exercise: Exercise,
+        top: Int,
+        target: Int,
+        outcome: Outcome,
+        earlier: List<ExerciseMark>,
+    ): Change {
         val last = earlier.lastOrNull()
         val easyTwice = outcome.effort == Effort.EASY && last?.effort == Effort.EASY && last.hitTarget
         val raised = target + exercise.step * if (easyTwice) 2 else 1
-        return if (raised > exercise.range.last) {
+        return if (raised > top) {
             Change.Rungs(by = 1, target = raised)
         } else {
             Change.Target(raised, ProgressNote.TARGET_UP)
@@ -147,10 +161,12 @@ internal object LadderProgression {
             change.by > 0 && model.isAtTop(exercise) -> topOut(model, exercise, change)
 
             // A best-effort set that topped the range, on an exercise they can't move up from here.
-            change.placing -> model.withState(exercise) { it.copy(target = exercise.range.last, note = null) }
+            change.placing -> model.withState(exercise) {
+                it.copy(target = model.profile.aim.top(exercise), note = null)
+            }
 
             else -> model.withState(exercise) {
-                it.copy(target = change.target.coerceIn(1, exercise.range.last), note = null)
+                it.copy(target = change.target.coerceIn(1, model.profile.aim.top(exercise)), note = null)
             }
         }
     }
@@ -169,7 +185,11 @@ internal object LadderProgression {
                     state.copy(target = change.target.coerceAtMost(exercise.ceiling), note = ProgressNote.TARGET_UP)
 
                 exercise.allowsSlowLowering && !state.slowLowering ->
-                    state.copy(slowLowering = true, target = exercise.range.last, note = ProgressNote.SLOWER)
+                    state.copy(
+                        slowLowering = true,
+                        target = model.profile.aim.top(exercise),
+                        note = ProgressNote.SLOWER,
+                    )
 
                 else -> state.copy(target = exercise.ceiling, note = null)
             }

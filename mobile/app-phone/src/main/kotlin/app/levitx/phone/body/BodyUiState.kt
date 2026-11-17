@@ -4,6 +4,7 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.BodyweightTrend
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.ExerciseCatalogue
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.coach.currentExercise
@@ -30,6 +31,7 @@ sealed interface BodyUiState {
      * @property equipment Kit the plan can use.
      * @property bands Calibrated bands, oldest first.
      * @property loadKit The vest, belt and plates the coach can add weight with.
+     * @property aim What the ladder work is tuned for.
      */
     data class Ready(
         val nowEpochMillis: Long,
@@ -39,6 +41,7 @@ sealed interface BodyUiState {
         val equipment: Set<Equipment>,
         val bands: List<Band>,
         val loadKit: LoadKit = LoadKit(),
+        val aim: TrainingAim = TrainingAim.BALANCED,
     ) : BodyUiState
 }
 
@@ -76,6 +79,7 @@ internal fun bodyState(model: AthleteModel, bands: List<Band>, nowEpochMillis: L
         equipment = model.profile.equipment,
         bands = bands,
         loadKit = model.profile.loadKit,
+        aim = model.profile.aim,
     )
 }
 

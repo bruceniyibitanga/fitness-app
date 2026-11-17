@@ -11,6 +11,7 @@ import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.SuggestionChoice
+import app.levitx.core.coach.TrainingAim
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.load.LoadKit
 import app.levitx.core.pain.PainAdvice
@@ -34,6 +35,7 @@ class CoachDocumentTest {
         sessionMinutes = 40,
         equipment = setOf(Equipment.PULL_UP_BAR, Equipment.BAND),
         loadKit = LoadKit(vestMaxKg = 10.0, vestStepKg = 1.0, platesKg = listOf(2.5, 5.0), hasBelt = true),
+        aim = TrainingAim.STRENGTH,
     )
 
     /** A model with something in every field, from two real sessions. */
@@ -74,6 +76,12 @@ class CoachDocumentTest {
         val model = CoachCodec.decodeCoach(json).toModel()
         assertEquals(LoadKit(), model.profile.loadKit)
         assertTrue(model.exercises.values.all { it.addedKg == 0.0 && !it.slowLowering })
+    }
+
+    @Test
+    fun aDocumentFromBeforeTrainingAimsReadsAsBalanced() {
+        val json = CoachCodec.encode(coachDocumentOf(trained(), days)).replace(""","aim":"STRENGTH"""", "")
+        assertEquals(TrainingAim.BALANCED, CoachCodec.decodeCoach(json).toModel().profile.aim)
     }
 
     @Test
