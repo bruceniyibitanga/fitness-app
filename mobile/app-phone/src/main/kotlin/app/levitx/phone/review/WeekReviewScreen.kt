@@ -66,6 +66,7 @@ fun WeekReviewRoute(onClose: () -> Unit, viewModel: WeekReviewViewModel = hiltVi
 private const val DAY_MILLIS = 24L * 60 * 60 * 1_000
 private val BarHeight = 8.dp
 private val NameWidth = 120.dp
+private val HighlightPadding = 12.dp
 
 /**
  * Last week, laid out as the "Coach: week review" artboard: sessions done
@@ -195,7 +196,8 @@ private fun RowScope.Highlight(value: Int, label: String, accent: Boolean) {
         modifier = Modifier
             .weight(1f)
             .fillMaxHeight()
-            .padding(horizontal = ScreenPadding)
+            // Narrower than the screen margin so "GATES PASSED" fits on one line.
+            .padding(horizontal = HighlightPadding)
             .clearAndSetSemantics { contentDescription = "$value $label" },
     ) {
         Text("$value", style = LevitxType.Figure, color = if (accent) LevitxColors.Accent else LevitxColors.Text)
