@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -202,7 +203,7 @@ private fun Header(name: String, secondsLeft: Int, onEnd: () -> Unit) {
 /** A thin bar that fills as the step runs out. */
 @Composable
 private fun PhaseBar(remaining: Int, seconds: Int, color: Color) {
-    val label = stringResource(R.string.interval_time_left, remaining, seconds)
+    val label = pluralStringResource(R.plurals.interval_time_left, remaining, remaining, seconds)
     val done = if (seconds == 0) 1f else (seconds - remaining).toFloat() / seconds
     Box(
         modifier = Modifier
