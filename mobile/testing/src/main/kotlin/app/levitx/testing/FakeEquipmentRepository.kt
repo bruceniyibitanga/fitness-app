@@ -33,6 +33,10 @@ class FakeEquipmentRepository(bodyweightKg: Double? = null, bands: List<Band> = 
         bandList.update { bands -> bands.filterNot { it.id == id } }
     }
 
+    /** The latest bodyweight, for assertions. */
+    val bodyweightKg: Double?
+        get() = bodyweight.value
+
     /** Current bands, for assertions. */
     val bands: List<Band>
         get() = bandList.value

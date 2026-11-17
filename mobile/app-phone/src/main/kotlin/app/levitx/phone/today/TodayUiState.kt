@@ -19,6 +19,7 @@ sealed interface TodayUiState {
      * @property hasWorkoutInProgress True when a workout was started and not finished.
      * @property sessionsLastWeek Sessions finished in the last seven days.
      * @property sessionsPerWeek Sessions a week the person said they'd train.
+     * @property weighIn Set when the quick weigh-in should show before the next start, null otherwise.
      */
     data class Ready(
         val nowEpochMillis: Long,
@@ -27,5 +28,15 @@ sealed interface TodayUiState {
         val hasWorkoutInProgress: Boolean,
         val sessionsLastWeek: Int = 0,
         val sessionsPerWeek: Int = 0,
+        val weighIn: WeighInAsk? = null,
     ) : TodayUiState
 }
+
+/**
+ * What the quick weigh-in is prefilled with. Bodyweight is health data: it
+ * comes from the encrypted database and goes straight back into it.
+ *
+ * @property lastKg The latest reading, or null if there has never been one.
+ * @property lastAtEpochMillis When it was taken, or null.
+ */
+data class WeighInAsk(val lastKg: Double?, val lastAtEpochMillis: Long?)

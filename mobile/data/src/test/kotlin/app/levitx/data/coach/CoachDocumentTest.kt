@@ -53,7 +53,11 @@ class CoachDocumentTest {
         return model.copy(exercises = loaded)
             .withPain(BodyArea.ELBOW, PainAssessment(PainAdvice.EASE_OFF, PainReason.WORSE_NEXT_MORNING))
             .withWeightNoticeShown()
-            .copy(skips = mapOf("squat.bodyweight" to 1), lastEasedAtEpochMillis = at(3))
+            .copy(
+                skips = mapOf("squat.bodyweight" to 1),
+                lastEasedAtEpochMillis = at(3),
+                weighInAskedAtEpochMillis = at(2),
+            )
     }
 
     private fun roundTrip(model: AthleteModel): CoachDocument =

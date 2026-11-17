@@ -4,9 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.SuggestionChoice
+import app.levitx.core.coach.WeighInPrompt
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.core.load.LoadLimits
+import app.levitx.data.coach.CoachPrompt
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.WorkoutDraftRepository
+import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
 import app.levitx.phone.isExpectedDataFailure
@@ -43,6 +47,7 @@ class TodayViewModel @Inject constructor(
     private val coach: Coach,
     private val clock: TrainingClock,
     private val starter: WorkoutStarter,
+    private val equipment: EquipmentRepository,
 ) : ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<TodayUiState> =
@@ -58,6 +63,12 @@ class TodayViewModel @Inject constructor(
                     hasWorkoutInProgress = draft != null,
                     sessionsLastWeek = state.model.history.count { it.finishedAtEpochMillis > now - WEEK_MILLIS },
                     sessionsPerWeek = state.model.profile.sessionsPerWeek,
+                    weighIn = state.model.weighIns.lastOrNull()
+                        .let { last -> WeighInAsk(last?.kg, last?.atEpochMillis) }
+                        .takeIf {
+                            draft == null &&
+                                WeighInPrompt.isDue(state.model.weighIns, state.model.weighInAskedAtEpochMillis, now)
+                        },
                 )
             }
         }
@@ -90,6 +101,23 @@ class TodayViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Answers the quick weigh-in, then starts like [start]. [kg] null means
+     * skipped. Either way it's noted as asked, so it won't come back for a week.
+     *
+     * @return True when there is a workout to open.
+     */
+    suspend fun answerWeighIn(kg: Double?, choice: SuggestionChoice? = null): Boolean {
+        val answered = handlingDataFailures(onFailure = { false }) {
+            if (kg != null && kg.isFinite() && kg in LoadLimits.MIN_BODYWEIGHT_KG..LoadLimits.MAX_BODYWEIGHT_KG) {
+                equipment.recordBodyweight(kg)
+            }
+            coachRepository.markShown(CoachPrompt.WEIGH_IN, clock.currentTimeMillis())
+            true
+        }
+        return answered && start(choice)
+    }
+
     /** Takes the rest day the coach offered. The session waits for next time. */
     fun rest() {
         viewModelScope.launch {
@@ -100,7 +128,8 @@ class TodayViewModel @Inject constructor(
     /** Marks the fast weight loss notice as read, so it isn't shown again this spell. */
     fun acknowledgeWeightNotice() {
         viewModelScope.launch {
-            handlingDataFailures(onFailure = {}) { coachRepository.markWeightNoticeShown() }
+            handlingDataFailures(onFailure = {
+            }) { coachRepository.markShown(CoachPrompt.WEIGHT_NOTICE, clock.currentTimeMillis()) }
         }
     }
 }

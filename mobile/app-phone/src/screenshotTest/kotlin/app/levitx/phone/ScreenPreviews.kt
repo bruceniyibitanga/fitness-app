@@ -106,7 +106,14 @@ import java.time.ZoneOffset
 
 private val noOnboardingActions = OnboardingActions({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
 private val noTodayActions =
-    TodayActions(onStart = {}, onRest = {}, onAcknowledgeWeightNotice = {}, onOpenExercise = {}, onOpenProgress = {})
+    TodayActions(
+        onStart = {},
+        onAnswerWeighIn = { _, _ -> },
+        onRest = {},
+        onAcknowledgeWeightNotice = {},
+        onOpenExercise = {},
+        onOpenProgress = {},
+    )
 
 /** Someone after a muscle-up who can do a pull-up and has a bar. */
 private fun muscleUp(kit: Set<Equipment> = setOf(Equipment.PULL_UP_BAR)) =
