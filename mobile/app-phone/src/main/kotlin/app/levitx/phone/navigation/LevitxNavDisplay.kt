@@ -29,8 +29,11 @@ import app.levitx.phone.progress.ProgressNavigation
 import app.levitx.phone.progress.ProgressRoute
 import app.levitx.phone.settings.PhotoCreditsScreen
 import app.levitx.phone.settings.SettingsRoute
+import app.levitx.phone.train.AllProgramsRoute
 import app.levitx.phone.train.FocusWorkoutNavigation
 import app.levitx.phone.train.FocusWorkoutRoute
+import app.levitx.phone.train.SearchRoute
+import app.levitx.phone.train.TrainNavigation
 import app.levitx.phone.workout.WorkoutRoute
 
 /**
@@ -75,6 +78,8 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                         onOpenProgram = { backStack.add(Destination.Program(it)) },
                         onOpenProgress = { backStack.add(Destination.Progress) },
                         onOpenSettings = { backStack.add(Destination.Settings) },
+                        onOpenSearch = { backStack.add(Destination.Search) },
+                        onOpenAllPrograms = { backStack.add(Destination.AllPrograms) },
                     ),
                 )
             }
@@ -101,7 +106,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
             entry<Destination.Program> { key ->
                 ProgramRoute(pathId = key.pathId, onBack = { backStack.removeLastOrNull() })
             }
-            intervalEntries(backStack)
+            trainEntries(backStack)
             progressEntries(backStack)
             settingsEntries(backStack)
         },
@@ -117,8 +122,27 @@ private fun MutableList<NavKey>.replaceAllWith(destination: Destination) {
     subList(0, size - 1).clear()
 }
 
-/** A cardio or mobility workout's page, and its timer. */
-private fun EntryProviderScope<NavKey>.intervalEntries(backStack: MutableList<NavKey>) {
+/** Search, every program, and a cardio or mobility workout's page and its timer. */
+private fun EntryProviderScope<NavKey>.trainEntries(backStack: MutableList<NavKey>) {
+    entry<Destination.Search> {
+        SearchRoute(
+            navigation = TrainNavigation(
+                onOpenWorkout = { backStack.add(Destination.FocusWorkout(it)) },
+                onOpenProgram = { backStack.add(Destination.Program(it)) },
+                onOpenInterval = { backStack.add(Destination.IntervalWorkout(it)) },
+                onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
+                onOpenSearch = {},
+                onOpenAllPrograms = { backStack.add(Destination.AllPrograms) },
+            ),
+            onBack = { backStack.removeLastOrNull() },
+        )
+    }
+    entry<Destination.AllPrograms> {
+        AllProgramsRoute(
+            onBack = { backStack.removeLastOrNull() },
+            onOpenProgram = { backStack.add(Destination.Program(it)) },
+        )
+    }
     entry<Destination.IntervalWorkout> { key ->
         IntervalDetailRoute(
             workoutId = key.workoutId,
