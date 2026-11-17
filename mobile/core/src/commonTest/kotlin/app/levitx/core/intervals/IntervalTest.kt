@@ -14,8 +14,8 @@ class IntervalTest {
     private val stretch = checkNotNull(IntervalCatalogue.byId("hips_and_hamstrings"))
 
     @Test
-    fun theCatalogueHasFourOfEachKindAndEveryMoveCanBeFoundAndCoached() {
-        assertEquals(4, IntervalCatalogue.all.count { it.kind == IntervalKind.CARDIO })
+    fun theCatalogueHasBothKindsAndEveryMoveCanBeFoundAndCoached() {
+        assertEquals(5, IntervalCatalogue.all.count { it.kind == IntervalKind.CARDIO })
         assertEquals(4, IntervalCatalogue.all.count { it.kind == IntervalKind.MOBILITY })
         IntervalCatalogue.all.flatMap { it.blocks }.map { it.move }.forEach { move ->
             assertEquals(move, ExerciseLookup.byId(move.id), move.id)
@@ -109,5 +109,29 @@ class IntervalTest {
         assertFailsWith<IllegalArgumentException> { IntervalBlock(pushUp, 30, 30, 3) }
         assertFailsWith<IllegalArgumentException> { IntervalBlock(burpees, 0, 30, 3) }
         assertFailsWith<IllegalArgumentException> { IntervalBlock(burpees, 30, 30, 0) }
+    }
+
+    @Test
+    fun quietAndBeginnerWorkoutsLeaveOutJumping() {
+        assertFalse(tabata.isQuiet)
+        assertTrue(stretch.isQuiet)
+        val quietCardio = IntervalCatalogue.all.filter { it.kind == IntervalKind.CARDIO && it.isQuiet }
+        assertEquals(listOf("quiet_cardio"), quietCardio.map { it.id }, "one cardio workout for a flat")
+        assertTrue(IntervalCatalogue.all.filter { it.forBeginners }.all { it.isQuiet })
+        assertTrue(IntervalCatalogue.all.filter { it.kind == IntervalKind.MOBILITY }.all { it.forBeginners })
+    }
+
+    @Test
+    fun aWorkoutForBeginnersCantJump() {
+        assertFailsWith<IllegalArgumentException> {
+            IntervalWorkout(
+                "x",
+                "X",
+                IntervalKind.CARDIO,
+                "",
+                listOf(IntervalBlock(burpees, 30, 30, 2)),
+                forBeginners = true,
+            )
+        }
     }
 }

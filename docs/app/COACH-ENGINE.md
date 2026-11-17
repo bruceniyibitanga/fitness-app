@@ -263,7 +263,7 @@ Built, in `:core`:
 - workouts picked from the Train tab (`Coach.workout`), built and made safe the same way as the coach's own sessions
 - form cues and set-up notes for every exercise (`ExerciseGuides`)
 - storage in the encrypted database (`CoachRepository`), with the workout in progress saved after every set
-- cardio and mobility workouts (`:core` `intervals`): eight fixed workouts, the timeline of work, rest and side switches, and a run that saves the seconds actually worked. They sit outside the coach (section 11)
+- cardio and mobility workouts (`:core` `intervals`): nine fixed workouts, the timeline of work, rest and side switches, and a run that saves the seconds actually worked. They sit outside the coach (section 11)
 - the watch: the phone sends it the next session, the watch runs it with `WorkoutRun`, and the finished workout comes back to the coach's history like one done on the phone
 
 Not built yet:
@@ -319,7 +319,7 @@ Alongside any skill goal, the person picks what the ladder work is for. It's cho
 
 ### Cardio and mobility
 
-Eight fixed workouts in the Train tab: four cardio, four mobility. They run on a timer that counts work, rest and side switches, beeps for the last three seconds of each step and buzzes on every change.
+Nine fixed workouts in the Train tab: five cardio, four mobility. They run on a timer that counts work, rest and side switches, beeps for the last three seconds of each step and buzzes on every change.
 
 They are kept apart from the coach on purpose. Their moves belong to two patterns, cardio and mobility, that have no ladder and no weekly target. Finishing one never changes a rung, a target or the week's hard sets. It goes into the history as one workout, with each move's sets stored as the seconds actually worked, so ending early keeps only what was done.
 
@@ -327,7 +327,8 @@ They are kept apart from the coach on purpose. Their moves belong to two pattern
 |---|---|---|
 | Tabata | 20 s hard, 10 s rest, 8 rounds, three moves after a warm-up | Tabata et al. (1996): 7 to 8 rounds of 20 s with 10 s rest, five days a week for six weeks, raised VO2max and anaerobic capacity. That was on a bike at about 170% of VO2max, which bodyweight moves can't reach, so the app borrows the timing and doesn't promise the result. |
 | Ten one-minute intervals | 60 s hard, 75 s easy, 10 rounds | Little et al. (2010): six sessions of 8 to 12 rounds over two weeks raised the muscles' capacity for endurance work. Also done on a bike. |
-| Bodyweight intervals, Skipping intervals | 30 s hard, 30 s easy | Our choice. Equal work and rest is a common starting point; no single study sets it. |
+| Bodyweight intervals, Rope intervals | 30 s hard, 30 s easy | Our choice. Equal work and rest is a common starting point; no single study sets it. |
+| Quiet cardio | 40 s on, 20 s off, nothing that jumps | Our choice, for flats and for beginners. Moves that jump (jumping jacks, burpees, squat jumps, high knees, skipping) are marked as jumping, and the Train tab's Quiet filter leaves them out. |
 | Mobility sessions | static stretches of 30 to 45 s, most twice, each side where it has one | ACSM (Garber et al. 2011): stretch two or three days a week, hold 10 to 30 s (30 to 60 s for older adults), about 60 s in total per stretch. Two 30 s rounds make that minute. |
 
 The timer counts against the clock that doesn't jump when the time zone or the phone's time changes, and holds a partial wake lock while running so beeps come on time with the screen off. It is let go when the workout is paused, ends or the screen closes. A half-done workout isn't kept if Android kills the app, because saved screen state is written to disk unencrypted. Leaving the screen any other way saves what was done.

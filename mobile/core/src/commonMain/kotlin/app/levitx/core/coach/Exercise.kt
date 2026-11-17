@@ -24,6 +24,8 @@ import app.levitx.core.skills.GateMeasure
  * @property carriers How weight can be added to it: a vest, a belt or plates.
  *   Empty for exercises that never take added weight, such as anything still
  *   being learned or balanced (pistols, Nordic curls) and holds.
+ * @property isJumping True when it involves jumping or bouncing, which is loud
+ *   in a flat and hard on the joints. The Quiet filter leaves these out.
  * @throws IllegalArgumentException if [range] is empty or starts below 1,
  *   [alsoTrains] repeats [pattern], or [lowerSeconds] is set on a hold or isn't positive.
  */
@@ -39,6 +41,7 @@ public data class Exercise(
     val isPerSide: Boolean = false,
     val lowerSeconds: Int? = null,
     val carriers: Set<LoadCarrier> = emptySet(),
+    val isJumping: Boolean = false,
 ) {
     init {
         require(range.first >= 1 && range.last >= range.first) { "range must start at 1 or more and not be empty" }

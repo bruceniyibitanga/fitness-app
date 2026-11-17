@@ -37,6 +37,7 @@ class TrainViewModel @Inject constructor(
                 TrainUiState.Ready(
                     programs = programsFor(state.model),
                     workouts = workoutsFor(state.model, coach, clock.currentTimeMillis()),
+                    owned = state.model.profile.equipment,
                 )
             }
         }

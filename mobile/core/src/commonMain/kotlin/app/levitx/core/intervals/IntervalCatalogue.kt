@@ -10,12 +10,28 @@ import app.levitx.core.coach.ExerciseGuide
  * stretch around 30 seconds to a minute in all.
  */
 public object IntervalCatalogue {
+    private val quietCardio = IntervalWorkout(
+        id = "quiet_cardio",
+        name = "Quiet cardio",
+        kind = IntervalKind.CARDIO,
+        about = "Forty seconds on, twenty off, with nothing that jumps. Kind to neighbours and knees, and a good " +
+            "first cardio session: you set the pace.",
+        blocks = listOf(
+            IntervalBlock(marching, workSeconds = 60, restSeconds = 0, rounds = 2),
+            IntervalBlock(stepJacks, workSeconds = 40, restSeconds = 20, rounds = 4),
+            IntervalBlock(shadowBoxing, workSeconds = 40, restSeconds = 20, rounds = 4),
+            IntervalBlock(mountainClimbers, workSeconds = 30, restSeconds = 30, rounds = 4),
+            IntervalBlock(marching, workSeconds = 60, restSeconds = 0, rounds = 1),
+        ),
+        forBeginners = true,
+    )
+
     private val bodyweightIntervals = IntervalWorkout(
         id = "bodyweight_intervals",
         name = "Bodyweight intervals",
         kind = IntervalKind.CARDIO,
-        about = "Thirty seconds hard, thirty easy, through four moves. No kit, and quiet enough for a flat if you " +
-            "step instead of jump.",
+        about = "Thirty seconds hard, thirty easy, through four moves. No kit. Three of them jump: for a flat, " +
+            "try Quiet cardio.",
         blocks = listOf(
             IntervalBlock(jumpingJacks, workSeconds = 40, restSeconds = 20, rounds = 3),
             IntervalBlock(burpees, workSeconds = 30, restSeconds = 30, rounds = 4),
@@ -68,6 +84,7 @@ public object IntervalCatalogue {
         id = "morning_mobility",
         name = "Morning mobility",
         kind = IntervalKind.MOBILITY,
+        forBeginners = true,
         about = "Spine, hips and upper back, gently. Good on rest days or before training.",
         blocks = listOf(
             IntervalBlock(catCow, workSeconds = 45, restSeconds = 10, rounds = 2),
@@ -82,6 +99,7 @@ public object IntervalCatalogue {
         id = "hips_and_hamstrings",
         name = "Hips and hamstrings",
         kind = IntervalKind.MOBILITY,
+        forBeginners = true,
         about = "The range pistols, shrimps and L-sits need. Each stretch adds up to a minute a side.",
         blocks = listOf(
             IntervalBlock(hipFlexor, workSeconds = 30, restSeconds = 10, rounds = 2),
@@ -96,6 +114,7 @@ public object IntervalCatalogue {
         id = "shoulders_and_wrists",
         name = "Shoulders and wrists",
         kind = IntervalKind.MOBILITY,
+        forBeginners = true,
         about = "Before handstands, planche work or a hard pushing day. You'll want a towel or a band.",
         blocks = listOf(
             IntervalBlock(wrists, workSeconds = 30, restSeconds = 10, rounds = 2),
@@ -110,6 +129,7 @@ public object IntervalCatalogue {
         id = "full_body_stretch",
         name = "Full body stretch",
         kind = IntervalKind.MOBILITY,
+        forBeginners = true,
         about = "Everything, slowly, after a hard week. About a minute per stretch in all.",
         blocks = listOf(
             IntervalBlock(catCow, workSeconds = 45, restSeconds = 10, rounds = 1),
@@ -125,6 +145,7 @@ public object IntervalCatalogue {
 
     /** Every built-in interval workout, cardio first. */
     public val all: List<IntervalWorkout> = listOf(
+        quietCardio,
         bodyweightIntervals,
         tabata,
         oneMinuteIntervals,

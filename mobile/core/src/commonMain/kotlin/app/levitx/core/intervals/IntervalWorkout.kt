@@ -51,6 +51,8 @@ public data class IntervalBlock(
  * @property kind Cardio or mobility.
  * @property about One or two sentences on what it is and where it comes from.
  * @property blocks The moves, in order.
+ * @property forBeginners True when someone new to training can do all of it
+ *   as written: nothing jumps, and the pace is theirs to set.
  * @throws IllegalArgumentException if [blocks] is empty.
  */
 public data class IntervalWorkout(
@@ -59,10 +61,16 @@ public data class IntervalWorkout(
     val kind: IntervalKind,
     val about: String,
     val blocks: List<IntervalBlock>,
+    val forBeginners: Boolean = false,
 ) {
     init {
         require(blocks.isNotEmpty()) { "an interval workout needs at least one block" }
+        require(!forBeginners || isQuiet) { "a workout for beginners mustn't jump" }
     }
+
+    /** True when no move jumps, so it suits a flat or a sore knee. */
+    val isQuiet: Boolean
+        get() = blocks.none { it.move.isJumping }
 
     /** Every piece of kit some block needs. */
     val equipment: Set<Equipment>
