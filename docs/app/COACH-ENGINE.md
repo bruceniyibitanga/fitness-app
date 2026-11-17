@@ -269,7 +269,7 @@ Built, in `:core`:
 Not built yet:
 
 - **Health Connect.** The engine takes weigh-ins; nothing reads them from Health Connect yet.
-- **Some screens.** Setup, Today, the suggestion card, the weigh-in prompt, the week review, the workout, Skills and the Train library are built on the phone. The comeback day screen is designed but not built.
+- **Some screens.** Setup, Today, the suggestion card, the weigh-in prompt, the week review, the comeback day, the workout, Skills and the Train library are built on the phone.
 - **Offering to trim sessions** that keep finishing early. The model records how long each session took; nothing acts on it yet.
 - **More goals.** Only the first pull-up and muscle-up paths exist. Handstand, front lever, pistol squat and push-up paths need their gates written. The general goals (stronger, muscle, lean, mobility) all get the same even plan for now.
 - **Conditioning and mobility in the plan.** Cardio and mobility workouts can be picked and run from the Train tab (section 11), but the coach never schedules them or suggests one on a rest day.

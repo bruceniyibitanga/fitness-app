@@ -214,6 +214,22 @@
     <string name="today_weight_body" formatted="false">Your weight has been falling faster than about 1% a week. That makes it harder to keep strength, so your targets will hold steady until it settles. If you aren\'t trying to lose weight, it\'s worth talking to a GP.</string>
     <string name="today_weight_ok">Got it</string>
     <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see the load of every rep.</string>
+    <plurals name="comeback_label">
+        <item quantity="one">COMEBACK DAY · %1$d DAY AWAY</item>
+        <item quantity="other">COMEBACK DAY · %1$d DAYS AWAY</item>
+    </plurals>
+    <string name="comeback_title">Welcome back.</string>
+    <string name="comeback_body">You\'re not starting over: every exercise picks up where you left it. Today is lighter, and the next session is back to normal.</string>
+    <string name="comeback_how">HOW MUCH TODAY</string>
+    <string name="comeback_lighter">Lighter</string>
+    <string name="comeback_full">Full session</string>
+    <string name="comeback_suggested_minutes">SUGGESTED · %1$d MIN</string>
+    <string name="comeback_planned_minutes">AS PLANNED · %1$d MIN</string>
+    <string name="comeback_lighter_note">Same exercises, fewer sets and lower targets, shorter rest. No gate attempt today.</string>
+    <string name="comeback_full_note">As planned. Pick this if you kept training while you were away.</string>
+    <string name="comeback_rest">Rest today instead</string>
+    <string name="comeback_start_lighter">Start comeback</string>
+    <string name="comeback_start_full">Start full session</string>
     <string name="today_review_label">YOUR WEEK</string>
     <string name="today_review_body">Last week, looked back on: sessions, new bests and hard sets.</string>
     <string name="today_review_open">See your week</string>
