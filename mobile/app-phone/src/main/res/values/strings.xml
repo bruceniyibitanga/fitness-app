@@ -34,6 +34,8 @@
     <string name="pattern_squat">Squats and lunges</string>
     <string name="pattern_hinge">Hips and hamstrings</string>
     <string name="pattern_core">Core</string>
+    <string name="pattern_cardio">Cardio</string>
+    <string name="pattern_mobility">Mobility</string>
 
     <!-- Kit -->
     <string name="kit_pull_up_bar">Pull-up bar or a park</string>
@@ -42,6 +44,7 @@
     <string name="kit_rings">Rings</string>
     <string name="kit_band">Bands</string>
     <string name="kit_box">Box or step</string>
+    <string name="kit_jump_rope">Skipping rope</string>
     <string name="kit_none">Nothing yet</string>
 
     <!-- Tabs -->
@@ -572,6 +575,8 @@
     <string name="credit_tuck_planche">TUCK PLANCHE</string>
     <string name="credit_front_lever">FRONT LEVER</string>
     <string name="credit_one_arm_pull_up">ONE-ARM PULL-UP</string>
+    <string name="credit_cardio">CARDIO</string>
+    <string name="credit_mobility">MOBILITY</string>
 
     <!-- Skills -->
     <string name="skills_step">%1$s · STEP %2$d OF %3$d</string>
@@ -601,6 +606,50 @@
     <string name="train_tag_skill">SKILL</string>
     <string name="train_programs">PROGRAMS</string>
     <string name="train_workouts">SINGLE WORKOUTS</string>
+    <string name="train_intervals">CARDIO AND MOBILITY</string>
+    <plurals name="interval_moves_count">
+        <item quantity="one">%1$d MIN · %2$d MOVE</item>
+        <item quantity="other">%1$d MIN · %2$d MOVES</item>
+    </plurals>
+    <string name="interval_kind_cardio">CARDIO</string>
+    <string name="interval_kind_mobility">MOBILITY</string>
+    <string name="interval_moves">MOVES</string>
+    <string name="interval_work_rest">WORK · REST</string>
+    <string name="interval_block">%1$d × %2$d s · %3$d s</string>
+    <string name="interval_block_no_rest">%1$d × %2$d s</string>
+    <string name="interval_block_each_side">%1$d × %2$d s each side</string>
+    <string name="interval_note">Logged in your history. It doesn\'t change your plan or count toward your strength sets.</string>
+    <string name="interval_start">Start</string>
+    <string name="interval_not_found">This workout isn\'t in the app any more.</string>
+    <string name="interval_end">End the workout</string>
+    <string name="interval_left">%1$s LEFT</string>
+    <string name="interval_phase_prepare">GET READY</string>
+    <string name="interval_phase_work">WORK</string>
+    <string name="interval_phase_rest">REST</string>
+    <string name="interval_phase_switch">SWITCH SIDES</string>
+    <string name="interval_paused">PAUSED</string>
+    <string name="interval_round">ROUND %1$d OF %2$d</string>
+    <string name="interval_side_left">LEFT SIDE</string>
+    <string name="interval_side_right">RIGHT SIDE</string>
+    <string name="interval_next">NEXT</string>
+    <string name="interval_next_rest">Rest · %1$d s</string>
+    <string name="interval_next_none">Last one</string>
+    <string name="interval_next_switch">Switch sides</string>
+    <string name="interval_pause">Pause</string>
+    <string name="interval_resume">Resume</string>
+    <string name="interval_skip">Skip</string>
+    <string name="interval_time_left">%1$d of %2$d seconds left</string>
+    <string name="interval_end_title">End now?</string>
+    <string name="interval_end_body">What you\'ve done so far goes into your history.</string>
+    <string name="interval_end_keep">Keep going</string>
+    <string name="interval_end_confirm">End workout</string>
+    <string name="interval_done">Done</string>
+    <string name="interval_done_worked">%1$s OF WORK</string>
+    <string name="interval_done_saving">Saving to your history…</string>
+    <string name="interval_done_saved">Saved to your history.</string>
+    <string name="interval_done_nothing">No work was done, so there\'s nothing to save.</string>
+    <string name="interval_done_failed">This workout couldn\'t be saved, because your training data couldn\'t be unlocked on this device.</string>
+    <string name="interval_back">Back to Train</string>
     <string name="train_current_program">YOUR PLAN</string>
     <plurals name="train_program_gates">
         <item quantity="one">%1$d GATE · %2$d PASSED</item>
@@ -660,6 +709,7 @@
     <string name="kit_short_rings">RINGS</string>
     <string name="kit_short_band">BAND</string>
     <string name="kit_short_box">BOX</string>
+    <string name="kit_short_rope">ROPE</string>
     <string name="program_gates">GATES</string>
     <string name="program_to_pass">TO PASS</string>
     <string name="program_make_plan">Make this my plan</string>

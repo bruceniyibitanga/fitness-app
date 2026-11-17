@@ -126,11 +126,11 @@ fun progressState(
 ): ProgressUiState.Ready {
     val from = range.days?.let { nowEpochMillis - it * MILLIS_PER_DAY } ?: Long.MIN_VALUE
     val inRange = workouts.filter { it.finishedAtEpochMillis >= from }
-    val series = MovementPattern.entries.associateWith { Progress.loadSeries(inRange, it, from) }
+    val series = MovementPattern.strength.associateWith { Progress.loadSeries(inRange, it, from) }
     return ProgressUiState.Ready(
         range = range,
         headline = headline(model, series),
-        moves = MovementPattern.entries.mapNotNull { moveRow(it, inRange, series.getValue(it)) },
+        moves = MovementPattern.strength.mapNotNull { moveRow(it, inRange, series.getValue(it)) },
         weekSets = weekSets(model, nowEpochMillis),
         weeks = Progress.workoutsPerWeek(workouts, WEEKS_SHOWN, nowEpochMillis),
         gates = Progress.passedGates(workouts, passedGates(model)),
@@ -165,7 +165,7 @@ private fun moveRow(pattern: MovementPattern, workouts: List<WorkoutRecord>, poi
 private fun weekSets(model: AthleteModel, nowEpochMillis: Long): List<WeekSets> {
     val weekStart = nowEpochMillis - CoachTuning.WEEK_WINDOW_HOURS * MILLIS_PER_HOUR
     val planned = VolumeTargets.weekly(model.profile)
-    return MovementPattern.entries
+    return MovementPattern.strength
         .map { WeekSets(it, model.hardSets(it, weekStart, nowEpochMillis), planned[it] ?: 0.0) }
         .filter { it.done > 0.0 || it.planned > 0.0 }
 }

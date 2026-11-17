@@ -36,6 +36,7 @@ import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.clockText
 import app.levitx.phone.ui.durationText
 import app.levitx.phone.ui.measureText
 import app.levitx.phone.ui.repsLeftLabel
@@ -45,7 +46,6 @@ import app.levitx.phone.ui.weightNumber
 /** How often the rest countdown redraws. A quarter second keeps the seconds honest. */
 private const val COUNTDOWN_TICK_MILLIS = 250L
 private const val MILLIS_PER_SECOND = 1_000L
-private const val SECONDS_PER_MINUTE = 60
 
 /** For this long after rest runs out it says "GO"; after that it counts the extra. */
 private const val GO_SECONDS = 10
@@ -109,9 +109,9 @@ private fun RestClock(secondsLeft: Int, overSeconds: Int, plannedSeconds: Int, r
     }
     Caption(label, color = labelColor, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
     val (digits, digitColor) = when {
-        running -> clock(secondsLeft) to LevitxColors.Ice
+        running -> clockText(secondsLeft) to LevitxColors.Ice
         overSeconds < GO_SECONDS -> stringResource(R.string.workout_rest_go) to LevitxColors.Accent
-        else -> stringResource(R.string.workout_rest_extra, clock(overSeconds)) to LevitxColors.Text
+        else -> stringResource(R.string.workout_rest_extra, clockText(overSeconds)) to LevitxColors.Text
     }
     // The label speaks for the clock; reading every second out would drown everything else.
     Text(
@@ -218,8 +218,3 @@ private fun LastSetRow(last: LastSet, canUndo: Boolean, onUndo: () -> Unit) {
         }
     }
 }
-
-/** "1:24": minutes and seconds. */
-@Composable
-private fun clock(seconds: Int): String =
-    stringResource(R.string.clock_format, seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE)

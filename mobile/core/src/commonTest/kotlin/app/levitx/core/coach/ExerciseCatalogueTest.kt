@@ -13,7 +13,7 @@ class ExerciseCatalogueTest {
 
     @Test
     fun everyPatternHasALadder() {
-        MovementPattern.entries.forEach { assertEquals(it, ExerciseCatalogue.ladder(it).pattern) }
+        MovementPattern.strength.forEach { assertEquals(it, ExerciseCatalogue.ladder(it).pattern) }
     }
 
     @Test

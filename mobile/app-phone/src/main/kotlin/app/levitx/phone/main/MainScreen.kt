@@ -89,6 +89,7 @@ fun MainRoute(navigation: MainNavigation) {
             MainTab.TRAIN -> TrainRoute(
                 onOpenWorkout = navigation.onOpenFocusWorkout,
                 onOpenProgram = navigation.onOpenProgram,
+                onOpenInterval = navigation.onOpenInterval,
             )
 
             MainTab.PLAN -> PathRoute(
@@ -109,6 +110,7 @@ fun MainRoute(navigation: MainNavigation) {
  *
  * @property onOpenWorkout Opens the workout in progress.
  * @property onOpenFocusWorkout Opens a single workout from the Train tab, by focus name.
+ * @property onOpenInterval Opens a cardio or mobility workout from the Train tab, by id.
  * @property onOpenExercise Opens an exercise's detail, by id.
  * @property onOpenProgram Opens a skill program, by id.
  * @property onOpenProgress Opens Progress.
@@ -117,6 +119,7 @@ fun MainRoute(navigation: MainNavigation) {
 data class MainNavigation(
     val onOpenWorkout: () -> Unit,
     val onOpenFocusWorkout: (String) -> Unit,
+    val onOpenInterval: (String) -> Unit,
     val onOpenExercise: (String) -> Unit,
     val onOpenProgram: (String) -> Unit,
     val onOpenProgress: () -> Unit,

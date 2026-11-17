@@ -1,5 +1,6 @@
 package app.levitx.phone.train
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -106,6 +107,26 @@ internal fun ProgramCard(program: ProgramSummary, onClick: () -> Unit) {
 @Composable
 internal fun WorkoutRow(workout: WorkoutSummary, onClick: () -> Unit) {
     val session = workout.session
+    val meta = if (session == null) {
+        stringResource(R.string.train_nothing_safe)
+    } else {
+        val parts = listOfNotNull(
+            pluralStringResource(
+                R.plurals.train_workout_meta,
+                session.plans.size,
+                session.estimatedMinutes,
+                session.plans.size,
+            ),
+            stringResource(R.string.train_some_light).takeIf { session.plans.any { !it.isHard } },
+        )
+        parts.joinToString(" · ")
+    }
+    PhotoListRow(focusPhoto(workout.focus), focusName(workout.focus), meta, onClick)
+}
+
+/** A row of the Train list: a square [photo], a [title] over its [meta] line, and a chevron. */
+@Composable
+internal fun PhotoListRow(@DrawableRes photo: Int, title: String, meta: String, onClick: () -> Unit) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -116,27 +137,13 @@ internal fun WorkoutRow(workout: WorkoutSummary, onClick: () -> Unit) {
             .padding(horizontal = ScreenPadding, vertical = 8.dp),
     ) {
         Image(
-            painter = painterResource(focusPhoto(workout.focus)),
+            painter = painterResource(photo),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(WorkoutThumbSize),
         )
         Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.weight(1f)) {
-            Text(focusName(workout.focus), fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
-            val meta = if (session == null) {
-                stringResource(R.string.train_nothing_safe)
-            } else {
-                val parts = listOfNotNull(
-                    pluralStringResource(
-                        R.plurals.train_workout_meta,
-                        session.plans.size,
-                        session.estimatedMinutes,
-                        session.plans.size,
-                    ),
-                    stringResource(R.string.train_some_light).takeIf { session.plans.any { !it.isHard } },
-                )
-                parts.joinToString(" · ")
-            }
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
             Text(meta, style = LevitxType.Micro, color = LevitxColors.TextMuted)
         }
         Icon(painterResource(R.drawable.ic_chevron_forward), contentDescription = null, tint = LevitxColors.TextFaint)

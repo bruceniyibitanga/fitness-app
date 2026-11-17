@@ -68,6 +68,8 @@ private val credits = listOf(
     Credit(R.string.credit_tuck_planche, "Bogdan Pasca", "https://unsplash.com/photos/UBC4m6KEWcQ"),
     Credit(R.string.credit_front_lever, "Kate Trysh", "https://unsplash.com/photos/WnXzlISbtY0"),
     Credit(R.string.credit_one_arm_pull_up, "Amanda Hodge", "https://unsplash.com/photos/Wqn_gieaKyI"),
+    Credit(R.string.credit_cardio, "Element5 Digital", "https://unsplash.com/photos/7QYd1VxLRbM"),
+    Credit(R.string.credit_mobility, "Alora Griffiths", "https://unsplash.com/photos/WX7FSaiYxK8"),
 )
 
 /** The photos in the app and who took them. Each opens its page on Unsplash in the browser. */

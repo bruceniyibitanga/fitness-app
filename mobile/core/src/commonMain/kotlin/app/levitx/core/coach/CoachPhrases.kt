@@ -96,6 +96,8 @@ public object CoachPhrases {
         MovementPattern.SQUAT -> "squatting"
         MovementPattern.HINGE -> "hip work"
         MovementPattern.CORE -> "core work"
+        MovementPattern.CARDIO -> "cardio"
+        MovementPattern.MOBILITY -> "mobility work"
     }
 
     /** What to call [area] mid-sentence. */
@@ -117,6 +119,7 @@ public object CoachPhrases {
         Equipment.RINGS -> "rings"
         Equipment.BAND -> "a resistance band"
         Equipment.BOX -> "a box or step"
+        Equipment.JUMP_ROPE -> "a skipping rope"
     }
 
     private fun sets(count: Int): String = if (count == 1) "1 set" else "$count sets"

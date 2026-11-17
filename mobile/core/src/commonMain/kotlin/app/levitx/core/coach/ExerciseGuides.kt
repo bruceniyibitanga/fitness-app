@@ -1,5 +1,7 @@
 package app.levitx.core.coach
 
+import app.levitx.core.intervals.IntervalCatalogue
+
 /**
  * How to do an exercise well: a few form cues, and a note when it needs
  * something the kit list doesn't cover or has a common way to go wrong.
@@ -423,6 +425,7 @@ public object ExerciseGuides {
         ?: advancedGuides[exerciseId]
         ?: skillGuides[exerciseId]
         ?: gateGuideSources[exerciseId]?.let(::forExercise)
+        ?: IntervalCatalogue.guideFor(exerciseId)
 }
 
 /** The same guide with its first cue replaced, for a variation that differs only in how it starts. */

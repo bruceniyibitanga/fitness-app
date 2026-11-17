@@ -28,7 +28,7 @@ sealed interface ExerciseUiState {
      * @property target Reps or seconds the person's work sets aim for, or null until the coach has a figure.
      * @property best Their best set, or null before they have one.
      * @property bodyweightKg Bodyweight for kilograms per rep, or null when none is recorded.
-     * @property ladder Its ladder, easiest first, or null for a skill gate's exercise.
+     * @property ladder Its ladder, easiest first, or null for a skill gate's exercise or a cardio or mobility move.
      */
     data class Ready(
         val exercise: Exercise,
@@ -73,7 +73,8 @@ fun exerciseState(model: AthleteModel, exerciseId: String, nowEpochMillis: Long)
         target = state?.target.takeUnless { isGate },
         best = best?.takeIf { it > 0 },
         bodyweightKg = bodyweightTrend(model.weighIns, nowEpochMillis)?.currentKg,
-        ladder = if (isGate) null else ladderFor(model, exercise),
+        // Gates and cardio or mobility moves sit on no ladder.
+        ladder = if (isGate || !exercise.pattern.isStrength) null else ladderFor(model, exercise),
     )
 }
 

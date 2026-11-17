@@ -13,6 +13,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import app.levitx.phone.exercise.ExerciseRoute
+import app.levitx.phone.intervals.IntervalDetailNavigation
+import app.levitx.phone.intervals.IntervalDetailRoute
+import app.levitx.phone.intervals.IntervalTimerRoute
 import app.levitx.phone.launch.LaunchViewModel
 import app.levitx.phone.main.MainNavigation
 import app.levitx.phone.main.MainRoute
@@ -67,6 +70,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                     MainNavigation(
                         onOpenWorkout = { backStack.add(Destination.Workout) },
                         onOpenFocusWorkout = { backStack.add(Destination.FocusWorkout(it)) },
+                        onOpenInterval = { backStack.add(Destination.IntervalWorkout(it)) },
                         onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
                         onOpenProgram = { backStack.add(Destination.Program(it)) },
                         onOpenProgress = { backStack.add(Destination.Progress) },
@@ -97,6 +101,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
             entry<Destination.Program> { key ->
                 ProgramRoute(pathId = key.pathId, onBack = { backStack.removeLastOrNull() })
             }
+            intervalEntries(backStack)
             progressEntries(backStack)
             settingsEntries(backStack)
         },
@@ -110,6 +115,27 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
 private fun MutableList<NavKey>.replaceAllWith(destination: Destination) {
     add(destination)
     subList(0, size - 1).clear()
+}
+
+/** A cardio or mobility workout's page, and its timer. */
+private fun EntryProviderScope<NavKey>.intervalEntries(backStack: MutableList<NavKey>) {
+    entry<Destination.IntervalWorkout> { key ->
+        IntervalDetailRoute(
+            workoutId = key.workoutId,
+            navigation = IntervalDetailNavigation(
+                onBack = { backStack.removeLastOrNull() },
+                // The timer replaces this screen, so finishing it goes back to the tabs.
+                onStart = {
+                    backStack.removeLastOrNull()
+                    backStack.add(Destination.IntervalTimer(key.workoutId))
+                },
+                onOpenMove = { backStack.add(Destination.ExerciseDetail(it)) },
+            ),
+        )
+    }
+    entry<Destination.IntervalTimer> { key ->
+        IntervalTimerRoute(workoutId = key.workoutId, onDone = { backStack.removeLastOrNull() })
+    }
 }
 
 /** Progress, an exercise's progress, History and a past workout. */
