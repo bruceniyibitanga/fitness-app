@@ -10,7 +10,7 @@ class VolumeTargetsTest {
         val targets = VolumeTargets.weekly(pullUpProfile())
         assertEquals(CoachTuning.GOAL_PATTERN_WEEKLY_SETS, targets[MovementPattern.VERTICAL_PULL])
         assertEquals(CoachTuning.ALL_ROUND_WEEKLY_SETS, targets[MovementPattern.SQUAT])
-        assertEquals(MovementPattern.entries.toSet(), targets.keys)
+        assertEquals(MovementPattern.strength.toSet(), targets.keys)
     }
 
     @Test
@@ -40,7 +40,7 @@ class VolumeTargetsTest {
         val roomy = VolumeTargets.weekly(pullUpProfile())
         val tight = VolumeTargets.weekly(pullUpProfile(sessionMinutes = 20))
         assertTrue(tight.values.sum() < roomy.values.sum())
-        val ratios = MovementPattern.entries.map { tight.getValue(it) / roomy.getValue(it) }
+        val ratios = MovementPattern.strength.map { tight.getValue(it) / roomy.getValue(it) }
         assertEquals(ratios.first(), ratios.last(), absoluteTolerance = 1e-9)
         // Three 20-minute sessions leave 15 minutes of work each: 18 sets a week.
         assertEquals(18.0, tight.values.sum(), absoluteTolerance = 1e-9)

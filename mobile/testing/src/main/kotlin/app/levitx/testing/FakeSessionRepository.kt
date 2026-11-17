@@ -37,6 +37,11 @@ class FakeSessionRepository(private val progress: FakeProgressRepository) :
         insertIfNew(StoredSession("local-${nextId++}", session))
     }
 
+    override suspend fun saveIntervalWorkout(workoutId: String, sessions: List<CompletedSession>) {
+        if (saved.any { it.id.startsWith("$workoutId/") }) return
+        sessions.forEachIndexed { index, session -> saved += StoredSession("$workoutId/$index", session) }
+    }
+
     override suspend fun saveReceivedSession(received: StoredSession): Boolean = insertIfNew(received)
 
     override suspend fun saveAndQueue(queued: StoredSession) {

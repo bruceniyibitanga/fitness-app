@@ -144,6 +144,8 @@ fun patternName(pattern: MovementPattern): String = stringResource(
         MovementPattern.SQUAT -> R.string.pattern_squat
         MovementPattern.HINGE -> R.string.pattern_hinge
         MovementPattern.CORE -> R.string.pattern_core
+        MovementPattern.CARDIO -> R.string.pattern_cardio
+        MovementPattern.MOBILITY -> R.string.pattern_mobility
     },
 )
 
@@ -157,5 +159,6 @@ fun kitName(equipment: Equipment): String = stringResource(
         Equipment.RINGS -> R.string.kit_rings
         Equipment.BAND -> R.string.kit_band
         Equipment.BOX -> R.string.kit_box
+        Equipment.JUMP_ROPE -> R.string.kit_jump_rope
     },
 )

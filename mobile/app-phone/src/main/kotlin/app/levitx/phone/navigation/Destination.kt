@@ -35,6 +35,24 @@ sealed interface Destination : NavKey {
     data class FocusWorkout(val focus: String) : Destination
 
     /**
+     * A cardio or mobility workout picked from the Train tab, before it starts.
+     *
+     * @property workoutId The workout's catalogue id. Not personal data.
+     */
+    @Serializable
+    data class IntervalWorkout(val workoutId: String) : Destination
+
+    /**
+     * The timer for a cardio or mobility workout. The run itself isn't kept
+     * here: saved state goes to disk, and the timer starts afresh if the app
+     * is killed.
+     *
+     * @property workoutId The workout's catalogue id. Not personal data.
+     */
+    @Serializable
+    data class IntervalTimer(val workoutId: String) : Destination
+
+    /**
      * How to do one exercise, and where it sits on its ladder.
      *
      * @property exerciseId The exercise's catalogue id. Not personal data.

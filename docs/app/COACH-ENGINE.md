@@ -263,6 +263,7 @@ Built, in `:core`:
 - workouts picked from the Train tab (`Coach.workout`), built and made safe the same way as the coach's own sessions
 - form cues and set-up notes for every exercise (`ExerciseGuides`)
 - storage in the encrypted database (`CoachRepository`), with the workout in progress saved after every set
+- cardio and mobility workouts (`:core` `intervals`): eight fixed workouts, the timeline of work, rest and side switches, and a run that saves the seconds actually worked. They sit outside the coach (section 11)
 - the watch: the phone sends it the next session, the watch runs it with `WorkoutRun`, and the finished workout comes back to the coach's history like one done on the phone
 
 Not built yet:
@@ -271,7 +272,7 @@ Not built yet:
 - **Some screens.** Setup, Today, the suggestion card, the workout, Skills and the Train library are built on the phone. The weigh-in prompt and the week review are designed but not built.
 - **Offering to trim sessions** that keep finishing early. The model records how long each session took; nothing acts on it yet.
 - **More goals.** Only the first pull-up and muscle-up paths exist. Handstand, front lever, pistol squat and push-up paths need their gates written. The general goals (stronger, muscle, lean, mobility) all get the same even plan for now.
-- **Conditioning and mobility.** The engine plans strength and skill work. Cardio and mobility sessions are in the Train tab design but not in the engine.
+- **Conditioning and mobility in the plan.** Cardio and mobility workouts can be picked and run from the Train tab (section 11), but the coach never schedules them or suggests one on a rest day.
 
 ## 11. Where the exercises and numbers come from
 
@@ -315,6 +316,21 @@ Alongside any skill goal, the person picks what the ladder work is for. It's cho
 - **Conditioning** climbs past the range before moving on and rests a minute. ACSM's endurance guidance is higher reps with short rest.
 - Weekly targets are sized to the time available using the aim's rest, so short rest fits more sets into the same week and long rest fewer.
 - Placement from a best-effort set and the quick test ignores the aim. It measures where someone is, which doesn't depend on what they're training for.
+
+### Cardio and mobility
+
+Eight fixed workouts in the Train tab: four cardio, four mobility. They run on a timer that counts work, rest and side switches, beeps for the last three seconds of each step and buzzes on every change.
+
+They are kept apart from the coach on purpose. Their moves belong to two patterns, cardio and mobility, that have no ladder and no weekly target. Finishing one never changes a rung, a target or the week's hard sets. It goes into the history as one workout, with each move's sets stored as the seconds actually worked, so ending early keeps only what was done.
+
+| Workout | What it is | Where the format comes from |
+|---|---|---|
+| Tabata | 20 s hard, 10 s rest, 8 rounds, three moves after a warm-up | Tabata et al. (1996): 7 to 8 rounds of 20 s with 10 s rest, five days a week for six weeks, raised VO2max and anaerobic capacity. That was on a bike at about 170% of VO2max, which bodyweight moves can't reach, so the app borrows the timing and doesn't promise the result. |
+| Ten one-minute intervals | 60 s hard, 75 s easy, 10 rounds | Little et al. (2010): six sessions of 8 to 12 rounds over two weeks raised the muscles' capacity for endurance work. Also done on a bike. |
+| Bodyweight intervals, Skipping intervals | 30 s hard, 30 s easy | Our choice. Equal work and rest is a common starting point; no single study sets it. |
+| Mobility sessions | static stretches of 30 to 45 s, most twice, each side where it has one | ACSM (Garber et al. 2011): stretch two or three days a week, hold 10 to 30 s (30 to 60 s for older adults), about 60 s in total per stretch. Two 30 s rounds make that minute. |
+
+The timer counts against the clock that doesn't jump when the time zone or the phone's time changes, and holds a partial wake lock while running so beeps come on time with the screen off. It is let go when the workout is paused, ends or the screen closes. A half-done workout isn't kept if Android kills the app, because saved screen state is written to disk unencrypted. Leaving the screen any other way saves what was done.
 
 ### The programs
 
@@ -453,6 +469,8 @@ wger couldn't be reached from where this check ran, so the new rows say "not che
 - Ebben WP et al. (2011). Kinetic analysis of several variations of push-ups. J Strength Cond Res 25(10):2891-2894.
 - de Leva P (1996). Adjustments to Zatsiorsky-Seluyanov's segment inertia parameters. J Biomech 29(9):1223-1230.
 - Morán-Navarro R et al. (2017). Time course of recovery following resistance training leading or not to failure. Eur J Appl Physiol 117(12):2387-2399.
+- Tabata I et al. (1996). Effects of moderate-intensity endurance and high-intensity intermittent training on anaerobic capacity and VO2max. Med Sci Sports Exerc 28(10):1327-1330.
+- Little JP et al. (2010). A practical model of low-volume high-intensity interval training induces mitochondrial biogenesis in human skeletal muscle: potential mechanisms. J Physiol 588(6):1011-1022.
 - Garber CE et al. (2011). Quantity and quality of exercise for developing and maintaining cardiorespiratory, musculoskeletal, and neuromotor fitness in apparently healthy adults. Med Sci Sports Exerc 43(7):1334-1359.
 - American College of Sports Medicine (2009). Progression models in resistance training for healthy adults. Med Sci Sports Exerc 41(3):687-708.
 - Schoenfeld BJ, Grgic J, Van Every DW, Plotkin DL (2021). Loading recommendations for muscle strength, hypertrophy, and local endurance: a re-examination of the repetition continuum. Sports 9(2):32.

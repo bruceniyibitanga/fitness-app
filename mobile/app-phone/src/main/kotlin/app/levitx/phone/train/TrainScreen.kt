@@ -26,8 +26,12 @@ import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.WorkoutFocus
+import app.levitx.core.intervals.IntervalCatalogue
+import app.levitx.core.intervals.IntervalWorkout
 import app.levitx.design.LevitxColors
 import app.levitx.phone.R
+import app.levitx.phone.intervals.intervalPhoto
+import app.levitx.phone.intervals.intervalRowMeta
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Chip
@@ -42,27 +46,31 @@ import app.levitx.phone.ui.TabHeader
  *
  * @param onOpenWorkout Opens the workout for a focus, by its name.
  * @param onOpenProgram Opens a skill program, by its id.
+ * @param onOpenInterval Opens a cardio or mobility workout, by its id.
  */
 @Composable
 fun TrainRoute(
     onOpenWorkout: (String) -> Unit,
     onOpenProgram: (String) -> Unit,
+    onOpenInterval: (String) -> Unit,
     viewModel: TrainViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    TrainScreen(uiState, onOpenWorkout, onOpenProgram)
+    TrainScreen(uiState, onOpenWorkout, onOpenProgram, onOpenInterval)
 }
 
 /**
  * The Train tab, laid out as the Train artboard: a row of body-focus chips,
  * skill programs as photo cards, and a single workout for each part of the
- * body as photo rows. A chip narrows the workouts to that focus.
+ * body as photo rows, then the cardio and mobility workouts. A chip narrows
+ * the single workouts to that focus; cardio and mobility show under All.
  */
 @Composable
 fun TrainScreen(
     uiState: TrainUiState,
     onOpenWorkout: (String) -> Unit,
     onOpenProgram: (String) -> Unit,
+    onOpenInterval: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Survives rotation and coming back from a workout. Null is "All".
@@ -87,6 +95,7 @@ fun TrainScreen(
                     FocusChips(selected = focus, onSelect = { focus = it })
                     Programs(uiState.programs, onOpenProgram)
                     Workouts(uiState.workouts.filter { focus == null || it.focus == focus }, onOpenWorkout)
+                    if (focus == null) Intervals(IntervalCatalogue.all, onOpenInterval)
                 }
             }
         }
@@ -138,6 +147,21 @@ private fun Workouts(workouts: List<WorkoutSummary>, onOpen: (String) -> Unit) {
     }
 }
 
+/** The cardio and mobility heading and a row for each. They come from the catalogue: nothing personal. */
+@Composable
+private fun Intervals(workouts: List<IntervalWorkout>, onOpen: (String) -> Unit) {
+    Caption(
+        stringResource(R.string.train_intervals),
+        modifier = Modifier.padding(start = ScreenPadding, top = 20.dp, bottom = 4.dp),
+    )
+    workouts.forEach { workout ->
+        PhotoListRow(intervalPhoto(workout.kind), workout.name, intervalRowMeta(workout), onClick = {
+            onOpen(workout.id)
+        })
+        Rule()
+    }
+}
+
 @Preview
 @Composable
 private fun TrainScreenPreview() {
@@ -150,6 +174,7 @@ private fun TrainScreenPreview() {
             uiState = TrainUiState.Ready(programsFor(model), workoutsFor(model, Coach(), nowEpochMillis = 0L)),
             onOpenWorkout = {},
             onOpenProgram = {},
+            onOpenInterval = {},
         )
     }
 }

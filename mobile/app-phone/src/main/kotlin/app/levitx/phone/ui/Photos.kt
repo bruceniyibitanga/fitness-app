@@ -54,4 +54,6 @@ fun patternPhoto(pattern: MovementPattern): Int = when (pattern) {
     MovementPattern.HORIZONTAL_PUSH, MovementPattern.VERTICAL_PUSH -> R.drawable.photo_focus_push
     MovementPattern.SQUAT, MovementPattern.HINGE -> R.drawable.photo_focus_legs
     MovementPattern.CORE -> R.drawable.photo_focus_core
+    MovementPattern.CARDIO -> R.drawable.photo_focus_cardio
+    MovementPattern.MOBILITY -> R.drawable.photo_focus_mobility
 }

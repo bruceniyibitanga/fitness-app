@@ -17,6 +17,7 @@ private val KitOrder = listOf(
     Equipment.LOW_BAR,
     Equipment.BAND,
     Equipment.BOX,
+    Equipment.JUMP_ROPE,
 )
 
 /** Kit choices side by side. Two fit the longest name at any font size. */

@@ -28,7 +28,7 @@ public enum class PatternRole {
 public object VolumeTargets {
     /** Weekly targets for [profile]. Patterns the person has no kit to train aren't included. */
     public fun weekly(profile: CoachProfile): Map<MovementPattern, Double> {
-        val ideal = MovementPattern.entries
+        val ideal = MovementPattern.strength
             .filter { it in goalPatterns(profile) || hasLadderExercise(it, profile.equipment) }
             .associateWith {
                 (idealSets(roleOf(it, profile), profile.style) * profile.aim.volumeShare)

@@ -29,7 +29,7 @@ internal object BlockKeeper {
     private fun lighterWeekIsDue(model: AthleteModel, context: CoachContext): Boolean {
         val perWeek = model.profile.sessionsPerWeek
         val done = model.block.sessionsDone + 1
-        val stalled = MovementPattern.entries.count { pattern ->
+        val stalled = MovementPattern.strength.count { pattern ->
             context.exerciseFor(pattern)?.let { model.exercises[it.id] }?.let(context.trend::isDropping) == true
         }
         val early = stalled >= CoachTuning.STALLED_PATTERNS_FOR_LIGHTER_WEEK &&
@@ -40,7 +40,7 @@ internal object BlockKeeper {
     /** Starts [next], flagging every accessory exercise that changes so the coach can say so. */
     private fun startBlock(model: AthleteModel, next: TrainingBlock, context: CoachContext): AthleteModel {
         val goal = context.goalPatterns
-        val fresh = MovementPattern.entries.mapNotNull { pattern ->
+        val fresh = MovementPattern.strength.mapNotNull { pattern ->
             val arriving = model.exerciseFor(pattern, goal, next.index)
             arriving?.takeIf { it != model.exerciseFor(pattern, goal) }
         }

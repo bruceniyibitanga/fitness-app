@@ -41,7 +41,7 @@ fun levelName(level: SkillLevel): Int = when (level) {
 
 /** The kit in a word or two each, or "NO KIT". */
 @Composable
-private fun kitShort(kit: Set<Equipment>): String = if (kit.isEmpty()) {
+internal fun kitShort(kit: Set<Equipment>): String = if (kit.isEmpty()) {
     stringResource(R.string.kit_short_none)
 } else {
     Equipment.entries.filter { it in kit }.map { stringResource(kitShortName(it)) }.joinToString(" + ")
@@ -55,6 +55,7 @@ private fun kitShortName(equipment: Equipment): Int = when (equipment) {
     Equipment.RINGS -> R.string.kit_short_rings
     Equipment.BAND -> R.string.kit_short_band
     Equipment.BOX -> R.string.kit_short_box
+    Equipment.JUMP_ROPE -> R.string.kit_short_rope
 }
 
 private const val SEPARATOR = " · "

@@ -32,8 +32,11 @@ public enum class BodyArea {
  *
  * @property loads The body areas this pattern puts under load. A sore area
  *   eases off or stops every pattern that loads it.
+ * @property isStrength True for the seven strength patterns the coach plans,
+ *   balances and progresses. Cardio and mobility moves have a pattern so
+ *   history can name them, but the coach never counts or plans them.
  */
-public enum class MovementPattern(public val loads: Set<BodyArea>) {
+public enum class MovementPattern(public val loads: Set<BodyArea>, public val isStrength: Boolean = true) {
     /** Pulling yourself up: hangs, pull-ups. */
     VERTICAL_PULL(setOf(BodyArea.ELBOW, BodyArea.SHOULDER)),
 
@@ -54,6 +57,19 @@ public enum class MovementPattern(public val loads: Set<BodyArea>) {
 
     /** Holding the trunk still or curling it: planks, hollow holds, leg raises. */
     CORE(setOf(BodyArea.LOWER_BACK)),
+
+    /** Getting out of breath: jumping, skipping, burpees. Run as intervals, never planned by the coach. */
+    CARDIO(setOf(BodyArea.KNEE, BodyArea.ANKLE), isStrength = false),
+
+    /** Stretching and moving through range. Run as timed holds, never planned by the coach. */
+    MOBILITY(emptySet(), isStrength = false),
+    ;
+
+    /** The patterns lists can walk without meeting cardio or mobility. */
+    public companion object {
+        /** The strength patterns, in order. Volume, blocks and progress are worked out over these. */
+        public val strength: List<MovementPattern> = entries.filter { it.isStrength }
+    }
 }
 
 /**
@@ -81,4 +97,7 @@ public enum class Equipment {
      * A chair or a wall isn't kit: everyone has one.
      */
     BOX,
+
+    /** A skipping rope. */
+    JUMP_ROPE,
 }

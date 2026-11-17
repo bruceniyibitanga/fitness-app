@@ -30,6 +30,15 @@ class ExerciseStateTest {
     }
 
     @Test
+    fun cardioAndMobilityMovesHaveAGuideButNoLadder() {
+        listOf("cardio.burpees", "mobility.pigeon").forEach { id ->
+            val state = exerciseState(newcomer(), id, nowEpochMillis = 0L) as ExerciseUiState.Ready
+            assertNull("$id ladder", state.ladder)
+            assertNotNull("$id guide", state.guide)
+        }
+    }
+
+    @Test
     fun anUnknownIdIsNotFound() {
         assertEquals(ExerciseUiState.NotFound, exerciseState(newcomer(), "nope", nowEpochMillis = 0L))
     }

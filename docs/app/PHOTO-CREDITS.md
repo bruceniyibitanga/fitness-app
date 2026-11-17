@@ -30,6 +30,8 @@ Each photo was cropped, resized and saved as WebP with its metadata (camera, loc
 | `photo_goal_tuck_planche.webp` | The tuck planche program | [Bogdan Pasca](https://unsplash.com/photos/UBC4m6KEWcQ) |
 | `photo_goal_front_lever.webp` | The front lever program | [Kate Trysh](https://unsplash.com/photos/WnXzlISbtY0) |
 | `photo_goal_one_arm_pull_up.webp` | The one-arm pull-up program | [Amanda Hodge](https://unsplash.com/photos/Wqn_gieaKyI) |
+| `photo_focus_cardio.webp` | Cardio workouts and cardio moves | [Element5 Digital](https://unsplash.com/photos/7QYd1VxLRbM) |
+| `photo_focus_mobility.webp` | Mobility sessions and stretches | [Alora Griffiths](https://unsplash.com/photos/WX7FSaiYxK8) |
 
 Each link opens the photo's page on Unsplash, which names the photographer.
 

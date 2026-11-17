@@ -31,6 +31,27 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
         database.withTransaction { database.insertIfNew(StoredSession(UUID.randomUUID().toString(), session)) }
     }
 
+    override suspend fun saveIntervalWorkout(workoutId: String, sessions: List<CompletedSession>) {
+        val database = databaseProvider.database()
+        database.withTransaction {
+            if (database.sessionDao().hasWorkout(workoutId)) return@withTransaction
+            sessions.forEachIndexed { index, session ->
+                val rowId = "$workoutId/$index"
+                database.sessionDao().insertSession(
+                    TrainingSessionEntity(
+                        id = rowId,
+                        gateId = session.gateId,
+                        startedAtEpochMillis = session.startedAtEpochMillis,
+                        finishedAtEpochMillis = session.finishedAtEpochMillis,
+                        bodyweightKg = null,
+                        workoutId = workoutId,
+                    ),
+                )
+                database.sessionDao().insertSets(session.sets.toEntities(rowId))
+            }
+        }
+    }
+
     override suspend fun saveReceivedSession(received: StoredSession): Boolean {
         val database = databaseProvider.database()
         return database.withTransaction { database.insertIfNew(received) }
@@ -78,19 +99,7 @@ private suspend fun LevitxDatabase.insertIfNew(stored: StoredSession): Boolean {
         ),
     )
     if (rowId == NOT_INSERTED) return false
-    sessionDao().insertSets(
-        session.sets.mapIndexed { index, set ->
-            LoggedSetEntity(
-                sessionId = stored.id,
-                position = index,
-                value = set.value,
-                repsInReserve = set.repsInReserve,
-                isBestEffort = set.isBestEffort,
-                addedKg = set.addedKg,
-                assistanceKg = set.assistanceKg,
-            )
-        },
-    )
+    sessionDao().insertSets(session.sets.toEntities(stored.id))
     // An all-assisted session has no best to record.
     if (session.best > 0) {
         gateBestDao().recordBest(
@@ -100,6 +109,19 @@ private suspend fun LevitxDatabase.insertIfNew(stored: StoredSession): Boolean {
         )
     }
     return true
+}
+
+/** [this] sets as rows of the session [sessionId], in order. */
+private fun List<LoggedSet>.toEntities(sessionId: String): List<LoggedSetEntity> = mapIndexed { index, set ->
+    LoggedSetEntity(
+        sessionId = sessionId,
+        position = index,
+        value = set.value,
+        repsInReserve = set.repsInReserve,
+        isBestEffort = set.isBestEffort,
+        addedKg = set.addedKg,
+        assistanceKg = set.assistanceKg,
+    )
 }
 
 private fun SessionWithSets.toStoredSession() = StoredSession(

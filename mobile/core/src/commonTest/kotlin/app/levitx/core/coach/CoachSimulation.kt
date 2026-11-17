@@ -89,7 +89,7 @@ internal class SimulatedAthlete(
 
         /** Someone with the same strength on every pattern. */
         fun even(strength: Double, skill: Double, gain: Double): SimulatedAthlete =
-            SimulatedAthlete(MovementPattern.entries.associateWith { strength }.toMutableMap(), skill, gain)
+            SimulatedAthlete(MovementPattern.strength.associateWith { strength }.toMutableMap(), skill, gain)
     }
 }
 
