@@ -58,6 +58,7 @@ class CoachDocumentTest {
                 lastEasedAtEpochMillis = at(3),
                 weighInAskedAtEpochMillis = at(2),
             )
+            .withWeekReviewed(at(1))
     }
 
     private fun roundTrip(model: AthleteModel): CoachDocument =

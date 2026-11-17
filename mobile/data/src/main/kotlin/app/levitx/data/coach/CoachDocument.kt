@@ -51,6 +51,7 @@ internal data class CoachDocument(
     val weightNoticeShown: Boolean = false,
     val lastEasedAt: Long? = null,
     val weighInAskedAt: Long? = null,
+    val weekReviewedAt: Long? = null,
 )
 
 /** A stored `CoachProfile`. */
@@ -157,6 +158,7 @@ internal fun coachDocumentOf(model: AthleteModel, trainingDays: Set<DayOfWeek>):
     weightNoticeShown = model.weightNoticeShown,
     lastEasedAt = model.lastEasedAtEpochMillis,
     weighInAskedAt = model.weighInAskedAtEpochMillis,
+    weekReviewedAt = model.weekReviewedAtEpochMillis,
 )
 
 /**
@@ -208,6 +210,7 @@ internal fun CoachDocument.toModel(): AthleteModel = AthleteModel(
     weightNoticeShown = weightNoticeShown,
     lastEasedAtEpochMillis = lastEasedAt,
     weighInAskedAtEpochMillis = weighInAskedAt,
+    weekReviewedAtEpochMillis = weekReviewedAt,
 )
 
 /** The training days in this document. Numbers outside 1 to 7 are dropped. */

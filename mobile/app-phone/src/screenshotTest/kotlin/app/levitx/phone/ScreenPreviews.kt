@@ -113,6 +113,7 @@ private val noTodayActions =
         onAcknowledgeWeightNotice = {},
         onOpenExercise = {},
         onOpenProgress = {},
+        onOpenWeekReview = {},
     )
 
 /** Someone after a muscle-up who can do a pull-up and has a bar. */

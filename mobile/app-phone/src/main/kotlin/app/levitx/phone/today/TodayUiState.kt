@@ -20,6 +20,7 @@ sealed interface TodayUiState {
      * @property sessionsLastWeek Sessions finished in the last seven days.
      * @property sessionsPerWeek Sessions a week the person said they'd train.
      * @property weighIn Set when the quick weigh-in should show before the next start, null otherwise.
+     * @property weekReviewDue True when last week's review is ready and hasn't been opened.
      */
     data class Ready(
         val nowEpochMillis: Long,
@@ -29,6 +30,7 @@ sealed interface TodayUiState {
         val sessionsLastWeek: Int = 0,
         val sessionsPerWeek: Int = 0,
         val weighIn: WeighInAsk? = null,
+        val weekReviewDue: Boolean = false,
     ) : TodayUiState
 }
 

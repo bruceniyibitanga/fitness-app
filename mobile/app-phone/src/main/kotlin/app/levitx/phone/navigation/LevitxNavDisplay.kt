@@ -27,6 +27,7 @@ import app.levitx.phone.progress.HistoryRoute
 import app.levitx.phone.progress.PastWorkoutRoute
 import app.levitx.phone.progress.ProgressNavigation
 import app.levitx.phone.progress.ProgressRoute
+import app.levitx.phone.review.WeekReviewRoute
 import app.levitx.phone.settings.PhotoCreditsScreen
 import app.levitx.phone.settings.SettingsRoute
 import app.levitx.phone.train.AllProgramsRoute
@@ -79,6 +80,7 @@ private fun LevitxNavDisplay(start: Destination, modifier: Modifier) {
                         onOpenProgress = { backStack.add(Destination.Progress) },
                         onOpenSettings = { backStack.add(Destination.Settings) },
                         onOpenSearch = { backStack.add(Destination.Search) },
+                        onOpenWeekReview = { backStack.add(Destination.WeekReview) },
                         onOpenAllPrograms = { backStack.add(Destination.AllPrograms) },
                     ),
                 )
@@ -137,6 +139,7 @@ private fun EntryProviderScope<NavKey>.trainEntries(backStack: MutableList<NavKe
             onBack = { backStack.removeLastOrNull() },
         )
     }
+    entry<Destination.WeekReview> { WeekReviewRoute(onClose = { backStack.removeLastOrNull() }) }
     entry<Destination.AllPrograms> {
         AllProgramsRoute(
             onBack = { backStack.removeLastOrNull() },

@@ -100,10 +100,14 @@ enum class CoachPrompt {
 
     /** The quick weigh-in before a session: at most once a week, saved or skipped. */
     WEIGH_IN,
+
+    /** The week review: once a week, when the person opens it. */
+    WEEK_REVIEW,
 }
 
 /** [this] with [prompt] noted as shown at [atEpochMillis]. */
 fun AthleteModel.withShown(prompt: CoachPrompt, atEpochMillis: Long): AthleteModel = when (prompt) {
     CoachPrompt.WEIGHT_NOTICE -> withWeightNoticeShown()
     CoachPrompt.WEIGH_IN -> withWeighInAsked(atEpochMillis)
+    CoachPrompt.WEEK_REVIEW -> withWeekReviewed(atEpochMillis)
 }

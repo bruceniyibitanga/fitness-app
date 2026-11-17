@@ -34,6 +34,10 @@ sealed interface Destination : NavKey {
     @Serializable
     data class FocusWorkout(val focus: String) : Destination
 
+    /** Last week, looked back on. */
+    @Serializable
+    data object WeekReview : Destination
+
     /** Search across exercises, programs and workouts. The query isn't part of the key. */
     @Serializable
     data object Search : Destination

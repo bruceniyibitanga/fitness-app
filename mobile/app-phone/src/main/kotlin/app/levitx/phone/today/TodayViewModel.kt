@@ -6,6 +6,7 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WeighInPrompt
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.core.history.WeekReviews
 import app.levitx.core.load.LoadLimits
 import app.levitx.data.coach.CoachPrompt
 import app.levitx.data.coach.CoachRepository
@@ -14,8 +15,10 @@ import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
 import app.levitx.phone.isExpectedDataFailure
+import app.levitx.phone.ui.weekBounds
 import app.levitx.phone.workout.WorkoutStarter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -63,6 +66,9 @@ class TodayViewModel @Inject constructor(
                     hasWorkoutInProgress = draft != null,
                     sessionsLastWeek = state.model.history.count { it.finishedAtEpochMillis > now - WEEK_MILLIS },
                     sessionsPerWeek = state.model.profile.sessionsPerWeek,
+                    weekReviewDue = weekBounds(now, ZoneId.systemDefault()).let { week ->
+                        WeekReviews.isDue(state.model, week.lastWeekFromEpochMillis, week.thisWeekFromEpochMillis)
+                    },
                     weighIn = state.model.weighIns.lastOrNull()
                         .let { last -> WeighInAsk(last?.kg, last?.atEpochMillis) }
                         .takeIf {
