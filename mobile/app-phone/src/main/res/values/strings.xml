@@ -220,7 +220,10 @@
     <string name="review_close">Close the week review</string>
     <string name="review_dates">%1$s – %2$s</string>
     <string name="review_label">YOUR WEEK</string>
-    <string name="review_sessions">%1$d of %2$d sessions done</string>
+    <plurals name="review_sessions">
+        <item quantity="one">%1$d of %2$d session done</item>
+        <item quantity="other">%1$d of %2$d sessions done</item>
+    </plurals>
     <string name="review_all_done">Every planned session.</string>
     <string name="review_more_done">More than you planned.</string>
     <string name="review_short">%1$d short of your plan. One week doesn\'t undo anything.</string>

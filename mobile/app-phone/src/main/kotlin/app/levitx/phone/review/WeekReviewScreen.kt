@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -133,7 +134,12 @@ private fun Header(week: WeekBounds?, onClose: () -> Unit) {
 /** "YOUR WEEK", sessions done out of planned in big type, and a line about it. */
 @Composable
 private fun Sessions(review: WeekReview) {
-    val description = stringResource(R.string.review_sessions, review.sessionsDone, review.sessionsPlanned)
+    val description = pluralStringResource(
+        R.plurals.review_sessions,
+        review.sessionsPlanned,
+        review.sessionsDone,
+        review.sessionsPlanned,
+    )
     Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 22.dp, bottom = 18.dp)) {
         Caption(stringResource(R.string.review_label), color = LevitxColors.Accent)
         Row(
