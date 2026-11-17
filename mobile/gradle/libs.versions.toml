@@ -25,7 +25,7 @@ android-minSdk-wear = "30"
 agp = "9.5.1"
 kotlin = "2.4.21"
 # KSP2 versions are independent of the Kotlin version since KSP 2.3.0.
-ksp = "2.3.13"
+ksp = "2.3.14"
 
 # Kotlin libraries
 kotlinx-coroutines = "1.11.0"
