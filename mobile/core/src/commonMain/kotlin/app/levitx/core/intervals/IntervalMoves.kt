@@ -16,8 +16,15 @@ import app.levitx.core.skills.GateMeasure
 /** Seconds any interval move can be done for. Declared first: the moves below use it as they're built. */
 private val TIMED_RANGE = 10..600
 
-private fun cardio(id: String, name: String, equipment: Set<Equipment> = emptySet()) =
-    Exercise("cardio.$id", name, MovementPattern.CARDIO, GateMeasure.HOLD_SECONDS, TIMED_RANGE, equipment)
+private fun cardio(id: String, name: String, equipment: Set<Equipment> = emptySet(), jumps: Boolean = false) = Exercise(
+    "cardio.$id",
+    name,
+    MovementPattern.CARDIO,
+    GateMeasure.HOLD_SECONDS,
+    TIMED_RANGE,
+    equipment,
+    isJumping = jumps,
+)
 
 private fun stretch(id: String, name: String, perSide: Boolean = false) =
     Exercise("mobility.$id", name, MovementPattern.MOBILITY, GateMeasure.HOLD_SECONDS, TIMED_RANGE, isPerSide = perSide)
@@ -25,14 +32,18 @@ private fun stretch(id: String, name: String, perSide: Boolean = false) =
 private val rope = setOf(Equipment.JUMP_ROPE)
 
 internal val marching = cardio("march", "Marching on the spot")
-internal val jumpingJacks = cardio("jumping_jacks", "Jumping jacks")
-internal val burpees = cardio("burpees", "Burpees")
+internal val jumpingJacks = cardio("jumping_jacks", "Jumping jacks", jumps = true)
+internal val burpees = cardio("burpees", "Burpees", jumps = true)
 internal val mountainClimbers = cardio("mountain_climbers", "Mountain climbers")
-internal val squatJumps = cardio("squat_jumps", "Squat jumps")
-internal val highKnees = cardio("high_knees", "High knees")
-internal val hardMinute = cardio("hard_minute", "Hard minute")
-internal val ropeEasy = cardio("rope_easy", "Skipping, easy", rope)
-internal val ropeFast = cardio("rope_fast", "Skipping, fast", rope)
+internal val squatJumps = cardio("squat_jumps", "Squat jumps", jumps = true)
+internal val highKnees = cardio("high_knees", "High knees", jumps = true)
+
+// Its cues suggest burpees, high knees or squat jumps, so it counts as jumping.
+internal val hardMinute = cardio("hard_minute", "Hard minute", jumps = true)
+internal val ropeEasy = cardio("rope_easy", "Skipping, easy", rope, jumps = true)
+internal val ropeFast = cardio("rope_fast", "Skipping, fast", rope, jumps = true)
+internal val stepJacks = cardio("step_jacks", "Step jacks")
+internal val shadowBoxing = cardio("shadow_boxing", "Shadow boxing")
 
 internal val catCow = stretch("cat_cow", "Cat-cow")
 internal val worldsGreatest = stretch("worlds_greatest", "World's greatest stretch", perSide = true)
@@ -52,6 +63,7 @@ internal val childsPose = stretch("childs_pose", "Child's pose")
 /** Every interval move. */
 internal val intervalMoves: List<Exercise> = listOf(
     marching, jumpingJacks, burpees, mountainClimbers, squatJumps, highKnees, hardMinute, ropeEasy, ropeFast,
+    stepJacks, shadowBoxing,
     catCow, worldsGreatest, openBook, hipFlexor, couchStretch, pigeon, hamstring, frog, deepSquat, wrists,
     passThrough, doorwayChest, threadNeedle, childsPose,
 )
@@ -92,6 +104,14 @@ internal val intervalGuides: Map<String, ExerciseGuide> = mapOf(
             "Turn the rope with your wrists, elbows by your sides.",
         ),
     ropeFast.id to guide("As fast as you can turn it cleanly.", "If you trip, pick it up and keep going."),
+    stepJacks.id to guide(
+        "Step one foot out to the side as both arms sweep overhead, then step back in.",
+        "Alternate sides and keep a steady rhythm. No jumping, so it's quiet.",
+    ),
+    shadowBoxing.id to guide(
+        "Feet staggered, hands by your chin, throw straight punches and hooks at the air.",
+        "Turn from your hips and stay light on your feet without bouncing.",
+    ),
     catCow.id to guide(
         "On hands and knees, round your back up towards the ceiling.",
         "Then let your belly drop and lift your chest. Move slowly with your breath.",

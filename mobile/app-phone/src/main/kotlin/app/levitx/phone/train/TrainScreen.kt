@@ -9,13 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -25,10 +30,9 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PullUpAnswer
-import app.levitx.core.coach.WorkoutFocus
-import app.levitx.core.intervals.IntervalCatalogue
 import app.levitx.core.intervals.IntervalWorkout
 import app.levitx.design.LevitxColors
+import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.intervals.intervalPhoto
 import app.levitx.phone.intervals.intervalRowMeta
@@ -37,6 +41,7 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Chip
 import app.levitx.phone.ui.ChipRow
 import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.TabHeader
@@ -60,10 +65,10 @@ fun TrainRoute(
 }
 
 /**
- * The Train tab, laid out as the Train artboard: a row of body-focus chips,
- * skill programs as photo cards, and a single workout for each part of the
- * body as photo rows, then the cardio and mobility workouts. A chip narrows
- * the single workouts to that focus; cardio and mobility show under All.
+ * The Train tab, laid out as the Train artboard: chips for everything, each
+ * part of the body, cardio and mobility; filters under them; then skill
+ * programs as photo cards, single workouts and cardio and mobility workouts
+ * as photo rows. Sections the chip and filters leave empty aren't shown.
  */
 @Composable
 fun TrainScreen(
@@ -73,8 +78,9 @@ fun TrainScreen(
     onOpenInterval: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Survives rotation and coming back from a workout. Null is "All".
-    var focus by rememberSaveable { mutableStateOf<WorkoutFocus?>(null) }
+    // Both survive rotation and coming back from a workout.
+    var chip by rememberSaveable { mutableStateOf(TrainChip.ALL) }
+    var filters by rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(emptySet<TrainFilter>()) }
     Column(modifier = modifier.fillMaxSize().background(LevitxColors.Background)) {
         TabHeader(stringResource(R.string.train_label))
         Column(
@@ -92,28 +98,54 @@ fun TrainScreen(
                 )
 
                 is TrainUiState.Ready -> {
-                    FocusChips(selected = focus, onSelect = { focus = it })
-                    Programs(uiState.programs, onOpenProgram)
-                    Workouts(uiState.workouts.filter { focus == null || it.focus == focus }, onOpenWorkout)
-                    if (focus == null) Intervals(IntervalCatalogue.all, onOpenInterval)
+                    Chips(selected = chip, onSelect = { chip = it })
+                    FilterRow(on = filters, onToggle = { filters = filters.toggled(it) })
+                    val lists = trainLists(uiState, chip, filters)
+                    if (lists.isEmpty) NoMatches(onClear = { filters = emptySet() })
+                    if (lists.programs.isNotEmpty()) Programs(lists.programs, onOpenProgram)
+                    if (lists.workouts.isNotEmpty()) Workouts(lists.workouts, onOpenWorkout)
+                    if (lists.intervals.isNotEmpty()) Intervals(lists.intervals, onOpenInterval)
                 }
             }
         }
     }
 }
 
-/** "BODY FOCUS" and a chip for All and each focus, scrolling sideways. */
+/** Saves the filters as their names, which a saved-state bundle can hold. */
+private val FilterSaver = listSaver<Set<TrainFilter>, String>(
+    save = { filters -> filters.map { it.name } },
+    restore = { names -> names.mapNotNull { name -> TrainFilter.entries.firstOrNull { it.name == name } }.toSet() },
+)
+
+/** "BODY FOCUS" and a chip for each [TrainChip], scrolling sideways. */
 @Composable
-private fun FocusChips(selected: WorkoutFocus?, onSelect: (WorkoutFocus?) -> Unit) {
+private fun Chips(selected: TrainChip, onSelect: (TrainChip) -> Unit) {
     Caption(
         stringResource(R.string.train_body_focus),
         modifier = Modifier.padding(start = ScreenPadding, top = 16.dp, bottom = 10.dp),
     )
     ChipRow {
-        Chip(stringResource(R.string.train_all), selected = selected == null, onClick = { onSelect(null) })
-        WorkoutFocus.entries.forEach { focus ->
-            Chip(focusName(focus), selected = selected == focus, onClick = { onSelect(focus) })
+        TrainChip.entries.forEach { chip ->
+            Chip(chipName(chip), selected = selected == chip, onClick = { onSelect(chip) })
         }
+    }
+}
+
+/** Shown when the filters leave nothing: what happened and the way out. */
+@Composable
+private fun NoMatches(onClear: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 28.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.train_no_matches_title),
+            style = LevitxType.Figure,
+            color = LevitxColors.Text,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        Lede(stringResource(R.string.train_no_matches_body))
+        OutlineBar(text = stringResource(R.string.train_clear_filters), onClick = onClear)
     }
 }
 

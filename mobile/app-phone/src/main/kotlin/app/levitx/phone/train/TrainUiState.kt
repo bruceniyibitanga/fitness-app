@@ -2,6 +2,7 @@ package app.levitx.phone.train
 
 import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.Coach
+import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.skills.SkillCatalogue
@@ -20,8 +21,13 @@ sealed interface TrainUiState {
      *
      * @property programs Every skill program.
      * @property workouts One workout per focus, in [WorkoutFocus] order.
+     * @property owned The kit the person has, for the My kit filter.
      */
-    data class Ready(val programs: List<ProgramSummary>, val workouts: List<WorkoutSummary>) : TrainUiState
+    data class Ready(
+        val programs: List<ProgramSummary>,
+        val workouts: List<WorkoutSummary>,
+        val owned: Set<Equipment> = emptySet(),
+    ) : TrainUiState
 }
 
 /**
