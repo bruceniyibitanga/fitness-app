@@ -52,10 +52,13 @@ class QuickTestTest {
     }
 
     @Test
-    fun withNothingHarderToDoTheTargetRisesInstead() {
-        val model = tested(QuickTest.PUSH_UPS to 25, kit = noBox)
-        assertEquals(PUSH_UP_RUNG, model.rung(MovementPattern.HORIZONTAL_PUSH), "the harder push-ups need a box")
-        assertEquals(18, model.exercises.getValue(QuickTest.PUSH_UPS.exerciseId).target)
+    fun rungsTheKitDoesNotAllowAreSteppedOver() {
+        val model = tested(QuickTest.PUSH_UPS to 25, kit = emptySet())
+        assertEquals(
+            ARCHER_PUSH_UP_RUNG,
+            model.rung(MovementPattern.HORIZONTAL_PUSH),
+            "box and ring push-ups are skipped",
+        )
     }
 
     @Test
@@ -99,6 +102,7 @@ class QuickTestTest {
 
     private companion object {
         const val KNEE_PUSH_UP_RUNG = 2
+        const val ARCHER_PUSH_UP_RUNG = 7
         const val PUSH_UP_RUNG = 4
         const val PULL_UP_RUNG = 3
         const val BODYWEIGHT_SQUAT_RUNG = 1

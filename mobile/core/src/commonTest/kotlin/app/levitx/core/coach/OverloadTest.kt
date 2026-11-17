@@ -8,42 +8,53 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** What happens at the top of a ladder, where there is no harder exercise to move to. */
+/**
+ * What happens when someone beats the top of an exercise's range: more weight
+ * if the exercise takes it and the kit has a step, else the next rung, and at
+ * the top of the ladder more reps and then a slower lowering.
+ */
 class OverloadTest {
     private val coach = Coach()
 
-    // The hardest push-up on the ladder: feet on a 61 cm box.
+    // A push-up that takes a vest: feet on a 61 cm box.
     private val top = exercise("horizontal_push.feet_61cm")
-    private val topRung = ExerciseCatalogue.ladder(MovementPattern.HORIZONTAL_PUSH).rungs.indexOfFirst {
-        top in
-            it.options
-    }
+
+    // The hardest push-up on the ladder, which takes no weight.
+    private val summit = exercise("horizontal_push.one_arm")
     private val vest = LoadKit(vestMaxKg = 20.0, vestStepKg = 1.0)
 
-    /** Someone settled at the top push-up with [state], owning [kit]. */
-    private fun atTop(state: ExerciseState, kit: LoadKit = LoadKit()): AthleteModel =
-        newcomer(pullUpProfile().copy(loadKit = kit)).copy(
-            rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to topRung),
-            exercises = mapOf(top.id to state),
+    /** Someone settled on [exercise]'s rung with [state], owning [kit]. */
+    private fun on(exercise: Exercise, state: ExerciseState, kit: LoadKit = LoadKit()): AthleteModel {
+        val rung = ExerciseCatalogue.ladder(exercise.pattern).rungs.indexOfFirst { exercise in it.options }
+        return newcomer(pullUpProfile().copy(loadKit = kit)).copy(
+            rungs = mapOf(exercise.pattern to rung),
+            exercises = mapOf(exercise.id to state),
         )
+    }
+
+    /** Someone settled on the box push-up with [state], owning [kit]. */
+    private fun atTop(state: ExerciseState, kit: LoadKit = LoadKit()): AthleteModel = on(top, state, kit)
 
     private fun settled(target: Int, addedKg: Double = 0.0, slow: Boolean = false) =
         ExerciseState(target = target, best = target, timesTrained = 5, addedKg = addedKg, slowLowering = slow)
 
-    /** [model] after a session of three work sets of [reps], each carrying [usedKg], prescribed [prescribedKg]. */
+    /** [model] after a session of three work sets of [reps] on [exercise], each carrying [usedKg]. */
     private fun AthleteModel.after(
         day: Int,
         reps: Int,
         prescribedKg: Double,
         usedKg: Double = prescribedKg,
+        exercise: Exercise = top,
     ): AthleteModel {
-        val state = exercises.getValue(top.id)
-        val plan = hardPlan(top, state.target).copy(addedKg = prescribedKg)
+        val state = exercises.getValue(exercise.id)
+        val plan = hardPlan(exercise, state.target).copy(addedKg = prescribedKg)
         val sets = plan.sets.map { LoggedSet(reps, 2, false, addedKg = usedKg) }
         return coach.record(this, finished(day, ExerciseResult(plan, sets)))
     }
 
     private fun AthleteModel.topState(): ExerciseState = exercises.getValue(top.id)
+
+    private fun AthleteModel.summitState(): ExerciseState = exercises.getValue(summit.id)
 
     @Test
     fun withAVestToppingOutAddsTheSmallestStepOfTheRightSize() {
@@ -53,6 +64,10 @@ class OverloadTest {
         assertEquals(2.0, state.addedKg)
         assertEquals(top.range.first, state.target)
         assertEquals(ProgressNote.WEIGHT_UP, state.note)
+        assertEquals(
+            atTop(settled(0)).rung(MovementPattern.HORIZONTAL_PUSH),
+            after.rung(MovementPattern.HORIZONTAL_PUSH),
+        )
     }
 
     @Test
@@ -63,28 +78,39 @@ class OverloadTest {
     }
 
     @Test
-    fun withNoWeightTheTargetClimbsPastTheRangeToTheCeiling() {
-        val after = atTop(settled(top.range.last)).after(0, top.range.last, prescribedKg = 0.0)
-        assertEquals(top.range.last + 1, after.topState().target)
-        assertEquals(ProgressNote.TARGET_UP, after.topState().note)
-        assertEquals(0.0, after.topState().addedKg)
+    fun atTheTopOfTheLadderTheTargetClimbsPastTheRangeToTheCeiling() {
+        val after = on(summit, settled(summit.range.last), vest)
+            .after(0, summit.range.last, prescribedKg = 0.0, exercise = summit)
+        assertEquals(summit.range.last + 1, after.summitState().target)
+        assertEquals(ProgressNote.TARGET_UP, after.summitState().note)
+        assertEquals(0.0, after.summitState().addedKg, "one-arm push-ups never take weight")
     }
 
     @Test
     fun atTheCeilingTheLoweringSlowsDown() {
-        val after = atTop(settled(top.ceiling)).after(0, top.ceiling, prescribedKg = 0.0)
-        val state = after.topState()
+        val after = on(summit, settled(summit.ceiling)).after(0, summit.ceiling, prescribedKg = 0.0, exercise = summit)
+        val state = after.summitState()
         assertTrue(state.slowLowering)
-        assertEquals(top.range.last, state.target)
+        assertEquals(summit.range.last, state.target)
         assertEquals(ProgressNote.SLOWER, state.note)
     }
 
     @Test
-    fun aVestTooHeavyForOneStepIsNotUsed() {
+    fun aVestTooHeavyForOneStepIsNotUsedAndTheNextRungIs() {
         // A fixed 20 kg vest is far more than 10% of what a push-up moves.
-        val after = atTop(settled(top.range.last), LoadKit(vestMaxKg = 20.0)).after(0, top.range.last, 0.0)
+        val start = atTop(settled(top.range.last), LoadKit(vestMaxKg = 20.0))
+        val after = start.after(0, top.range.last, 0.0)
         assertEquals(0.0, after.topState().addedKg)
-        assertEquals(top.range.last + 1, after.topState().target)
+        assertTrue(after.rung(MovementPattern.HORIZONTAL_PUSH) > start.rung(MovementPattern.HORIZONTAL_PUSH))
+    }
+
+    @Test
+    fun onceTheVestIsFullTheNextRungStartsAtBodyweight() {
+        val start = atTop(settled(top.range.last, addedKg = 20.0), vest)
+        val after = start.after(0, top.range.last, 20.0)
+        assertTrue(after.rung(MovementPattern.HORIZONTAL_PUSH) > start.rung(MovementPattern.HORIZONTAL_PUSH))
+        val next = checkNotNull(after.exerciseFor(MovementPattern.HORIZONTAL_PUSH, emptySet()))
+        assertEquals(0.0, after.exercises.getValue(next.id).addedKg)
     }
 
     @Test
@@ -98,10 +124,11 @@ class OverloadTest {
 
     @Test
     fun easingBackFromASlowLoweringGoesBackToTheUsualPace() {
-        val start = atTop(settled(top.range.first, slow = true))
-        val after = start.after(0, top.range.first - 1, 0.0).after(2, top.range.first - 1, 0.0)
-        assertFalse(after.topState().slowLowering)
-        assertEquals(top.range.last, after.topState().target)
+        val start = on(summit, settled(summit.range.first, slow = true))
+        val after = start.after(0, summit.range.first - 1, 0.0, exercise = summit)
+            .after(2, summit.range.first - 1, 0.0, exercise = summit)
+        assertFalse(after.summitState().slowLowering)
+        assertEquals(summit.range.last, after.summitState().target)
     }
 
     @Test
@@ -121,16 +148,23 @@ class OverloadTest {
     }
 
     @Test
-    fun belowTheTopRungToppingOutStillMovesUpRatherThanAddingWeight() {
+    fun withNoWeightKitToppingOutMovesUpARung() {
         val pushUp = exercise("horizontal_push.push_up")
-        val rung = ExerciseCatalogue.ladder(MovementPattern.HORIZONTAL_PUSH).rungs.indexOfFirst { pushUp in it.options }
-        val model = newcomer(pullUpProfile().copy(loadKit = vest)).copy(
-            rungs = mapOf(MovementPattern.HORIZONTAL_PUSH to rung),
-            exercises = mapOf(pushUp.id to settled(pushUp.range.last)),
-        )
+        val model = on(pushUp, settled(pushUp.range.last))
         val after = coach.record(model, finished(0, done(hardPlan(pushUp, pushUp.range.last), pushUp.range.last)))
         assertEquals(0.0, after.exercises.getValue(pushUp.id).addedKg)
-        assertTrue(after.rung(MovementPattern.HORIZONTAL_PUSH) > rung)
+        assertTrue(after.rung(MovementPattern.HORIZONTAL_PUSH) > model.rung(MovementPattern.HORIZONTAL_PUSH))
+    }
+
+    @Test
+    fun aBestEffortSetNeverAddsWeight() {
+        val pushUp = exercise("horizontal_push.push_up")
+        val model = on(pushUp, ExerciseState(target = pushUp.range.first), vest)
+        val effort = hardPlan(pushUp, pushUp.range.first, bestEffort = true)
+        val sets = effort.sets.dropLast(1).map { LoggedSet(pushUp.range.first, 2, false) } +
+            LoggedSet(pushUp.range.last * 2, 1, false)
+        val after = coach.record(model, finished(0, ExerciseResult(effort, sets)))
+        assertTrue(after.exercises.values.all { it.addedKg == 0.0 })
     }
 
     @Test
@@ -140,8 +174,8 @@ class OverloadTest {
         assertEquals(3.0, plan?.addedKg)
         assertNull(plan?.slowLowerSeconds)
 
-        val slow = atTop(settled(top.range.last, slow = true))
-        val slowPlan = Coach().workout(slow, WorkoutFocus.PUSH, atDay(0))?.plans?.first { it.exercise == top }
+        val slow = on(summit, settled(summit.range.last, slow = true))
+        val slowPlan = Coach().workout(slow, WorkoutFocus.PUSH, atDay(0))?.plans?.first { it.exercise == summit }
         assertEquals(CoachTuning.SLOW_LOWER_SECONDS, slowPlan?.slowLowerSeconds)
     }
 

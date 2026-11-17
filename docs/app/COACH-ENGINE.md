@@ -120,11 +120,13 @@ The highest score wins. Nothing is random: the same model at the same time alway
 - **Skill work** keeps the shape it has today: work sets at about 70% of the gate's best with reps in reserve, then a best-effort set. A gate is passed only by a strict, unassisted set.
 - **Gate attempts.** Once the best at a gate reaches 80% of its target, or is one short, skill work starts with a fresh attempt at the whole target, then the usual work sets. A set at the end of a session undersells someone that close, and the attempt costs nothing extra: it is the session's best-effort set, moved to the front. The person can put it off ("Not today"), which moves it back to the end. Light days never carry an attempt.
 - **Any strict set passes a gate**, attempt or not. Making someone repeat a set they have just done would be friction for nothing. Because the next gate is harder, a set that would pass asks once whether every rep met the standard (the exercise's form cues) before it counts. A band-assisted set never asks and never passes.
-- **Ladder exercises** are three work sets at a target. Hit every set at an effort that isn't Hard and the target goes up a rep (five seconds for holds), or two when this session and the last were both Easy. At the top of the exercise's range the person moves up a rung. Two sessions in a row short of target ease it back a step.
-- **Past the top of a ladder.** When there's no harder exercise to move to with the person's kit, the target keeps climbing another way, in this order:
-  1. **Weight**, if they have a vest, a dip belt with plates, or plates for bridges, and the exercise takes it. The coach adds the lightest weight the kit can make that is at least 2% of what a rep moves, and never a step over 10% (ACSM's 2 to 10% once the top of the range is beaten). The reps go back to the bottom of the range and build up again. Weight stops at half of bodyweight.
-  2. **More reps**, up to a ceiling: 20 for the upper body, 30 for legs and hips, 60 seconds for holds. Progressing reps instead of load gave similar strength and growth in a randomised trial ([Plotkin et al. 2022](https://doi.org/10.7717/peerj.14142)).
-  3. **A slower lowering**: 3 seconds a rep, from the top of the range. Reps lasting 0.5 to 8 seconds grow muscle about equally ([Schoenfeld et al. 2015](https://doi.org/10.1007/s40279-015-0304-0)), so it makes the same reps harder at no cost.
+- **Ladder exercises** are three work sets at a target. Hit every set at an effort that isn't Hard and the target goes up a rep (five seconds for holds), or two when this session and the last were both Easy. Two sessions in a row short of target ease it back a step.
+- **Past the top of an exercise's range**, the next step depends on the exercise and the kit:
+  1. **Weight first**, if they have a vest, a dip belt with plates, or plates for bridges, and the exercise takes it. The coach adds the lightest weight the kit can make that is at least 2% of what a rep moves, and never a step over 10% (ACSM's 2 to 10% once the top of the range is beaten). The reps go back to the bottom of the range and build up again. Weight stops at half of bodyweight. The same movement made heavier is the most direct overload there is, and it shows up plainly in load per rep. The Recommended Routine ends its pull-up, dip and row progressions with weighted versions for the same reason.
+  2. **Then the next rung**, at bodyweight, when the exercise takes no weight, the kit has no step of the right size left, or the person has no load kit. Harder variations progress strength about as well as adding load: push-up variations matched bench pressing in a trial ([Kotarsky et al. 2018](https://doi.org/10.1519/JSC.0000000000002345)).
+- **Past the top of a ladder**, when there's no harder exercise the person has the kit for, the target keeps climbing another way:
+  1. **More reps**, up to a ceiling: 20 for the upper body, 30 for legs and hips, 60 seconds for holds. Progressing reps instead of load gave similar strength and growth in a randomised trial ([Plotkin et al. 2022](https://doi.org/10.7717/peerj.14142)).
+  2. **A slower lowering**: 3 seconds a rep, from the top of the range. Reps lasting 0.5 to 8 seconds grow muscle about equally ([Schoenfeld et al. 2015](https://doi.org/10.1007/s40279-015-0304-0)), so it makes the same reps harder at no cost.
 - **Easing back undoes them in reverse**: weight comes off a step first, then the lowering goes back to normal, then the person moves down a rung.
 - **Weight is part of the target.** A set done lighter than prescribed doesn't count as hitting it. A person who carries more than prescribed and still hits it keeps that weight as theirs.
 - **Only some exercises take weight.** Pull-ups, chin-ups and dips take a vest or a belt; push-ups, rows, squats and lunges a vest; bridges and hip thrusts plates on the hips. Pistols, Nordic curls, negatives, holds and skill gates never do: they are still being learned or balanced.
@@ -287,13 +289,15 @@ The datasets were useful for names and kit, and not much else. Their difficulty 
 
 | Movement | Our order, easiest first | Checked against |
 |---|---|---|
-| Vertical pull | dead hang, scapular pull-up, negative or band-assisted pull-up, pull-up or chin-up, chest-to-bar or wide pull-up | RR pull-up progression: scapular pulls, arch hangs, negatives, pull-ups. Chest-to-bar is the RR wiki's prerequisite for a muscle-up. |
-| Horizontal pull | rows with knees bent, rows with straight body, rows with feet raised | RR row progression goes from steep to flat body angle. A steeper body is easier. |
-| Vertical push | pike push-up with hands raised, pike push-up, feet-raised pike or negative dip, wall handstand push-up negative or dip | RR dip progression: support hold, negative dips, dips. Pike to handstand push-up is common coaching practice; we found no study ranking it. |
-| Horizontal push | wall, hands on 61 cm box, knees, hands on 30 cm box, floor, feet on 30 cm box, feet on 61 cm box | Force-plate loads of 41, 49, 55, 64, 70 and 74% of bodyweight for the six box and floor positions (Ebben et al. 2011). Our order matches the measured order exactly. The wall push-up is a gentler start below all of them, so someone with no kit has a first rung. |
-| Squat | squat to a chair, squat, split squat or reverse lunge, Bulgarian split squat or high step-up, pistol to a chair, pistol | RR squat progression: assisted squat, squat, Bulgarian split squat, then shrimp squats. Our split squat rung is a smaller step between squat and Bulgarian, and we use pistols at the top instead of shrimps. |
-| Hinge | glute bridge, single-leg bridge or hip thrust, single-leg deadlift, sliding leg curl, Nordic curl negative | RR hinge progression: Romanian deadlift, single-leg deadlift, then Nordic curl work, with floor slides as its alternative bridge between the two. Bridges are an easier start we added in place of the Romanian deadlift. |
-| Core | plank or dead bug, hollow hold or lying leg raise, hanging knee raise or tuck L-sit, hanging leg raise | RR core work (anti-extension), and free-exercise-db's ranking of lying leg raises below hanging ones. |
+| Vertical pull | dead hang, scapular pull-up, negative or band-assisted pull-up, pull-up or chin-up, chest-to-bar or wide pull-up, archer or typewriter pull-up, one-arm pull-up negative | RR pull-up progression: scapular pulls, arch hangs, negatives, pull-ups. Chest-to-bar is the RR wiki's prerequisite for a muscle-up. Archer pull-ups and one-arm negatives follow the Bodyweight Fitness progressions chart (BWF chart). |
+| Horizontal pull | rows with knees bent, rows with straight body, rows with feet raised, archer row, tuck front lever row | RR row progression goes from steep to flat body angle. A steeper body is easier. The BWF chart puts archer rows next, then tuck front lever rows, which newer versions of the RR also list. |
+| Vertical push | pike push-up with hands raised, pike push-up, feet-raised pike or negative dip, wall handstand push-up negative or dip, wall handstand push-up or ring dip, ring dip with the rings turned out | RR dip progression: support hold, negative dips, dips. Pike to handstand push-up is common coaching practice; we found no study ranking it. The BWF chart has ring dips, then rings-turned-out dips, and wall handstand push-up negatives before full ones. |
+| Horizontal push | wall, hands on 61 cm box, knees, hands on 30 cm box, floor, feet on 30 cm box or rings, feet on 61 cm box, archer, pseudo-planche, one-arm with feet wide | Force-plate loads of 41, 49, 55, 64, 70 and 74% of bodyweight for the six box and floor positions (Ebben et al. 2011). Our order matches the measured order exactly. The wall push-up is a gentler start below all of them, so someone with no kit has a first rung. Past the floor, the RR's push-up progression ends at the pseudo-planche push-up and lists ring push-ups as a harder variation; the BWF chart puts archer push-ups before both and one-arm push-ups after. |
+| Squat | squat to a chair, squat, split squat or reverse lunge, Bulgarian split squat or high step-up, pistol to a chair or beginner shrimp, pistol or intermediate shrimp, shrimp holding the foot | RR squat progression: assisted squat, squat, split squat, Bulgarian split squat, then beginner, intermediate and advanced shrimp squats. Our split squat rung matches it. Pistols sit beside the shrimps at the same level, since they share the top of the BWF chart's squat column. |
+| Hinge | glute bridge, single-leg bridge or hip thrust, single-leg deadlift, sliding leg curl, Nordic curl negative, Nordic curl | RR hinge progression: Romanian deadlift, single-leg deadlift, banded Nordic curl negatives and Nordic curls, with floor slides as its alternative bridge. Bridges are an easier start we added in place of the Romanian deadlift. |
+| Core | plank or dead bug, hollow hold or lying leg raise, hanging knee raise or tuck L-sit, hanging leg raise, toes to bar or L-sit, tuck dragon flag negative, dragon flag negative | RR core work (anti-extension), and free-exercise-db's ranking of lying leg raises below hanging ones. The BWF chart has the L-sit after the tuck L-sit and the tuck dragon flag negative before the full one. |
+
+Rungs are only ever added at the top of a ladder or as another option on an existing rung. The coach stores the rung number, so inserting one lower down would quietly move everyone.
 
 ### The exercises
 
@@ -343,6 +347,28 @@ A dash means the dataset has no entry for it. Every exercise is in at least one 
 | Hanging knee raise | Knee_Hip_Raise_On_Parallel_Bars | Knee Raises | |
 | Tuck L-sit hold | - | Tuck L-sit | |
 | Hanging leg raise | Hanging_Leg_Raise | Hanging Leg Raises | |
+| Archer pull-up | - | not checked | BWF chart |
+| Typewriter pull-up | - | not checked | BWF chart, beside the archer pull-up |
+| One-arm pull-up negative | One_Arm_Chin-Up | not checked | The negative half of the listed exercise |
+| Archer row (bar and rings) | - | not checked | BWF chart |
+| Tuck front lever row (bar and rings) | - | not checked | BWF chart; newer RR row level |
+| Wall handstand push-up | Handstand_Push-Ups | not checked | BWF chart |
+| Ring dip | Ring_Dips | not checked | BWF chart |
+| Ring dip, rings turned out | - | not checked | BWF chart ("RTO dip") |
+| Ring push-up | - | not checked | RR lists it as a harder push-up |
+| Archer push-up | - | not checked | BWF chart |
+| Pseudo-planche push-up | - | not checked | RR push-up level 5 |
+| One-arm push-up, feet wide | - | not checked | BWF chart ("straddle one-arm push-up") |
+| Shrimp squat, hands forward | - | not checked | RR squat level 4 (beginner shrimp) |
+| Shrimp squat, knee to the floor | - | not checked | RR squat level 5 (intermediate shrimp) |
+| Shrimp squat, holding your foot | - | not checked | RR squat level 6 (advanced shrimp) |
+| Nordic curl | Natural_Glute_Ham_Raise | not checked | RR hinge level 5 |
+| Toes to bar | Hanging_Pike | not checked | |
+| L-sit hold | - | not checked | BWF chart |
+| Tuck dragon flag negative | - | not checked | BWF chart |
+| Dragon flag negative | - | not checked | BWF chart |
+
+wger couldn't be reached from where this check ran, so the new rows say "not checked" for it rather than guessing.
 
 ### The numbers
 
