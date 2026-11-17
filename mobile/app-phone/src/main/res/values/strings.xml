@@ -631,6 +631,8 @@
     <string name="interval_round">ROUND %1$d OF %2$d</string>
     <string name="interval_side_left">LEFT SIDE</string>
     <string name="interval_side_right">RIGHT SIDE</string>
+    <string name="interval_side_left_next">LEFT SIDE NEXT</string>
+    <string name="interval_side_right_next">RIGHT SIDE NEXT</string>
     <string name="interval_next">NEXT</string>
     <string name="interval_next_rest">Rest · %1$d s</string>
     <string name="interval_next_none">Last one</string>

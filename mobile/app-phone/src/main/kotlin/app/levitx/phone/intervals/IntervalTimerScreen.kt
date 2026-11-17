@@ -190,7 +190,7 @@ private fun Header(name: String, secondsLeft: Int, onEnd: () -> Unit) {
                 .size(QuietBarHeight)
                 .clickable(role = Role.Button, onClick = onEnd)
                 .semantics { contentDescription = endLabel },
-        ) { Icon(painterResource(R.drawable.ic_leave), contentDescription = null, tint = LevitxColors.Text) }
+        ) { Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = LevitxColors.Text) }
         Caption(name, color = LevitxColors.Text, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
         Caption(
             stringResource(R.string.interval_left, clockText(secondsLeft)),
@@ -280,14 +280,15 @@ private fun IntervalTimerScreenPreview() {
     }
 }
 
-/** Shown in the round line: which round, and which side when it matters. */
+/** The round line: which round, and which side, or which side is next while switching. */
 @Composable
 private fun roundText(step: IntervalStep): String {
     val round = stringResource(R.string.interval_round, step.round, step.rounds)
-    val side = step.side?.let {
-        stringResource(
-            if (it == Side.LEFT) R.string.interval_side_left else R.string.interval_side_right,
-        )
+    val switching = step.phase == IntervalPhase.SWITCH
+    val side = when (step.side) {
+        null -> null
+        Side.LEFT -> if (switching) R.string.interval_side_left_next else R.string.interval_side_left
+        Side.RIGHT -> if (switching) R.string.interval_side_right_next else R.string.interval_side_right
     }
-    return listOfNotNull(round, side).joinToString(" · ")
+    return listOfNotNull(round, side?.let { stringResource(it) }).joinToString(" · ")
 }
