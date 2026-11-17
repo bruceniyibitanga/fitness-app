@@ -224,7 +224,7 @@
     <string name="comeback_lighter">Lighter</string>
     <string name="comeback_full">Full session</string>
     <string name="comeback_suggested_minutes">SUGGESTED · %1$d MIN</string>
-    <string name="comeback_planned_minutes">AS PLANNED · %1$d MIN</string>
+    <string name="comeback_planned_minutes">PLANNED · %1$d MIN</string>
     <string name="comeback_lighter_note">Same exercises, fewer sets and lower targets, shorter rest. No gate attempt today.</string>
     <string name="comeback_full_note">As planned. Pick this if you kept training while you were away.</string>
     <string name="comeback_rest">Rest today instead</string>

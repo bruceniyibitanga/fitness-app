@@ -1,8 +1,6 @@
 package app.levitx.phone.today
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -30,7 +28,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.coach.AthleteModel
@@ -50,7 +47,6 @@ import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
-import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SessionList
@@ -181,6 +177,8 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
             .weight(1f)
             .verticalScroll(rememberScrollState()),
     ) {
+        // After a break, the comeback is the day's main message, so it comes first.
+        if (comeback != null) ComebackCard(comeback, choice, onChoose = { choice = it }, onRest = actions.onRest)
         if (state.weekReviewDue) WeekReviewCard(actions.onOpenWeekReview)
         if (CoachNotice.FAST_WEIGHT_LOSS in recommendation.notices) WeightNotice(actions.onAcknowledgeWeightNotice)
         if (shown == null) {
@@ -193,25 +191,25 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
         Rule()
         SquareNote(title = stringResource(R.string.today_why), text = CoachPhrases.describe(recommendation.reason))
         Rule()
-        if (suggestion != null) {
-            if (comeback != null) {
-                ComebackCard(comeback, choice, onChoose = { choice = it }, onRest = actions.onRest)
-            } else {
-                SuggestionCard(suggestion, choice, onChoose = { choice = it }, actions.onStart, actions.onRest)
-            }
+        if (suggestion != null && comeback == null) {
+            SuggestionCard(suggestion, choice, onChoose = { choice = it }, actions.onStart, actions.onRest)
         }
-        if (shown != null) {
-            SessionList(shown, state.bodyweightKg, onExerciseClick = actions.onOpenExercise)
-            if (state.bodyweightKg == null && shown.plans.any { it.exercise.loadProfile != null }) {
-                Help(
-                    text = stringResource(R.string.today_bodyweight_prompt),
-                    modifier = Modifier.padding(horizontal = ScreenPadding, vertical = 12.dp),
-                )
-            }
-        }
+        if (shown != null) Session(shown, state.bodyweightKg, actions.onOpenExercise)
     }
     if (shown != null && (suggestion == null || comeback != null)) {
         StartBar(shown, resuming = state.hasWorkoutInProgress, comeback = comeback != null, choice, actions.onStart)
+    }
+}
+
+/** The session's exercises, and a nudge to add bodyweight when the load figures need it. */
+@Composable
+private fun Session(session: PlannedSession, bodyweightKg: Double?, onOpenExercise: (String) -> Unit) {
+    SessionList(session, bodyweightKg, onExerciseClick = onOpenExercise)
+    if (bodyweightKg == null && session.plans.any { it.exercise.loadProfile != null }) {
+        Help(
+            text = stringResource(R.string.today_bodyweight_prompt),
+            modifier = Modifier.padding(horizontal = ScreenPadding, vertical = 12.dp),
+        )
     }
 }
 
@@ -303,48 +301,6 @@ private fun RestDay() {
         Lede(stringResource(R.string.today_rest_body), modifier = Modifier.padding(top = 12.dp))
     }
     Rule()
-}
-
-/** Said once per spell of fast weight loss, plainly and without judgement. */
-@Composable
-private fun WeightNotice(onAcknowledge: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LevitxColors.Surface)
-            .padding(ScreenPadding),
-    ) {
-        Caption(stringResource(R.string.today_weight_label), color = LevitxColors.Ice)
-        Text(
-            stringResource(R.string.today_weight_body),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            color = LevitxColors.Text,
-        )
-        QuietBar(stringResource(R.string.today_weight_ok), onAcknowledge)
-    }
-}
-
-/** Offers last week's review, at the top of Today until it's opened. */
-@Composable
-private fun WeekReviewCard(onOpen: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LevitxColors.Surface)
-            .padding(ScreenPadding),
-    ) {
-        Caption(stringResource(R.string.today_review_label), color = LevitxColors.Accent)
-        Text(
-            stringResource(R.string.today_review_body),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            color = LevitxColors.Text,
-        )
-        QuietBar(stringResource(R.string.today_review_open), onOpen)
-    }
 }
 
 @Preview
