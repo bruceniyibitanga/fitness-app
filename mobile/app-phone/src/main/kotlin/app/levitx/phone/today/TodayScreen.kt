@@ -72,6 +72,7 @@ fun TodayRoute(
     onOpenWorkout: () -> Unit,
     onOpenExercise: (String) -> Unit,
     onOpenProgress: () -> Unit,
+    onOpenWeekReview: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -87,6 +88,7 @@ fun TodayRoute(
             onAcknowledgeWeightNotice = viewModel::acknowledgeWeightNotice,
             onOpenExercise = onOpenExercise,
             onOpenProgress = onOpenProgress,
+            onOpenWeekReview = onOpenWeekReview,
         ),
     )
 }
@@ -100,6 +102,7 @@ fun TodayRoute(
  * @property onAcknowledgeWeightNotice Marks the weight notice as read.
  * @property onOpenExercise Opens an exercise's detail by id.
  * @property onOpenProgress Opens Progress, from the figures under the first exercise.
+ * @property onOpenWeekReview Opens last week's review.
  */
 data class TodayActions(
     val onStart: (SuggestionChoice?) -> Unit,
@@ -108,6 +111,7 @@ data class TodayActions(
     val onAcknowledgeWeightNotice: () -> Unit,
     val onOpenExercise: (String) -> Unit,
     val onOpenProgress: () -> Unit,
+    val onOpenWeekReview: () -> Unit,
 )
 
 /**
@@ -175,6 +179,7 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
             .weight(1f)
             .verticalScroll(rememberScrollState()),
     ) {
+        if (state.weekReviewDue) WeekReviewCard(actions.onOpenWeekReview)
         if (CoachNotice.FAST_WEIGHT_LOSS in recommendation.notices) WeightNotice(actions.onAcknowledgeWeightNotice)
         if (session == null) {
             RestDay()
@@ -355,6 +360,27 @@ private fun WeightNotice(onAcknowledge: () -> Unit) {
     }
 }
 
+/** Offers last week's review, at the top of Today until it's opened. */
+@Composable
+private fun WeekReviewCard(onOpen: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(LevitxColors.Surface)
+            .padding(ScreenPadding),
+    ) {
+        Caption(stringResource(R.string.today_review_label), color = LevitxColors.Accent)
+        Text(
+            stringResource(R.string.today_review_body),
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            color = LevitxColors.Text,
+        )
+        QuietBar(stringResource(R.string.today_review_open), onOpen)
+    }
+}
+
 @Preview
 @Composable
 private fun TodayScreenPreview() {
@@ -377,6 +403,7 @@ private fun TodayScreenPreview() {
                 onAcknowledgeWeightNotice = {},
                 onOpenExercise = {},
                 onOpenProgress = {},
+                onOpenWeekReview = {},
             ),
         )
     }

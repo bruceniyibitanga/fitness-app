@@ -214,6 +214,42 @@
     <string name="today_weight_body" formatted="false">Your weight has been falling faster than about 1% a week. That makes it harder to keep strength, so your targets will hold steady until it settles. If you aren\'t trying to lose weight, it\'s worth talking to a GP.</string>
     <string name="today_weight_ok">Got it</string>
     <string name="today_bodyweight_prompt">Add your bodyweight on the Body tab to see the load of every rep.</string>
+    <string name="today_review_label">YOUR WEEK</string>
+    <string name="today_review_body">Last week, looked back on: sessions, new bests and hard sets.</string>
+    <string name="today_review_open">See your week</string>
+    <string name="review_close">Close the week review</string>
+    <string name="review_dates">%1$s – %2$s</string>
+    <string name="review_label">YOUR WEEK</string>
+    <plurals name="review_sessions">
+        <item quantity="one">%1$d of %2$d session done</item>
+        <item quantity="other">%1$d of %2$d sessions done</item>
+    </plurals>
+    <string name="review_all_done">Every planned session.</string>
+    <string name="review_more_done">More than you planned.</string>
+    <plurals name="review_short">
+        <item quantity="one">%1$d session short of your plan. One week doesn\'t undo anything.</item>
+        <item quantity="other">%1$d sessions short of your plan. One week doesn\'t undo anything.</item>
+    </plurals>
+    <string name="review_bests">NEW BESTS</string>
+    <string name="review_gates">GATES PASSED</string>
+    <string name="review_hard_sets">HARD SETS</string>
+    <string name="review_by_movement">HARD SETS BY MOVEMENT</string>
+    <string name="review_done_target">DONE / TARGET</string>
+    <string name="review_sets_description">%1$s: %2$s of %3$s hard sets</string>
+    <string name="review_notes">WORTH KNOWING</string>
+    <plurals name="review_note_short">
+        <item quantity="one">%2$s: %1$d hard set short of the weekly target.</item>
+        <item quantity="other">%2$s: %1$d hard sets short of the weekly target.</item>
+    </plurals>
+    <plurals name="review_note_lighter_due">
+        <item quantity="one">Your lighter week is due after %1$d more session, then a new block with fresh accessory moves.</item>
+        <item quantity="other">Your lighter week is due after %1$d more sessions, then a new block with fresh accessory moves.</item>
+    </plurals>
+    <plurals name="review_note_lighter_now">
+        <item quantity="one">You\'re in your lighter week, with %1$d session left before a new block.</item>
+        <item quantity="other">You\'re in your lighter week, with %1$d sessions left before a new block.</item>
+    </plurals>
+    <string name="review_done">Done</string>
     <string name="weighin_label">QUICK WEIGH-IN</string>
     <string name="weighin_title">Still about the same?</string>
     <string name="weighin_title_first">What do you weigh today?</string>

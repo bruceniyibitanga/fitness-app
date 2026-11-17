@@ -85,6 +85,7 @@ fun MainRoute(navigation: MainNavigation) {
                 onOpenWorkout = navigation.onOpenWorkout,
                 onOpenExercise = navigation.onOpenExercise,
                 onOpenProgress = navigation.onOpenProgress,
+                onOpenWeekReview = navigation.onOpenWeekReview,
             )
 
             MainTab.TRAIN -> TrainRoute(
@@ -122,6 +123,7 @@ fun MainRoute(navigation: MainNavigation) {
  * @property onOpenProgress Opens Progress.
  * @property onOpenSettings Opens Settings.
  * @property onOpenSearch Opens search, from the Train tab.
+ * @property onOpenWeekReview Opens last week's review, from Today.
  * @property onOpenAllPrograms Opens every program, from the Train tab.
  */
 data class MainNavigation(
@@ -133,6 +135,7 @@ data class MainNavigation(
     val onOpenProgress: () -> Unit,
     val onOpenSettings: () -> Unit,
     val onOpenSearch: () -> Unit,
+    val onOpenWeekReview: () -> Unit,
     val onOpenAllPrograms: () -> Unit,
 )
 

@@ -136,6 +136,7 @@ public data class SuggestionOutcome(val choice: SuggestionChoice, val wentWell: 
  * @property weightNoticeShown True once the fast weight loss notice has been shown for the current spell.
  * @property weighInAskedAtEpochMillis When the quick weigh-in last showed, saved or skipped,
  *   or null if never. See [WeighInPrompt].
+ * @property weekReviewedAtEpochMillis When the person last opened a week review, or null if never.
  * @property lastEasedAtEpochMillis When they last took a lighter session or a rest the coach
  *   offered. Results from before then no longer count as a trend: the easier day was the answer to them.
  */
@@ -153,6 +154,7 @@ public data class AthleteModel(
     val weightNoticeShown: Boolean = false,
     val lastEasedAtEpochMillis: Long? = null,
     val weighInAskedAtEpochMillis: Long? = null,
+    val weekReviewedAtEpochMillis: Long? = null,
 ) {
     /** When the last session finished, or null before the first. */
     val lastSessionAtEpochMillis: Long?
@@ -197,6 +199,9 @@ public data class AthleteModel(
 
     /** Notes that the quick weigh-in showed at [atEpochMillis], whether it was saved or skipped. */
     public fun withWeighInAsked(atEpochMillis: Long): AthleteModel = copy(weighInAskedAtEpochMillis = atEpochMillis)
+
+    /** Notes that the person opened a week review at [atEpochMillis]. */
+    public fun withWeekReviewed(atEpochMillis: Long): AthleteModel = copy(weekReviewedAtEpochMillis = atEpochMillis)
 
     private fun between(fromEpochMillis: Long, toEpochMillis: Long): List<SessionRecord> =
         history.filter { it.finishedAtEpochMillis > fromEpochMillis && it.finishedAtEpochMillis <= toEpochMillis }
