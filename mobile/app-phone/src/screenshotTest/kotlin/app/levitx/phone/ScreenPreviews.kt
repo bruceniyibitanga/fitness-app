@@ -19,7 +19,10 @@ import app.levitx.core.coach.Intensity
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
+import app.levitx.core.coach.ReadinessSignal
 import app.levitx.core.coach.SkillTraining
+import app.levitx.core.coach.Suggestion
+import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WeighIn
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.coach.WorkoutRun
@@ -211,6 +214,36 @@ fun TodayScreenshot() {
                     bodyweightKg = 75.6,
                     hasWorkoutInProgress = false,
                     sessionsLastWeek = 1,
+                    sessionsPerWeek = 3,
+                ),
+                actions = noTodayActions,
+            )
+        }
+    }
+}
+
+@PreviewTest
+@Preview(name = "44 Today, comeback day", widthDp = 390, heightDp = 1300)
+@Composable
+fun TodayComebackScreenshot() {
+    val planned = Coach().recommend(muscleUp(), 0)
+    val session = checkNotNull(planned.session)
+    val comeback = planned.copy(
+        suggestion = Suggestion(
+            listOf(ReadinessSignal.LongGap(days = 23)),
+            SuggestionChoice.LIGHTER,
+            session.lightened(),
+        ),
+    )
+    LevitxTheme {
+        MainScreen(selected = MainTab.TODAY, onSelect = {}) {
+            TodayScreen(
+                uiState = TodayUiState.Ready(
+                    nowEpochMillis = 0,
+                    recommendation = comeback,
+                    bodyweightKg = 75.6,
+                    hasWorkoutInProgress = false,
+                    sessionsLastWeek = 0,
                     sessionsPerWeek = 3,
                 ),
                 actions = noTodayActions,

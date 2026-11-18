@@ -1,8 +1,6 @@
 package app.levitx.phone.today
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -28,10 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.coach.AthleteModel
@@ -40,8 +36,8 @@ import app.levitx.core.coach.CoachNotice
 import app.levitx.core.coach.CoachPhrases
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
+import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
-import app.levitx.core.coach.Suggestion
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
@@ -51,8 +47,6 @@ import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
-import app.levitx.phone.ui.OptionCard
-import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SessionList
@@ -173,43 +167,76 @@ private fun ColumnScope.Ready(state: TodayUiState.Ready, actions: TodayActions) 
     val recommendation = state.recommendation
     val session = recommendation.session
     val suggestion = recommendation.suggestion.takeIf { !state.hasWorkoutInProgress }
+    // Lifted out of the cards so the session below shows what was picked.
+    var choice by rememberSaveable(suggestion) { mutableStateOf(suggestion?.recommended) }
+    val shown = if (choice == SuggestionChoice.LIGHTER) suggestion?.lighter else session
+    val comeback = suggestion?.let { comebackOf(it, session) }
     Header(state.nowEpochMillis)
     Column(
         modifier = Modifier
             .weight(1f)
             .verticalScroll(rememberScrollState()),
     ) {
+        // After a break, the comeback is the day's main message, so it comes first.
+        if (comeback != null) ComebackCard(comeback, choice, onChoose = { choice = it }, onRest = actions.onRest)
         if (state.weekReviewDue) WeekReviewCard(actions.onOpenWeekReview)
         if (CoachNotice.FAST_WEIGHT_LOSS in recommendation.notices) WeightNotice(actions.onAcknowledgeWeightNotice)
-        if (session == null) {
+        if (shown == null) {
             RestDay()
         } else {
-            Lead(session.plans.first(), state.bodyweightKg)
+            Lead(shown.plans.first(), state.bodyweightKg)
             Rule()
         }
-        WeekFigures(state, session?.estimatedMinutes, actions.onOpenProgress)
+        WeekFigures(state, shown?.estimatedMinutes, actions.onOpenProgress)
         Rule()
         SquareNote(title = stringResource(R.string.today_why), text = CoachPhrases.describe(recommendation.reason))
         Rule()
-        if (suggestion != null) SuggestionCard(suggestion, actions.onStart, actions.onRest)
-        if (session != null) {
-            SessionList(session, state.bodyweightKg, onExerciseClick = actions.onOpenExercise)
-            if (state.bodyweightKg == null && session.plans.any { it.exercise.loadProfile != null }) {
-                Help(
-                    text = stringResource(R.string.today_bodyweight_prompt),
-                    modifier = Modifier.padding(horizontal = ScreenPadding, vertical = 12.dp),
-                )
-            }
+        if (suggestion != null && comeback == null) {
+            SuggestionCard(suggestion, choice, onChoose = { choice = it }, actions.onStart, actions.onRest)
         }
+        if (shown != null) Session(shown, state.bodyweightKg, actions.onOpenExercise)
     }
-    if (session != null && suggestion == null) {
-        AccentBar(
-            text = stringResource(if (state.hasWorkoutInProgress) R.string.today_resume else R.string.today_start),
-            hint = stringResource(R.string.today_minutes, session.estimatedMinutes),
-            onClick = { actions.onStart(null) },
-            height = 64.dp,
+    if (shown != null && (suggestion == null || comeback != null)) {
+        StartBar(shown, resuming = state.hasWorkoutInProgress, comeback = comeback != null, choice, actions.onStart)
+    }
+}
+
+/** The session's exercises, and a nudge to add bodyweight when the load figures need it. */
+@Composable
+private fun Session(session: PlannedSession, bodyweightKg: Double?, onOpenExercise: (String) -> Unit) {
+    SessionList(session, bodyweightKg, onExerciseClick = onOpenExercise)
+    if (bodyweightKg == null && session.plans.any { it.exercise.loadProfile != null }) {
+        Help(
+            text = stringResource(R.string.today_bodyweight_prompt),
+            modifier = Modifier.padding(horizontal = ScreenPadding, vertical = 12.dp),
         )
     }
+}
+
+/**
+ * Start, pinned to the bottom: Resume when a workout is under way, and on a
+ * comeback day it starts whichever of lighter or full was picked.
+ */
+@Composable
+private fun StartBar(
+    shown: PlannedSession,
+    resuming: Boolean,
+    comeback: Boolean,
+    choice: SuggestionChoice?,
+    onStart: (SuggestionChoice?) -> Unit,
+) {
+    val label = when {
+        resuming -> R.string.today_resume
+        !comeback -> R.string.today_start
+        choice == SuggestionChoice.LIGHTER -> R.string.comeback_start_lighter
+        else -> R.string.comeback_start_full
+    }
+    AccentBar(
+        text = stringResource(label),
+        hint = stringResource(R.string.today_minutes, shown.estimatedMinutes),
+        onClick = { onStart(if (comeback) choice else null) },
+        height = 64.dp,
+    )
 }
 
 /**
@@ -274,111 +301,6 @@ private fun RestDay() {
         Lede(stringResource(R.string.today_rest_body), modifier = Modifier.padding(top = 12.dp))
     }
     Rule()
-}
-
-/** The coach noticed something: what, and Keep, Lighter or Rest. The person decides. */
-@Composable
-private fun SuggestionCard(suggestion: Suggestion, onStart: (SuggestionChoice?) -> Unit, onRest: () -> Unit) {
-    var choice by rememberSaveable(suggestion) { mutableStateOf(suggestion.recommended) }
-    val suggested = stringResource(R.string.how_suggested)
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LevitxColors.Surface)
-            .padding(ScreenPadding),
-    ) {
-        Caption(stringResource(R.string.today_check_label), color = LevitxColors.Accent)
-        Text(
-            text = stringResource(R.string.today_check_title),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = LevitxColors.Text,
-            modifier = Modifier.semantics { heading() },
-        )
-        Caption(stringResource(R.string.today_check_noticed), modifier = Modifier.padding(top = 6.dp))
-        suggestion.signals.forEach { signal ->
-            Text(CoachPhrases.describe(signal), fontSize = 14.sp, lineHeight = 20.sp, color = LevitxColors.Text)
-        }
-        Caption(stringResource(R.string.today_check_question), modifier = Modifier.padding(top = 6.dp))
-        listOf(
-            Triple(SuggestionChoice.KEEP, R.string.today_choice_keep, R.string.today_choice_keep_body),
-            Triple(SuggestionChoice.LIGHTER, R.string.today_choice_lighter, R.string.today_choice_lighter_body),
-            Triple(SuggestionChoice.REST, R.string.today_choice_rest, R.string.today_choice_rest_body),
-        ).forEach { (option, title, body) ->
-            OptionCard(
-                title = stringResource(title),
-                body = stringResource(body),
-                selected = choice == option,
-                onClick = { choice = option },
-                badge = suggested.takeIf { option == suggestion.recommended },
-                trailing = when (option) {
-                    SuggestionChoice.LIGHTER -> stringResource(
-                        R.string.today_minutes,
-                        suggestion.lighter.estimatedMinutes,
-                    )
-
-                    else -> null
-                },
-            )
-        }
-        Help(stringResource(R.string.today_choice_note))
-        when (choice) {
-            SuggestionChoice.REST -> AccentBar(text = stringResource(R.string.today_take_rest), onClick = onRest)
-
-            SuggestionChoice.LIGHTER -> AccentBar(
-                text = stringResource(R.string.today_start_lighter),
-                onClick = { onStart(SuggestionChoice.LIGHTER) },
-            )
-
-            SuggestionChoice.KEEP -> AccentBar(
-                text = stringResource(R.string.today_start),
-                onClick = { onStart(SuggestionChoice.KEEP) },
-            )
-        }
-    }
-}
-
-/** Said once per spell of fast weight loss, plainly and without judgement. */
-@Composable
-private fun WeightNotice(onAcknowledge: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LevitxColors.Surface)
-            .padding(ScreenPadding),
-    ) {
-        Caption(stringResource(R.string.today_weight_label), color = LevitxColors.Ice)
-        Text(
-            stringResource(R.string.today_weight_body),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            color = LevitxColors.Text,
-        )
-        QuietBar(stringResource(R.string.today_weight_ok), onAcknowledge)
-    }
-}
-
-/** Offers last week's review, at the top of Today until it's opened. */
-@Composable
-private fun WeekReviewCard(onOpen: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(LevitxColors.Surface)
-            .padding(ScreenPadding),
-    ) {
-        Caption(stringResource(R.string.today_review_label), color = LevitxColors.Accent)
-        Text(
-            stringResource(R.string.today_review_body),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            color = LevitxColors.Text,
-        )
-        QuietBar(stringResource(R.string.today_review_open), onOpen)
-    }
 }
 
 @Preview
