@@ -123,6 +123,7 @@ private fun WorkoutRun.toUiState(heartRate: Int?, isTracked: Boolean): SessionUi
             repsInReserve = plan.repsInReserve,
             canSaveEarly = hasStarted,
             heartRate = heartRate,
+            addedKg = plan.addedKg,
         )
     }
 }

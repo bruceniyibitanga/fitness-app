@@ -34,6 +34,7 @@ sealed interface SessionUiState {
      * @property repsInReserve Reps to leave in the tank on work sets.
      * @property canSaveEarly True once a set is logged, so ending now saves something.
      * @property heartRate Heart rate in beats per minute, or null when it isn't being read.
+     * @property addedKg Weight the coach prescribed for the set, 0 for bodyweight.
      */
     data class Working(
         val exerciseName: String,
@@ -48,6 +49,7 @@ sealed interface SessionUiState {
         val repsInReserve: Int,
         val canSaveEarly: Boolean,
         val heartRate: Int? = null,
+        val addedKg: Double = 0.0,
     ) : SessionUiState
 
     /**

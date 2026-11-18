@@ -19,13 +19,14 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
-import app.levitx.core.load.formatKg
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.design.LevitxColors
 import app.levitx.wear.R
 import app.levitx.wear.theme.LevitxWearTheme
 import app.levitx.wear.ui.CenteredText
 import app.levitx.wear.ui.SectionLabel
+import app.levitx.wear.ui.unitLabel
+import app.levitx.wear.ui.weightNumber
 
 /** Home destination: connects [HomeViewModel] to [HomeScreen]. */
 @Composable
@@ -140,7 +141,13 @@ private fun nextText(next: NextSummary): String =
 /** "Bodyweight only", "+5 kg", "Red band" or "+5 kg, Red band". */
 @Composable
 private fun loadText(load: LoadSummary): String {
-    val added = if (load.addedKg > 0.0) stringResource(R.string.load_added, formatKg(load.addedKg)) else null
+    val added = if (load.addedKg >
+        0.0
+    ) {
+        stringResource(R.string.load_added, weightNumber(load.addedKg), unitLabel())
+    } else {
+        null
+    }
     val band = load.bandName?.let { stringResource(R.string.load_band, it) }
     return when {
         added != null && band != null -> stringResource(R.string.load_added_and_band, added, band)

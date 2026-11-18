@@ -1,6 +1,7 @@
 package app.levitx.sync
 
 import app.levitx.core.load.LoadLimits
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.session.CompletedSession
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.skills.SkillCatalogue
@@ -60,6 +61,8 @@ internal data class WireState(
     val bands: List<WireBand> = emptyList(),
     val next: String? = null,
     val recent: List<String> = emptyList(),
+    // Added after version 2 shipped: an older phone sends none, read as kilograms.
+    val units: String? = null,
 )
 
 /** A band as it travels. */
@@ -131,6 +134,7 @@ internal object SyncCodec {
             bands = state.bands.map { WireBand(it.id, it.name, it.assistanceKg) },
             next = state.next?.let(WorkoutCodec::encodePlan),
             recent = state.recentWorkoutIds,
+            units = state.units.name,
         ),
     ).encodeToByteArray()
 
@@ -158,6 +162,8 @@ internal object SyncCodec {
                 bands = wire.bands.map { Band(it.id, it.name.trim(), it.kg) },
                 next = next,
                 recentWorkoutIds = wire.recent,
+                // A unit this version doesn't know falls back to kilograms rather than rejecting the state.
+                units = WeightUnit.entries.firstOrNull { it.name == wire.units } ?: WeightUnit.KG,
             )
         }
     }

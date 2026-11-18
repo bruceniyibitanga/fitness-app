@@ -29,6 +29,8 @@ import app.levitx.wear.ui.CenteredText
 import app.levitx.wear.ui.SectionLabel
 import app.levitx.wear.ui.StepperRow
 import app.levitx.wear.ui.measureText
+import app.levitx.wear.ui.unitLabel
+import app.levitx.wear.ui.weightNumber
 import kotlinx.coroutines.delay
 
 private const val TICK_MILLIS = 250L
@@ -195,7 +197,13 @@ private fun setHint(state: SessionUiState.Working): String {
         state.measure == GateMeasure.HOLD_SECONDS -> stringResource(R.string.session_work_hint_hold)
         else -> pluralStringResource(R.plurals.session_work_hint, state.repsInReserve, state.repsInReserve)
     }
-    return if (state.isPerSide) stringResource(R.string.session_each_side, effort) else effort
+    val sided = if (state.isPerSide) stringResource(R.string.session_each_side, effort) else effort
+    // The coach's prescribed weight comes first: it's what to put on before the set.
+    return if (state.addedKg > 0.0) {
+        stringResource(R.string.session_with_weight, weightNumber(state.addedKg), unitLabel(), sided)
+    } else {
+        sided
+    }
 }
 
 private fun secondsSince(startedAtMillis: Long, nowMillis: Long): Int =

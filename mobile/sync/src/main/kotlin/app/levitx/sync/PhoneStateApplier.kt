@@ -4,6 +4,7 @@ import app.levitx.data.coach.NextSessionRepository
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.progress.ProgressRepository
+import app.levitx.data.settings.SettingsRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 
@@ -22,11 +23,13 @@ internal class PhoneStateApplier @Inject constructor(
     private val progressRepository: ProgressRepository,
     private val equipmentRepository: EquipmentRepository,
     private val nextSessionRepository: NextSessionRepository,
+    private val settingsRepository: SettingsRepository,
 ) {
     /** @return True when anything on the watch changed. */
     suspend fun applyState(state: PhoneState): Boolean {
         // Every step runs; none is skipped because an earlier one changed something.
-        val changes = listOf(applyGoal(state), applyBests(state), applyBands(state), applyNext(state))
+        val changes =
+            listOf(applyGoal(state), applyBests(state), applyBands(state), applyNext(state), applyUnits(state))
         return changes.any { it }
     }
 
@@ -48,6 +51,13 @@ internal class PhoneStateApplier @Inject constructor(
         // recordBest keeps the higher value, so a best set on the watch is never lowered.
         higher.forEach { (gateId, best) -> progressRepository.recordBest(gateId, best) }
         return higher.isNotEmpty()
+    }
+
+    /** The phone's choice of kg or lb. The watch has no setting of its own, so the phone's always wins. */
+    private suspend fun applyUnits(state: PhoneState): Boolean {
+        if (settingsRepository.observe().first().units == state.units) return false
+        settingsRepository.setUnits(state.units)
+        return true
     }
 
     private suspend fun applyBands(state: PhoneState): Boolean {
