@@ -31,10 +31,10 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
         database.withTransaction { database.insertIfNew(StoredSession(UUID.randomUUID().toString(), session)) }
     }
 
-    override suspend fun saveIntervalWorkout(workoutId: String, sessions: List<CompletedSession>) {
+    override suspend fun saveIntervalWorkout(workoutId: String, sessions: List<CompletedSession>): Boolean {
         val database = databaseProvider.database()
-        database.withTransaction {
-            if (database.sessionDao().hasWorkout(workoutId)) return@withTransaction
+        return database.withTransaction {
+            if (database.sessionDao().hasWorkout(workoutId)) return@withTransaction false
             sessions.forEachIndexed { index, session ->
                 val rowId = "$workoutId/$index"
                 database.sessionDao().insertSession(
@@ -49,6 +49,7 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
                 )
                 database.sessionDao().insertSets(session.sets.toEntities(rowId))
             }
+            true
         }
     }
 

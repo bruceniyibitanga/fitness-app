@@ -9,6 +9,8 @@ import app.levitx.data.coach.QueuedWorkout
 import app.levitx.data.coach.WorkoutCodec
 import app.levitx.data.equipment.Band
 import app.levitx.data.equipment.MAX_BAND_NAME_LENGTH
+import app.levitx.data.intervals.IntervalCodec
+import app.levitx.data.intervals.QueuedIntervalWorkout
 import app.levitx.data.session.StoredSession
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
@@ -86,6 +88,13 @@ internal data class WireSession(
  */
 @Serializable
 internal data class WireWorkout(val v: Int, val id: String, val run: String, val finishedAt: Long)
+
+/**
+ * A finished cardio or mobility workout as it travels: the work done in the
+ * format the watch stores it in. Nothing else about the person goes with it.
+ */
+@Serializable
+internal data class WireIntervals(val v: Int, val id: String, val work: String)
 
 /** A logged set as it travels. */
 @Serializable
@@ -194,6 +203,26 @@ internal object SyncCodec {
             run.result(wire.finishedAt) != null
         if (run != null && isValid && wire.finishedAt > 0) QueuedWorkout(run, wire.finishedAt) else null
     }
+
+    /** Encodes a finished cardio or mobility workout. */
+    fun encodeIntervals(workout: QueuedIntervalWorkout): ByteArray = json.encodeToString(
+        WireIntervals.serializer(),
+        WireIntervals(v = WIRE_VERSION, id = workout.id, work = IntervalCodec.encode(workout.sessions)),
+    ).encodeToByteArray()
+
+    /**
+     * Decodes and checks a finished cardio or mobility workout: a UUID, and
+     * work this version can read in full (known moves, sensible times).
+     */
+    fun decodeIntervals(payload: ByteArray): Decoded<QueuedIntervalWorkout> =
+        decode(payload, WireIntervals.serializer()) { wire ->
+            val sessions = IntervalCodec.decodeOrNull(wire.work)
+            if (sessions != null && UUID_PATTERN.matches(wire.id) && sessions.all { it.startedAtEpochMillis > 0 }) {
+                QueuedIntervalWorkout(wire.id.lowercase(), sessions)
+            } else {
+                null
+            }
+        }
 
     /** Encodes a finished session. */
     fun encodeSession(stored: StoredSession): ByteArray = json.encodeToString(

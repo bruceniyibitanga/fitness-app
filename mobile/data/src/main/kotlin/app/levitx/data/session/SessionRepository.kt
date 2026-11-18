@@ -27,9 +27,12 @@ interface SessionRepository {
      * Saves a finished cardio or mobility workout: one row per move, under
      * [workoutId] so history shows them as one workout. These moves aren't
      * skill gates and never feed the coach, so no gate best is recorded.
-     * Saving the same [workoutId] twice keeps the first.
+     * Saving the same [workoutId] twice keeps the first, so a workout the
+     * watch sends again can't be counted twice.
+     *
+     * @return True when the workout was new, false when it was already stored.
      */
-    suspend fun saveIntervalWorkout(workoutId: String, sessions: List<CompletedSession>)
+    suspend fun saveIntervalWorkout(workoutId: String, sessions: List<CompletedSession>): Boolean
 
     /**
      * Saves a session that was recorded on the other device, the same way as
