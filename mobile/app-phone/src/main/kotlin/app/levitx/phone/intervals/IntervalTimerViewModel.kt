@@ -11,6 +11,7 @@ import app.levitx.data.settings.AppSettings
 import app.levitx.data.settings.SettingsRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
+import app.levitx.phone.live.LiveIntervals
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -39,6 +40,9 @@ private const val AWAKE_MARGIN_MILLIS = 5_000L
  * Runs a cardio or mobility workout: counts each step down against the
  * clock that ignores time-zone and clock changes, beeps and buzzes as steps
  * change, and saves the work done to the history when it ends.
+ *
+ * While it runs, the workout service keeps the app going with the phone
+ * locked or another app in front, as it does for strength workouts.
  *
  * The timer lives as long as this screen. It doesn't survive the app being
  * killed in the background: the run holds catalogue moves, and saved state
@@ -79,6 +83,7 @@ class IntervalTimerViewModel @AssistedInject constructor(
     init {
         (state.value as? IntervalTimerUiState.Running)?.let { running ->
             holdAwake(running.run)
+            show(running)
             viewModelScope.launch { runClock() }
         }
     }
@@ -88,6 +93,7 @@ class IntervalTimerViewModel @AssistedInject constructor(
         val running = state.value as? IntervalTimerUiState.Running ?: return
         val run = running.run.togglePause()
         state.value = running.copy(run = run)
+        show(running.copy(run = run))
         if (run.paused) signals.letSleep() else holdAwake(run)
     }
 
@@ -141,7 +147,10 @@ class IntervalTimerViewModel @AssistedInject constructor(
             finish(run)
         } else {
             state.value = running.copy(run = run)
-            if (run.index != running.run.index) holdAwake(run)
+            if (run.index != running.run.index) {
+                holdAwake(run)
+                show(running.copy(run = run))
+            }
         }
     }
 
@@ -149,6 +158,7 @@ class IntervalTimerViewModel @AssistedInject constructor(
     private fun finish(run: IntervalRun) {
         val workout = workout ?: return
         signals.letSleep()
+        signals.hide()
         val done = run.sessions(startedAtEpochMillis, clock.currentTimeMillis())
         val workedSeconds = done.sumOf { session -> session.sets.sumOf { it.value } }
         state.value = IntervalTimerUiState.Done(
@@ -170,6 +180,21 @@ class IntervalTimerViewModel @AssistedInject constructor(
                 }
             }
         }
+    }
+
+    /** Shows the step [running] is on as the workout in progress. Called once per step, not once per second. */
+    private fun show(running: IntervalTimerUiState.Running) {
+        val step = running.run.current ?: return
+        signals.show(
+            LiveIntervals(
+                workoutName = running.workout.name,
+                phase = step.phase,
+                moveName = step.move.name,
+                round = step.round,
+                rounds = step.rounds,
+                paused = running.run.paused,
+            ),
+        )
     }
 
     /** Keeps the processor on until [run] would end, so beeps come on time with the screen off. */

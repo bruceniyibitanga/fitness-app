@@ -8,6 +8,7 @@ import app.levitx.data.time.TrainingClock
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.phone.live.CueOutput
 import app.levitx.phone.live.KeepAwake
+import app.levitx.phone.live.LiveWorkout
 import app.levitx.phone.workout.Cue
 import app.levitx.testing.FakeProgressRepository
 import app.levitx.testing.FakeSessionRepository
@@ -20,6 +21,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -35,6 +37,7 @@ class IntervalTimerViewModelTest {
     private val settings = FakeSettingsRepository(AppSettings(sounds = true, buzzes = false))
     private val played = mutableListOf<Cue>()
     private var awake = false
+    private val live = LiveWorkout()
 
     private val output = object : CueOutput {
         override fun play(cue: Cue, sound: Boolean, buzz: Boolean) {
@@ -67,7 +70,7 @@ class IntervalTimerViewModelTest {
             sessions,
             settings,
             clock,
-            IntervalSignals(output, keepAwake),
+            IntervalSignals(output, keepAwake, live),
             backgroundScope,
         )
         runCurrent()
@@ -98,6 +101,23 @@ class IntervalTimerViewModelTest {
         assertEquals("40 s of jumping jacks, 5 done", 35, run.remaining)
         assertEquals("a countdown into the work, then GO", listOf(Cue.COUNT, Cue.COUNT, Cue.COUNT, Cue.GO), played)
         viewModel.end()
+    }
+
+    @Test
+    fun theWorkoutIsShownAsInProgressStepByStepAndNoLongerOnceItEnds() = runTest(dispatcher) {
+        val viewModel = timer()
+        // Shown from the start: this is what keeps the timer going with another app in front.
+        val ready = checkNotNull(live.intervals.value)
+        assertEquals("Tabata", ready.workoutName)
+        assertEquals(IntervalPhase.PREPARE, ready.phase)
+
+        wait(IntervalTimeline.PREPARE_SECONDS)
+        assertEquals(IntervalPhase.WORK, live.intervals.value?.phase)
+        viewModel.togglePause()
+        assertEquals(true, live.intervals.value?.paused)
+
+        viewModel.end()
+        assertNull(live.intervals.value)
     }
 
     @Test
