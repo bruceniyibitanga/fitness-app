@@ -1,5 +1,6 @@
 package app.levitx.core.session
 
+import app.levitx.core.endingBy
 import app.levitx.core.load.AddedWeight
 import app.levitx.core.load.BandAssistance
 import app.levitx.core.load.EffectiveLoad
@@ -79,6 +80,16 @@ public data class CompletedSession(
     init {
         require(sets.isNotEmpty()) { "a session needs at least one set" }
         require(finishedAtEpochMillis >= startedAtEpochMillis) { "a session can't finish before it starts" }
+    }
+
+    /**
+     * This session moved back so it finishes no later than [epochMillis],
+     * keeping its length. A session can't have finished in the future; one
+     * that claims to came from a device whose clock was ahead.
+     */
+    public fun endingBy(epochMillis: Long): CompletedSession {
+        val (started, finished) = endingBy(startedAtEpochMillis, finishedAtEpochMillis, epochMillis)
+        return copy(startedAtEpochMillis = started, finishedAtEpochMillis = finished)
     }
 
     /**

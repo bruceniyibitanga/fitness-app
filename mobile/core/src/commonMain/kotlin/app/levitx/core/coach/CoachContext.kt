@@ -34,8 +34,8 @@ internal class CoachContext(val model: AthleteModel, val nowEpochMillis: Long) {
     /** Reads trends from results since the person last took an easier day. */
     val trend: PerformanceTrend = PerformanceTrend(since = model.lastEasedAtEpochMillis)
 
-    /** The last finished session, or null before the first. */
-    val lastSession: SessionRecord? = model.history.lastOrNull()
+    /** The last session finished by now, or null before the first. */
+    val lastSession: SessionRecord? = model.lastSession(nowEpochMillis)
 
     private val weekStart: Long = nowEpochMillis - CoachTuning.WEEK_WINDOW_HOURS * MILLIS_PER_HOUR
 
@@ -55,10 +55,10 @@ internal class CoachContext(val model: AthleteModel, val nowEpochMillis: Long) {
     }
 
     /** Hours since [pattern] was last trained hard, or null when it hasn't been. */
-    fun hoursSinceHard(pattern: MovementPattern): Double? = model.lastHardAt(pattern)?.let(::hoursSince)
+    fun hoursSinceHard(pattern: MovementPattern): Double? = model.lastHardAt(pattern, nowEpochMillis)?.let(::hoursSince)
 
     /** Hours since the last session, or null before the first. */
-    fun hoursSinceLastSession(): Double? = model.lastSessionAtEpochMillis?.let(::hoursSince)
+    fun hoursSinceLastSession(): Double? = lastSession?.finishedAtEpochMillis?.let(::hoursSince)
 
     /** The ladder exercise the person trains for [pattern] this block, or null without the kit. */
     fun exerciseFor(pattern: MovementPattern): Exercise? = model.exerciseFor(pattern, goalPatterns)

@@ -65,7 +65,9 @@ internal object Progression {
         )
         val oldest = result.finishedAtEpochMillis - CoachTuning.HISTORY_DAYS * MILLIS_PER_DAY
         val recorded = trained.copy(
-            history = (trained.history + record).filter { it.finishedAtEpochMillis >= oldest },
+            // Kept in time order whatever order results arrive in: a watch workout can reach the phone days late.
+            history = (trained.history + record).filter { it.finishedAtEpochMillis >= oldest }
+                .sortedBy { it.finishedAtEpochMillis },
             suggestionOutcomes = outcomes(model, result),
             // The notice is said once per spell of fast loss, so it resets when the spell ends.
             weightNoticeShown = model.weightNoticeShown && context.holdProgress,

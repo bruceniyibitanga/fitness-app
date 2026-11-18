@@ -127,7 +127,7 @@ public data class SuggestionOutcome(val choice: SuggestionChoice, val wentWell: 
  * @property rungs The rung they train at on each pattern's ladder. Missing means the first.
  * @property exercises What we know per exercise, by [Exercise.id].
  * @property gateBests Their best result per skill gate id.
- * @property history Recent sessions, oldest first.
+ * @property history Recent sessions, oldest first by when they finished.
  * @property pain The latest advice per sore body area. Areas that are fine aren't listed.
  * @property weighIns Recent bodyweight readings, oldest first.
  * @property block Where they are in the current block.
@@ -156,10 +156,6 @@ public data class AthleteModel(
     val weighInAskedAtEpochMillis: Long? = null,
     val weekReviewedAtEpochMillis: Long? = null,
 ) {
-    /** When the last session finished, or null before the first. */
-    val lastSessionAtEpochMillis: Long?
-        get() = history.lastOrNull()?.finishedAtEpochMillis
-
     /** The rung trained at for [pattern]. */
     public fun rung(pattern: MovementPattern): Int = rungs[pattern] ?: 0
 
@@ -173,11 +169,6 @@ public data class AthleteModel(
     /** Hard sets of [pattern]'s own exercises after [fromEpochMillis] and up to [toEpochMillis]. */
     public fun directSets(pattern: MovementPattern, fromEpochMillis: Long, toEpochMillis: Long): Int =
         between(fromEpochMillis, toEpochMillis).sumOf { it.directSets[pattern] ?: 0 }
-
-    /** When [pattern] was last trained hard, or null if it hasn't been in the history kept. */
-    public fun lastHardAt(pattern: MovementPattern): Long? = history
-        .lastOrNull { (it.directSets[pattern] ?: 0) >= CoachTuning.HARD_SESSION_MIN_SETS }
-        ?.finishedAtEpochMillis
 
     /**
      * Records the result of a pain check-in for [area]. Advice to carry on
@@ -233,6 +224,27 @@ public data class AthleteModel(
         }
     }
 }
+
+/**
+ * The last session finished by [asOfEpochMillis], or null when there is none.
+ * Sessions dated after it are left out: they can only come from a clock that
+ * was ahead, or be ones the caller is looking back from, and neither has
+ * happened yet as far as a decision at that time goes.
+ */
+public fun AthleteModel.lastSession(asOfEpochMillis: Long): SessionRecord? =
+    upTo(asOfEpochMillis).maxByOrNull { it.finishedAtEpochMillis }
+
+/**
+ * When [pattern] was last trained hard by [asOfEpochMillis], or null if it
+ * hasn't been in the history kept. Like [lastSession], it ignores sessions
+ * dated later, so one wrong date can't keep a movement "resting".
+ */
+public fun AthleteModel.lastHardAt(pattern: MovementPattern, asOfEpochMillis: Long): Long? = upTo(asOfEpochMillis)
+    .filter { (it.directSets[pattern] ?: 0) >= CoachTuning.HARD_SESSION_MIN_SETS }
+    .maxOfOrNull { it.finishedAtEpochMillis }
+
+private fun AthleteModel.upTo(epochMillis: Long): List<SessionRecord> =
+    history.filter { it.finishedAtEpochMillis <= epochMillis }
 
 /** The pull-up on the vertical pull ladder, where a "yes" at setup starts. */
 private const val PULL_UP_ID = "vertical_pull.pull_up"
