@@ -8,9 +8,9 @@ import app.levitx.core.coach.WeighInPrompt
 import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.history.WeekReviews
 import app.levitx.core.load.LoadLimits
+import app.levitx.data.DefaultDispatcher
 import app.levitx.data.coach.CoachPrompt
 import app.levitx.data.coach.CoachRepository
-import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
@@ -20,10 +20,12 @@ import app.levitx.phone.workout.WorkoutStarter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -46,15 +48,15 @@ private const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1_000
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     private val coachRepository: CoachRepository,
-    drafts: WorkoutDraftRepository,
     private val coach: Coach,
     private val clock: TrainingClock,
     private val starter: WorkoutStarter,
     private val equipment: EquipmentRepository,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<TodayUiState> =
-        combine(coachRepository.observeState(), drafts.observeDraft()) { state, draft ->
+        combine(coachRepository.observeState(), starter.observeInProgress()) { state, inProgress ->
             if (state == null) {
                 TodayUiState.Loading
             } else {
@@ -63,7 +65,7 @@ class TodayViewModel @Inject constructor(
                     nowEpochMillis = now,
                     recommendation = coach.recommend(state.model, now),
                     bodyweightKg = bodyweightTrend(state.model.weighIns, now)?.currentKg,
-                    hasWorkoutInProgress = draft != null,
+                    hasWorkoutInProgress = inProgress,
                     sessionsLastWeek = state.model.history.count { it.finishedAtEpochMillis > now - WEEK_MILLIS },
                     sessionsPerWeek = state.model.profile.sessionsPerWeek,
                     weekReviewDue = weekBounds(now, ZoneId.systemDefault()).let { week ->
@@ -72,12 +74,14 @@ class TodayViewModel @Inject constructor(
                     weighIn = state.model.weighIns.lastOrNull()
                         .let { last -> WeighInAsk(last?.kg, last?.atEpochMillis) }
                         .takeIf {
-                            draft == null &&
+                            !inProgress &&
                                 WeighInPrompt.isDue(state.model.weighIns, state.model.weighInAskedAtEpochMillis, now)
                         },
                 )
             }
         }
+            // The coach weighs every session it could offer, which is too much work for the main thread.
+            .flowOn(defaultDispatcher)
             .catch { error -> if (error.isExpectedDataFailure()) emit(TodayUiState.Unavailable) else throw error }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), TodayUiState.Loading)
 

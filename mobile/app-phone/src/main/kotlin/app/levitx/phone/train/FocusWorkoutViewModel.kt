@@ -6,8 +6,8 @@ import app.levitx.core.coach.Coach
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.WorkoutFocus
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.data.DefaultDispatcher
 import app.levitx.data.coach.CoachRepository
-import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.handlingDataFailures
 import app.levitx.phone.isExpectedDataFailure
@@ -16,10 +16,12 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 
 /** Keep collecting for this long after the screen stops listening, so a rotation doesn't restart the flow. */
@@ -62,16 +64,16 @@ sealed interface FocusWorkoutUiState {
 class FocusWorkoutViewModel @AssistedInject constructor(
     @Assisted focusName: String,
     coachRepository: CoachRepository,
-    drafts: WorkoutDraftRepository,
     private val coach: Coach,
     private val clock: TrainingClock,
     private val starter: WorkoutStarter,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val focus: WorkoutFocus? = WorkoutFocus.entries.firstOrNull { it.name == focusName }
 
     /** The current screen state. */
     val uiState: StateFlow<FocusWorkoutUiState> =
-        combine(coachRepository.observeState(), drafts.observeDraft()) { state, draft ->
+        combine(coachRepository.observeState(), starter.observeInProgress()) { state, inProgress ->
             when {
                 focus == null -> FocusWorkoutUiState.NotFound
 
@@ -83,11 +85,13 @@ class FocusWorkoutViewModel @AssistedInject constructor(
                         focus = focus,
                         session = coach.workout(state.model, focus, now),
                         bodyweightKg = bodyweightTrend(state.model.weighIns, now)?.currentKg,
-                        hasWorkoutInProgress = draft != null,
+                        hasWorkoutInProgress = inProgress,
                     )
                 }
             }
         }
+            // Building the workout and checking it against the safety rules runs off the main thread.
+            .flowOn(defaultDispatcher)
             .catch { error ->
                 if (error.isExpectedDataFailure()) emit(FocusWorkoutUiState.Unavailable) else throw error
             }

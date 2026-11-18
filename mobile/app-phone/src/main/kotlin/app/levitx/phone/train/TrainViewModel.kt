@@ -3,14 +3,17 @@ package app.levitx.phone.train
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Coach
+import app.levitx.data.DefaultDispatcher
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.time.TrainingClock
 import app.levitx.phone.isExpectedDataFailure
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -27,6 +30,7 @@ class TrainViewModel @Inject constructor(
     coachRepository: CoachRepository,
     private val coach: Coach,
     private val clock: TrainingClock,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     /** The current screen state. */
     val uiState: StateFlow<TrainUiState> = coachRepository.observeState()
@@ -41,6 +45,8 @@ class TrainViewModel @Inject constructor(
                 )
             }
         }
+        // A workout is built for every focus, each checked against the safety rules: not work for the main thread.
+        .flowOn(defaultDispatcher)
         .catch { error -> if (error.isExpectedDataFailure()) emit(TrainUiState.Unavailable) else throw error }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), TrainUiState.Loading)
 }
