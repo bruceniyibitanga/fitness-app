@@ -35,6 +35,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -54,6 +55,7 @@ class SyncEnginesTest {
     private val phoneCoach = FakeCoachRepository(coachState())
     private val clock = FakeTrainingClock()
     private val phoneSettings = FakeSettingsRepository(AppSettings(units = WeightUnit.LB))
+    private val phoneReset = FakeResetMarker()
     private val phone = phoneEngine()
     private val inbox = phoneInbox()
 
@@ -78,11 +80,22 @@ class SyncEnginesTest {
     private val watchReset = FakeResetMarker()
     private val watch = watchEngine()
 
-    private fun phoneEngine(goal: GoalRepository = phoneGoal, coach: CoachRepository = phoneCoach) = PhoneSyncEngine(
+    private fun phoneEngine(
+        goal: GoalRepository = phoneGoal,
+        coach: CoachRepository = phoneCoach,
+        marker: FakeResetMarker = phoneReset,
+    ) = PhoneSyncEngine(
         network.onDevice("phone"),
         PhoneStateSource(goal, phoneProgress, phoneEquipment, coach, Coach(), clock),
         phoneSettings,
+        marker,
     )
+
+    /** Does what the app does from its start for as long as it runs: announces the last delete, then keeps publishing. */
+    private fun CoroutineScope.running(engine: PhoneSyncEngine) = launch {
+        engine.announceLastReset()
+        engine.publishing().collect {}
+    }
 
     private fun phoneInbox(coach: CoachRepository = phoneCoach) =
         PhoneInbox(network.onDevice("phone"), phoneEquipment, phoneSessions, coach)
@@ -126,8 +139,6 @@ class SyncEnginesTest {
 
     private val idA = "00000000-0000-4000-8000-00000000000a"
     private val idB = "00000000-0000-4000-8000-00000000000b"
-    private val resetA = "00000000-0000-4000-8000-0000000000a1"
-    private val resetB = "00000000-0000-4000-8000-0000000000b2"
 
     private suspend fun publish() = phone.publish(checkNotNull(phone.watchState().first()))
 
@@ -165,7 +176,7 @@ class SyncEnginesTest {
         finishOnTheWatch(idA)
         watch.sync()
 
-        phone.forget(resetA)
+        phone.forget()
         assertTrue(watch.sync().stateChanged)
 
         assertEquals(1, watchPrivacy.deletions)
@@ -183,7 +194,7 @@ class SyncEnginesTest {
     fun afterSettingUpAgainTheWatchKeepsTheNewPlan() = runTest {
         publish()
         watch.sync()
-        phone.forget(resetA)
+        phone.forget()
         watch.sync()
 
         publish()
@@ -498,7 +509,7 @@ class SyncEnginesTest {
     @Test
     fun deletingEverythingOnThePhoneDeletesTheWatchsCardioWorkouts() = runTest {
         watchIntervals.queue(intervals(idA))
-        phone.forget(resetA)
+        phone.forget()
 
         watch.sync()
 
@@ -514,7 +525,7 @@ class SyncEnginesTest {
         watchProgress.recordBest(dips.id, 9)
 
         // The watch is out of reach for all of this: delete everything, then set up again.
-        phone.forget(resetA)
+        phone.forget()
         publish()
         assertTrue(SyncPaths.FORGET !in network.paths)
 
@@ -524,23 +535,25 @@ class SyncEnginesTest {
         // What it holds now is only what the phone offers now.
         assertEquals(phoneProgress.current[dips.id], watchProgress.current[dips.id])
         assertEquals(coachsPlan(), watchNext.current)
-        assertEquals(resetA, watchReset.id)
+        assertEquals(checkNotNull(phoneReset.id), watchReset.id)
     }
 
     @Test
-    fun eachDeleteIsActedOnOnce() = runTest {
-        phone.forget(resetA)
+    fun eachDeleteIsActedOnOnceAndHasItsOwnId() = runTest {
+        phone.forget()
+        val first = checkNotNull(phoneReset.id)
         publish()
         watch.sync()
         watch.sync()
         assertEquals(1, watchPrivacy.deletions)
 
-        phone.forget(resetB)
+        phone.forget()
         publish()
         watch.sync()
         watch.sync()
         assertEquals(2, watchPrivacy.deletions)
-        assertEquals(resetB, watchReset.id)
+        assertTrue(first != phoneReset.id)
+        assertEquals(phoneReset.id, watchReset.id)
     }
 
     @Test
@@ -560,23 +573,22 @@ class SyncEnginesTest {
     fun aDeleteThatCouldntBeAnnouncedIsAnnouncedWhenTheAppNextStarts() = runTest {
         publish()
         watch.sync()
-        val marker = FakeResetMarker()
-        val scope = CoroutineScope(Dispatchers.Unconfined)
 
-        // Play services is down at the moment of the delete.
+        // Play services is down at the moment of the delete. The id is saved all the same.
         network.isAvailable = false
-        PhoneSync(phone, inbox, marker, scope).forget()
+        assertEquals(SyncOutcome.NO_LINK, phone.forget().outcome)
         network.isAvailable = true
         assertTrue(SyncPaths.RESET !in network.paths)
         watch.sync()
         assertEquals(0, watchPrivacy.deletions)
 
-        // The next time the app starts, the id saved before the attempt goes out.
-        PhoneSync(phone, inbox, marker, scope).start()
+        // The next time the app starts, the saved id goes out before anything else.
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        scope.running(phoneEngine())
         watch.sync()
 
         assertEquals(1, watchPrivacy.deletions)
-        assertEquals(marker.id, watchReset.id)
+        assertEquals(checkNotNull(phoneReset.id), watchReset.id)
         scope.cancel()
     }
 
@@ -584,16 +596,15 @@ class SyncEnginesTest {
     fun whenTheDatabaseEmptiesTheLastWordIsAlwaysTheDelete() = runTest {
         publish()
         watch.sync()
-        val marker = FakeResetMarker()
         val goal = FakeGoalRepository(path)
         val coach = FakeCoachRepository(coachState())
+        val engine = phoneEngine(goal, coach)
         val scope = CoroutineScope(Dispatchers.Unconfined)
-        val sync = PhoneSync(phoneEngine(goal, coach), phoneInbox(coach), marker, scope)
-        sync.start()
+        scope.running(engine)
 
         // The delete is announced first, then the tables empty one after another. Each change
         // on the way is a state the publisher sees, some of them still holding the old plan.
-        sync.forget()
+        engine.forget()
         goal.clearActiveGoal()
         assertTrue(SyncPaths.STATE in network.paths)
         coach.deleteEverything()
@@ -609,9 +620,8 @@ class SyncEnginesTest {
     @Test
     fun beforeSetupThereIsNothingToWithdrawAndNothingToDelete() = runTest {
         val scope = CoroutineScope(Dispatchers.Unconfined)
-        val nobody = FakeCoachRepository()
 
-        PhoneSync(phoneEngine(FakeGoalRepository(), nobody), phoneInbox(nobody), FakeResetMarker(), scope).start()
+        scope.running(phoneEngine(FakeGoalRepository(), FakeCoachRepository(), FakeResetMarker()))
 
         // A phone that has never deleted anything never asks a watch to delete.
         assertTrue(network.paths.isEmpty())

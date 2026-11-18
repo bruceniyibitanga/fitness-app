@@ -1,7 +1,9 @@
 package app.levitx.sync
 
 import app.levitx.data.DataUnavailableException
+import app.levitx.data.privacy.ResetMarker
 import app.levitx.data.settings.SettingsRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +29,7 @@ internal class PhoneSyncEngine @Inject constructor(
     private val dataLayer: DataLayer,
     private val stateSource: PhoneStateSource,
     private val settingsRepository: SettingsRepository,
+    private val resetMarker: ResetMarker,
 ) {
     // One pass at a time: a publish and a delete must not interleave.
     private val mutex = Mutex()
@@ -50,41 +53,62 @@ internal class PhoneSyncEngine @Inject constructor(
     }
 
     /**
-     * After the person deletes everything: tells the watch to delete its copy
+     * When the person deletes everything: tells the watch to delete its copy
      * too, and takes the phone's published state off the Data Layer, so
-     * nothing about them is offered to the watch again. The watch acts on it
-     * the next time it is connected, even if that is days later.
+     * nothing about them is offered to the watch again.
      *
-     * @param resetId The id of this delete, which stays on offer for good.
+     * The delete gets a new random id, saved before anything is sent. If the
+     * watch can't be told now (no link, or the app is closed first), the id
+     * is offered again every time the app starts ([announceLastReset]), and
+     * the watch deletes its copy when it first sees an id it hasn't acted on,
+     * even if that is days later and the person has set up again since.
      */
-    suspend fun forget(resetId: String): SyncReport = withdraw(resetId)
+    suspend fun forget(): SyncReport {
+        resetMarker.set(UUID.randomUUID().toString())
+        return withdraw()
+    }
 
     /**
-     * Makes the Data Layer say what is true when the phone has nothing to
-     * offer: no state, and, if the person has ever deleted everything
-     * ([resetId] isn't null), the request to delete and its id.
+     * Offers the watch the id of the last "delete everything" again, if
+     * there has ever been one. The item is the same every time, so repeating
+     * it costs nothing, and it heals a delete whose first announcement never
+     * got through.
      *
-     * The publisher calls this whenever the state turns out empty, so the
-     * end result is right whatever order a delete and a last publish from
-     * the emptying database happen to land in.
+     * @return The report, or null when the person has never deleted everything.
      */
-    suspend fun withdraw(resetId: String?): SyncReport = mutex.syncPass {
+    suspend fun announceLastReset(): SyncReport? = resetMarker.current()?.let { resetId ->
+        mutex.syncPass {
+            dataLayer.put(SyncPaths.RESET, ResetCodec.encode(resetId))
+            SyncReport(SyncOutcome.DONE)
+        }
+    }
+
+    /**
+     * Keeps the Data Layer saying what is true for as long as it is
+     * collected: each new state is published, and when there is nothing to
+     * offer (before setup, or after everything was deleted) that is said too.
+     * Emits the report of each pass.
+     *
+     * Because "nothing to offer" is acted on like any other state, the end
+     * result is right whatever order a delete and a last publish from the
+     * emptying database happen to land in.
+     */
+    fun publishing(): Flow<SyncReport> = watchState().map { state ->
+        if (state == null) withdraw() else publish(state)
+    }
+
+    /**
+     * Takes the state off the Data Layer and, if the person has ever deleted
+     * everything, puts up the request to delete and the id of the last one.
+     * A phone that has never deleted anything never asks a watch to delete.
+     */
+    private suspend fun withdraw(): SyncReport = mutex.syncPass {
         dataLayer.delete(SyncPaths.STATE)
-        if (resetId != null) {
+        resetMarker.current()?.let { resetId ->
             dataLayer.put(SyncPaths.RESET, ResetCodec.encode(resetId))
             dataLayer.put(SyncPaths.FORGET, ByteArray(0))
         }
         SyncReport(SyncOutcome.DONE, stateChanged = true)
-    }
-
-    /**
-     * Offers the watch the id of the last "delete everything" again. The
-     * item is the same every time, so repeating it costs nothing, and it
-     * heals a delete whose first announcement never got through.
-     */
-    suspend fun announceReset(resetId: String): SyncReport = mutex.syncPass {
-        dataLayer.put(SyncPaths.RESET, ResetCodec.encode(resetId))
-        SyncReport(SyncOutcome.DONE)
     }
 
     /**
