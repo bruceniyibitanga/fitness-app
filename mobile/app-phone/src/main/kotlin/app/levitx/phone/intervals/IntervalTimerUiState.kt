@@ -1,8 +1,9 @@
 package app.levitx.phone.intervals
 
-import app.levitx.core.intervals.IntervalPhase
+import app.levitx.core.intervals.IntervalCue
 import app.levitx.core.intervals.IntervalRun
 import app.levitx.core.intervals.IntervalWorkout
+import app.levitx.core.intervals.cueFrom
 import app.levitx.phone.workout.Cue
 
 /** What the interval timer shows. */
@@ -45,20 +46,16 @@ enum class SaveStatus {
     FAILED,
 }
 
-/** The last seconds of each step that get a countdown beep. */
-private const val COUNTDOWN_SECONDS = 3
-
 /**
- * The cue to play going from [before] to [after], or null for none.
- *
- * A finished workout gets the done chime; a new work step gets GO; rest and
- * switching sides get the double beep; the last three seconds of any step
- * count down. When a late tick jumps several seconds only the newest cue
- * plays, so nothing ever plays twice or out of order.
+ * The sound and buzz for going from [before] to [after], or null for none.
+ * When each cue happens is decided in core (`cueFrom`), so the watch does
+ * the same; this only picks the phone's sound for it: GO for work, the
+ * double beep for rest and switching sides, the count beep, the done chime.
  */
-internal fun intervalCue(before: IntervalRun, after: IntervalRun): Cue? = when {
-    after.isFinished -> Cue.DONE.takeIf { !before.isFinished }
-    after.index != before.index -> if (after.current?.phase == IntervalPhase.WORK) Cue.GO else Cue.TARGET
-    after.remaining in 1..COUNTDOWN_SECONDS && after.remaining != before.remaining -> Cue.COUNT
-    else -> null
+internal fun intervalCue(before: IntervalRun, after: IntervalRun): Cue? = when (after.cueFrom(before)) {
+    IntervalCue.GO -> Cue.GO
+    IntervalCue.CHANGE -> Cue.TARGET
+    IntervalCue.COUNT -> Cue.COUNT
+    IntervalCue.DONE -> Cue.DONE
+    null -> null
 }

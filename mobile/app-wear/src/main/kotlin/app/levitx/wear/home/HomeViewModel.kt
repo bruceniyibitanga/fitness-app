@@ -6,10 +6,11 @@ import app.levitx.core.coach.PlannedSession
 import app.levitx.core.session.SetLoad
 import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.NextSessionRepository
-import app.levitx.data.coach.WorkoutOutbox
 import app.levitx.data.equipment.Band
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.goal.GoalRepository
+import app.levitx.wear.intervals.IntervalController
+import app.levitx.wear.intervals.IntervalState
 import app.levitx.wear.session.WorkoutController
 import app.levitx.wear.session.WorkoutState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,18 +41,22 @@ class HomeViewModel @Inject constructor(
     goalRepository: GoalRepository,
     nextSessionRepository: NextSessionRepository,
     equipmentRepository: EquipmentRepository,
-    workoutOutbox: WorkoutOutbox,
+    pendingWorkouts: PendingWorkouts,
     private val controller: WorkoutController,
+    intervalController: IntervalController,
 ) : ViewModel() {
+    // combine() takes five flows at most, so the two workouts are paired up first.
+    private val workouts = combine(controller.state, intervalController.state, ::Pair)
+
     // Typed on purpose: the branches below are different HomeUiState types,
     // and without the type the compiler can't tell what `catch` may emit.
     private val readyState: Flow<HomeUiState> = combine(
         goalRepository.observeActiveGoal(),
         nextSessionRepository.observeNext(),
-        controller.state,
+        workouts,
         equipmentRepository.observeBands(),
-        workoutOutbox.observeQueued(),
-    ) { path, next, workout, bands, queued ->
+        pendingWorkouts.observe(),
+    ) { path, next, (workout, interval), bands, waiting ->
         if (workout is WorkoutState.Unavailable) {
             HomeUiState.Unavailable
         } else {
@@ -60,7 +65,9 @@ class HomeViewModel @Inject constructor(
                 next = next?.summary(),
                 isSessionRunning = workout is WorkoutState.Running,
                 load = (workout as? WorkoutState.Idle)?.let { idle -> next?.loadSummary(idle.load, bands) },
-                waitingToSync = queued.size,
+                waitingToSync = waiting.total,
+                isWaitingForPlan = waiting.strength > 0,
+                intervalName = (interval as? IntervalState.Running)?.workout?.name,
             )
         }
     }

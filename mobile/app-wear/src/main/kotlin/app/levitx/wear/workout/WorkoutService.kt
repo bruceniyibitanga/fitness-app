@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import app.levitx.wear.intervals.IntervalController
+import app.levitx.wear.intervals.IntervalState
 import app.levitx.wear.session.WorkoutController
 import app.levitx.wear.session.WorkoutState
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,25 +18,34 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Runs the workout while a session is in progress.
+ * Runs the workout while a session or a cardio or mobility workout is in
+ * progress.
  *
  * The Wear OS workout guide puts sensors, the ongoing activity and anything
- * that must outlive the screen in a foreground service, so the session keeps
- * going when the person lowers their wrist or swipes to the watch face. This
- * one does three things, each in its own class:
- * - [ExerciseTracker] records a Health Services exercise and reads heart rate.
- * - [WorkoutNotifications] shows where the session is up to.
- * - [RestAlert] buzzes when rest ends.
+ * that must outlive the screen in a foreground service, so the workout keeps
+ * going when the person lowers their wrist or swipes to the watch face. Each
+ * job is in its own class:
+ * - [ExerciseTracker] records a Health Services exercise and reads heart
+ *   rate, for strength sessions only: the interval timer doesn't show heart
+ *   rate, so it isn't read.
+ * - [WorkoutNotifications] shows where the workout is up to.
+ * - [RestAlert] buzzes when a session's rest ends. The interval timer gives
+ *   its own buzzes.
  *
- * It doesn't hold the session. That stays with [WorkoutController]; the
- * service watches it and stops itself as soon as no session is running.
+ * It doesn't hold either workout. They stay with [WorkoutController] and
+ * [IntervalController]; the service watches both and stops itself as soon
+ * as neither is running.
  */
 @AndroidEntryPoint
 class WorkoutService : Service() {
@@ -53,6 +64,10 @@ class WorkoutService : Service() {
     /** The end-of-rest buzz. Set by Hilt. */
     @Inject
     lateinit var restAlert: RestAlert
+
+    /** The cardio or mobility workout being run. Set by Hilt. */
+    @Inject
+    lateinit var intervals: IntervalController
 
     /** Tells the screens whether this service is running. Set by Hilt. */
     @Inject
@@ -82,27 +97,47 @@ class WorkoutService : Service() {
     private suspend fun runWorkout() {
         monitor.onServiceStarted()
         try {
-            tracker.start()
-            controller.state
-                // The session may still be loading or being planned when the service starts.
-                .dropWhile { it is WorkoutState.Loading || it is WorkoutState.Starting }
-                .takeWhile { it is WorkoutState.Running }
-                // collectLatest cancels the wait for rest to end when the person skips it.
-                .collectLatest { state ->
-                    val run = (state as WorkoutState.Running).run
-                    showInForeground(notifications.forRun(run))
-                    val restEndsAt = run.restEndsAtElapsedMillis
-                    if (restEndsAt != null) {
-                        restAlert.awaitEndOfRest(restEndsAt)
-                        controller.endRest()
-                    }
-                }
+            // Whichever isn't running ends at once, so this returns when both are done.
+            coroutineScope {
+                launch { followSession() }
+                launch { followIntervals() }
+            }
         } finally {
             // Runs even when the service is being destroyed, so the sensor is never left on.
             withContext(NonCancellable) { tracker.stop() }
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
+    }
+
+    /** Tracks a strength session, if one is running, until it ends. */
+    private suspend fun followSession() {
+        // The session may still be loading or being planned when the service starts.
+        val states = controller.state.dropWhile { it is WorkoutState.Loading || it is WorkoutState.Starting }
+        if (states.first() !is WorkoutState.Running) return
+        tracker.start()
+        states
+            .takeWhile { it is WorkoutState.Running }
+            // collectLatest cancels the wait for rest to end when the person skips it.
+            .collectLatest { state ->
+                val run = (state as WorkoutState.Running).run
+                showInForeground(notifications.forRun(run))
+                val restEndsAt = run.restEndsAtElapsedMillis
+                if (restEndsAt != null) {
+                    restAlert.awaitEndOfRest(restEndsAt)
+                    controller.endRest()
+                }
+            }
+    }
+
+    /** Keeps a cardio or mobility workout's notification up to date until it ends. */
+    private suspend fun followIntervals() {
+        intervals.state
+            .takeWhile { it is IntervalState.Running }
+            // Once per step, not once per second: the notification says which step, not the time left.
+            .map { (it as IntervalState.Running).run.current }
+            .distinctUntilChanged()
+            .collect { step -> if (step != null) showInForeground(notifications.forStep(step)) }
     }
 
     /** Shows [notification] as this service's notification. Calling it again updates the text. */

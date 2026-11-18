@@ -47,6 +47,37 @@
     <string name="load_band_help">%1$s %2$s of help</string>
     <string name="load_no_bands">Add and calibrate bands in the Levitx app on your phone.</string>
 
+    <!-- Cardio and mobility -->
+    <string name="home_intervals">Cardio and mobility</string>
+    <string name="home_back_to">Back to %1$s</string>
+    <string name="intervals_title">Cardio and mobility</string>
+    <string name="intervals_cardio">Cardio · %1$d min</string>
+    <string name="intervals_cardio_quiet">Cardio · %1$d min · quiet</string>
+    <string name="intervals_mobility">Mobility · %1$d min</string>
+    <string name="interval_none">No cardio or mobility workout is running.</string>
+    <string name="interval_ready">GET READY</string>
+    <string name="interval_work">WORK</string>
+    <string name="interval_rest">REST</string>
+    <string name="interval_switch">SWITCH SIDES</string>
+    <string name="interval_paused">PAUSED</string>
+    <string name="interval_round">Round %1$d of %2$d</string>
+    <string name="interval_left_side">%1$s, left</string>
+    <string name="interval_right_side">%1$s, right</string>
+    <string name="interval_next_rest">Next: rest, %1$d s</string>
+    <string name="interval_next_work">Next: %1$s, %2$d s</string>
+    <string name="interval_next_switch">Next: switch sides</string>
+    <string name="interval_last_step">Last step</string>
+    <string name="interval_pause">Pause</string>
+    <string name="interval_resume">Resume</string>
+    <string name="interval_skip">Skip</string>
+    <string name="interval_end">End</string>
+    <string name="interval_done_label">DONE</string>
+    <string name="interval_worked">%1$s of work</string>
+    <string name="interval_saving">Saving…</string>
+    <string name="interval_saved">Saved. It reaches your phone at the next sync.</string>
+    <string name="interval_nothing">Nothing to save: no work was done.</string>
+    <string name="interval_failed">Couldn\'t save it: your data is locked on this watch.</string>
+
     <!-- Session -->
     <string name="session_none">No workout in progress.</string>
     <string name="session_exercise_label">EXERCISE %1$d OF %2$d</string>
@@ -95,6 +126,9 @@
     <string name="workout_notification_title">Levitx session</string>
     <string name="workout_status_starting">Starting</string>
     <string name="workout_status_rest">Rest</string>
+    <string name="workout_status_interval_ready">Get ready</string>
+    <string name="workout_status_interval_work">Work, round %1$d of %2$d</string>
+    <string name="workout_status_interval_switch">Switch sides</string>
     <string name="workout_status_exercise">Exercise %1$d of %2$d, set %3$d of %4$d</string>
 
     <!-- Tile -->

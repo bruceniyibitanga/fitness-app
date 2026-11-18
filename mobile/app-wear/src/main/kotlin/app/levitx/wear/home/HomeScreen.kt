@@ -30,18 +30,45 @@ import app.levitx.wear.ui.weightNumber
 
 /** Home destination: connects [HomeViewModel] to [HomeScreen]. */
 @Composable
-fun HomeRoute(onOpenSession: () -> Unit, onChooseLoad: () -> Unit, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeRoute(
+    onOpenSession: () -> Unit,
+    onChooseLoad: () -> Unit,
+    onOpenIntervals: () -> Unit,
+    onOpenIntervalTimer: () -> Unit,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     HomeScreen(
         uiState = uiState,
-        onStartSession = {
-            viewModel.startSession()
-            onOpenSession()
-        },
-        onResumeSession = onOpenSession,
-        onChooseLoad = onChooseLoad,
+        actions = HomeActions(
+            onStartSession = {
+                viewModel.startSession()
+                onOpenSession()
+            },
+            onResumeSession = onOpenSession,
+            onChooseLoad = onChooseLoad,
+            onOpenIntervals = onOpenIntervals,
+            onOpenIntervalTimer = onOpenIntervalTimer,
+        ),
     )
 }
+
+/**
+ * What can be tapped on the home screen.
+ *
+ * @property onStartSession Starts the coach's next session.
+ * @property onResumeSession Returns to the session in progress.
+ * @property onChooseLoad Opens the load screen.
+ * @property onOpenIntervals Opens the cardio and mobility list.
+ * @property onOpenIntervalTimer Returns to the cardio or mobility workout in progress.
+ */
+data class HomeActions(
+    val onStartSession: () -> Unit,
+    val onResumeSession: () -> Unit,
+    val onChooseLoad: () -> Unit,
+    val onOpenIntervals: () -> Unit,
+    val onOpenIntervalTimer: () -> Unit,
+)
 
 /**
  * The watch home screen: the next session the phone's coach planned and the
@@ -52,31 +79,20 @@ fun HomeRoute(onOpenSession: () -> Unit, onChooseLoad: () -> Unit, viewModel: Ho
  * Wear OS Material 3 guidance recommends.
  */
 @Composable
-fun HomeScreen(
-    uiState: HomeUiState,
-    onStartSession: () -> Unit,
-    onResumeSession: () -> Unit,
-    onChooseLoad: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun HomeScreen(uiState: HomeUiState, actions: HomeActions, modifier: Modifier = Modifier) {
     val listState = rememberTransformingLazyColumnState()
     ScreenScaffold(scrollState = listState, modifier = modifier) { contentPadding ->
         TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
             when (uiState) {
                 HomeUiState.Loading -> Unit
                 HomeUiState.Unavailable -> item { CenteredText(stringResource(R.string.data_unavailable)) }
-                is HomeUiState.Ready -> readyItems(uiState, onStartSession, onResumeSession, onChooseLoad)
+                is HomeUiState.Ready -> readyItems(uiState, actions)
             }
         }
     }
 }
 
-private fun TransformingLazyColumnScope.readyItems(
-    state: HomeUiState.Ready,
-    onStartSession: () -> Unit,
-    onResumeSession: () -> Unit,
-    onChooseLoad: () -> Unit,
-) {
+private fun TransformingLazyColumnScope.readyItems(state: HomeUiState.Ready, actions: HomeActions) {
     item { ListHeader { Text(state.goalName ?: stringResource(R.string.home_title)) } }
     val next = state.next
     if (next != null) {
@@ -91,35 +107,23 @@ private fun TransformingLazyColumnScope.readyItems(
         }
         item { CenteredText(nextText(next)) }
     }
-    when {
-        state.isSessionRunning -> item {
-            Button(
-                onClick = onResumeSession,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.home_resume_session)) },
-            )
-        }
-
-        next != null -> item {
-            Button(
-                onClick = onStartSession,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.home_start_session)) },
-            )
-        }
-
-        // The plan is cleared when a workout finishes, until the phone has it and plans the next.
-        state.waitingToSync > 0 -> item { CenteredText(stringResource(R.string.home_waiting_for_plan)) }
-
-        else -> item { CenteredText(stringResource(R.string.home_no_session)) }
-    }
+    mainAction(state, actions)
     state.load?.let { load ->
         item {
             FilledTonalButton(
-                onClick = onChooseLoad,
+                onClick = actions.onChooseLoad,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.home_load_label)) },
                 secondaryLabel = { Text(loadText(load)) },
+            )
+        }
+    }
+    if (!state.isSessionRunning && state.intervalName == null) {
+        item {
+            FilledTonalButton(
+                onClick = actions.onOpenIntervals,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.home_intervals)) },
             )
         }
     }
@@ -133,6 +137,44 @@ private fun TransformingLazyColumnScope.readyItems(
     }
 }
 
+/**
+ * The one big button: back to the cardio or mobility workout, back to the
+ * session, or start the next one. With none of those it says why.
+ */
+private fun TransformingLazyColumnScope.mainAction(state: HomeUiState.Ready, actions: HomeActions) {
+    when {
+        // One workout at a time: while cardio or mobility runs, home only leads back to it.
+        state.intervalName != null -> item {
+            Button(
+                onClick = actions.onOpenIntervalTimer,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.home_back_to, state.intervalName)) },
+            )
+        }
+
+        state.isSessionRunning -> item {
+            Button(
+                onClick = actions.onResumeSession,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.home_resume_session)) },
+            )
+        }
+
+        state.next != null -> item {
+            Button(
+                onClick = actions.onStartSession,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.home_start_session)) },
+            )
+        }
+
+        // The plan is cleared when a workout finishes, until the phone has it and plans the next.
+        state.isWaitingForPlan -> item { CenteredText(stringResource(R.string.home_waiting_for_plan)) }
+
+        else -> item { CenteredText(stringResource(R.string.home_no_session)) }
+    }
+}
+
 /** "4 exercises, about 35 min". */
 @Composable
 private fun nextText(next: NextSummary): String =
@@ -141,12 +183,8 @@ private fun nextText(next: NextSummary): String =
 /** "Bodyweight only", "+5 kg", "Red band" or "+5 kg, Red band". */
 @Composable
 private fun loadText(load: LoadSummary): String {
-    val added = if (load.addedKg >
-        0.0
-    ) {
-        stringResource(R.string.load_added, weightNumber(load.addedKg), unitLabel())
-    } else {
-        null
+    val added = load.addedKg.takeIf { it > 0.0 }?.let { kg ->
+        stringResource(R.string.load_added, weightNumber(kg), unitLabel())
     }
     val band = load.bandName?.let { stringResource(R.string.load_band, it) }
     return when {
@@ -168,9 +206,13 @@ private fun HomeScreenPreview() {
                 load = LoadSummary(addedKg = 0.0, bandName = null),
                 waitingToSync = 1,
             ),
-            onStartSession = {},
-            onResumeSession = {},
-            onChooseLoad = {},
+            actions = HomeActions(
+                onStartSession = {},
+                onResumeSession = {},
+                onChooseLoad = {},
+                onOpenIntervals = {},
+                onOpenIntervalTimer = {},
+            ),
         )
     }
 }

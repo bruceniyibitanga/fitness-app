@@ -9,6 +9,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
 import app.levitx.wear.home.HomeRoute
+import app.levitx.wear.intervals.IntervalListRoute
+import app.levitx.wear.intervals.IntervalTimerRoute
 import app.levitx.wear.load.LoadRoute
 import app.levitx.wear.session.SessionRoute
 
@@ -36,6 +38,8 @@ fun LevitxWearNavDisplay() {
                 HomeRoute(
                     onOpenSession = { backStack.add(Destination.Session) },
                     onChooseLoad = { backStack.add(Destination.Load) },
+                    onOpenIntervals = { backStack.add(Destination.Intervals) },
+                    onOpenIntervalTimer = { backStack.add(Destination.IntervalTimer) },
                 )
             }
             entry<Destination.Session> {
@@ -47,6 +51,23 @@ fun LevitxWearNavDisplay() {
                 )
             }
             entry<Destination.Load> { LoadRoute() }
+            entry<Destination.Intervals> {
+                // The list makes way for the timer, so swiping back from the timer goes home.
+                IntervalListRoute(
+                    onOpenTimer = {
+                        backStack.removeLastOrNull()
+                        backStack.add(Destination.IntervalTimer)
+                    },
+                )
+            }
+            entry<Destination.IntervalTimer> {
+                IntervalTimerRoute(
+                    onClose = {
+                        // Only ever closes the timer, even if it is asked to twice.
+                        if (backStack.lastOrNull() == Destination.IntervalTimer) backStack.removeLastOrNull()
+                    },
+                )
+            }
         },
     )
 }

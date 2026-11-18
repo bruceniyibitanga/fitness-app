@@ -82,6 +82,7 @@
                 <data android:host="*" />
                 <data android:pathPrefix="/levitx/workouts/" />
                 <data android:pathPrefix="/levitx/sessions/" />
+                <data android:pathPrefix="/levitx/intervals/" />
             </intent-filter>
         </service>
     </application>

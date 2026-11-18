@@ -24,9 +24,15 @@ internal object SyncPaths {
     const val WORKOUTS_PREFIX = "/levitx/workouts/"
 
     /**
-     * The phone's confirmation that it has stored a session or workout.
-     * Written by the phone; one item per id. Ids are random UUIDs, so the two
-     * kinds can share one prefix.
+     * Finished cardio and mobility workouts on their way to the phone's
+     * history. Written by the watch; one item per workout.
+     */
+    const val INTERVALS_PREFIX = "/levitx/intervals/"
+
+    /**
+     * The phone's confirmation that it has stored a session or workout of
+     * any kind. Written by the phone; one item per id. Ids are random UUIDs,
+     * so every kind can share one prefix.
      */
     const val ACKS_PREFIX = "/levitx/acks/"
 
@@ -35,6 +41,9 @@ internal object SyncPaths {
 
     /** The data item path for the workout with [workoutId]. */
     fun workout(workoutId: String): String = WORKOUTS_PREFIX + workoutId
+
+    /** The data item path for the cardio or mobility workout with [workoutId]. */
+    fun intervals(workoutId: String): String = INTERVALS_PREFIX + workoutId
 
     /** The data item path confirming the session or workout with [id]. */
     fun ack(id: String): String = ACKS_PREFIX + id

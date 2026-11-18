@@ -24,4 +24,12 @@ sealed interface Destination : NavKey {
     /** Choosing a vest, belt or band for the next session. */
     @Serializable
     data object Load : Destination
+
+    /** The cardio and mobility workouts to choose from. */
+    @Serializable
+    data object Intervals : Destination
+
+    /** The cardio or mobility workout in progress, and its done screen. */
+    @Serializable
+    data object IntervalTimer : Destination
 }

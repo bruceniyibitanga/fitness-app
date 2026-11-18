@@ -15,19 +15,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/** Payload of a confirmation item. Only its path matters; the byte is the wire version. */
-private val ACK_PAYLOAD = byteArrayOf(WIRE_VERSION.toByte())
-
 /**
  * The phone's side of sync.
  *
  * - **Out:** the goal, bests, bands and the coach's next session go to the
  *   watch as one data item. The coach itself stays on the phone.
- * - **In:** each finished workout (and each session from an older watch app)
- *   arrives as its own data item. The phone records it, then writes a
- *   confirmation item with the same id. The watch deletes its item when it
- *   sees the confirmation, and the phone then deletes the confirmation, so
- *   nothing is left behind.
+ * - **In:** each finished workout, cardio and mobility workouts included
+ *   (and each session from an older watch app), arrives as its own data
+ *   item. Cardio and mobility go straight into the history, never the
+ *   coach. The phone records it, then writes a confirmation item with the
+ *   same id. The watch deletes its item when it sees the confirmation, and
+ *   the phone then deletes the confirmation, so nothing is left behind.
  *
  * Every step can be repeated safely. An id is only recorded once, so a pass
  * that is interrupted and run again never double-counts.
@@ -93,13 +91,12 @@ internal class PhoneSyncEngine @Inject constructor(
      * Layer, and tidies up old confirmations.
      */
     suspend fun receive(): SyncReport = guarded {
-        val workouts = receiveWorkouts()
-        val sessions = receiveSessions()
-        removeFinishedAcks(workouts.waitingIds + sessions.waitingIds)
+        val received = listOf(receiveWorkouts(), receiveIntervals(), receiveSessions())
+        removeFinishedAcks(received.flatMap { it.waitingIds }.toSet())
         SyncReport(
             SyncOutcome.DONE,
-            delivered = workouts.stored + sessions.stored,
-            skipped = workouts.skipped + sessions.skipped,
+            delivered = received.sumOf { it.stored },
+            skipped = received.sumOf { it.skipped },
         )
     }
 
@@ -108,49 +105,34 @@ internal class PhoneSyncEngine @Inject constructor(
      * set up yet, they wait: confirming them would lose them.
      */
     private suspend fun receiveWorkouts(): Received {
-        val items = dataLayer.list(SyncPaths.WORKOUTS_PREFIX)
-        if (items.isEmpty() || coachRepository.observeState().first() == null) {
+        if (coachRepository.observeState().first() == null) {
+            val items = dataLayer.list(SyncPaths.WORKOUTS_PREFIX)
             return Received(waitingIds = items.map { it.path.removePrefix(SyncPaths.WORKOUTS_PREFIX) }.toSet())
         }
-        var stored = 0
-        var skipped = 0
-        for (item in items) {
-            val decoded = SyncCodec.decodeWorkout(item.payload)
-            // The id in the payload must be the id in the path it arrived on.
-            if (decoded !is Decoded.Ok || item.path != SyncPaths.workout(decoded.value.run.id)) {
-                skipped++
-                continue
-            }
-            val workout = decoded.value
+        return dataLayer.receiveEach(SyncPaths.WORKOUTS_PREFIX, SyncCodec::decodeWorkout, { it.run.id }) { workout ->
             val result = checkNotNull(workout.run.result(workout.finishedAtEpochMillis)) { "checked when decoded" }
-            if (coachRepository.recordWorkout(workout.run.id, result)) stored++
-            // Confirm only after it is safely recorded. Confirming again is harmless.
-            dataLayer.put(SyncPaths.ack(workout.run.id), ACK_PAYLOAD)
+            coachRepository.recordWorkout(workout.run.id, result)
         }
-        return Received(stored, skipped, items.map { it.path.removePrefix(SyncPaths.WORKOUTS_PREFIX) }.toSet())
     }
+
+    /**
+     * Saves each cardio and mobility workout the watch finished straight into
+     * the history. They never reach the coach, so they don't wait for one.
+     */
+    private suspend fun receiveIntervals(): Received =
+        dataLayer.receiveEach(SyncPaths.INTERVALS_PREFIX, SyncCodec::decodeIntervals, { it.id }) { workout ->
+            sessionRepository.saveIntervalWorkout(workout.id, workout.sessions)
+        }
 
     /** Stores each gate session sent by a watch still on an older version of the app. */
     private suspend fun receiveSessions(): Received {
-        val items = dataLayer.list(SyncPaths.SESSIONS_PREFIX)
         // Bodyweight never crosses the link, so it is added here from the phone's own record.
         val bodyweightKg = equipmentRepository.observeBodyweightKg().first()
-        var stored = 0
-        var skipped = 0
-        for (item in items) {
-            val decoded = SyncCodec.decodeSession(item.payload)
-            // The id in the payload must be the id in the path it arrived on.
-            if (decoded !is Decoded.Ok || item.path != SyncPaths.session(decoded.value.id)) {
-                skipped++
-                continue
-            }
-            val received = decoded.value
-            val withBodyweight = received.copy(session = received.session.copy(bodyweightKg = bodyweightKg))
-            if (sessionRepository.saveReceivedSession(withBodyweight)) stored++
-            // Confirm only after it is safely stored. Confirming again is harmless.
-            dataLayer.put(SyncPaths.ack(received.id), ACK_PAYLOAD)
+        return dataLayer.receiveEach(SyncPaths.SESSIONS_PREFIX, SyncCodec::decodeSession, { it.id }) { received ->
+            sessionRepository.saveReceivedSession(
+                received.copy(session = received.session.copy(bodyweightKg = bodyweightKg)),
+            )
         }
-        return Received(stored, skipped, items.map { it.path.removePrefix(SyncPaths.SESSIONS_PREFIX) }.toSet())
     }
 
     /** A confirmation has done its job once the watch has deleted the item it answers. */
@@ -159,15 +141,6 @@ internal class PhoneSyncEngine @Inject constructor(
             .filter { ack -> ack.isOwn && ack.path.removePrefix(SyncPaths.ACKS_PREFIX) !in waitingIds }
             .forEach { ack -> dataLayer.delete(ack.path) }
     }
-
-    /**
-     * What one kind of incoming item came to.
-     *
-     * @property stored Items newly recorded.
-     * @property skipped Items left alone because they were unreadable.
-     * @property waitingIds Ids of every item still on the Data Layer, recorded or not.
-     */
-    private data class Received(val stored: Int = 0, val skipped: Int = 0, val waitingIds: Set<String>)
 
     private suspend fun guarded(pass: suspend () -> SyncReport): SyncReport = mutex.withLock {
         try {

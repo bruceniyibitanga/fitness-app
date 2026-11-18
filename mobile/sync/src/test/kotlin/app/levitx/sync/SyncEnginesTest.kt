@@ -2,6 +2,7 @@ package app.levitx.sync
 
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.WorkoutRun
+import app.levitx.core.intervals.IntervalCatalogue
 import app.levitx.core.load.WeightUnit
 import app.levitx.core.session.CompletedSession
 import app.levitx.core.session.LoggedSet
@@ -11,11 +12,13 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.equipment.Band
 import app.levitx.data.goal.GoalRepository
+import app.levitx.data.intervals.QueuedIntervalWorkout
 import app.levitx.data.session.StoredSession
 import app.levitx.data.settings.AppSettings
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeGoalRepository
+import app.levitx.testing.FakeIntervalOutbox
 import app.levitx.testing.FakeNextSessionRepository
 import app.levitx.testing.FakePrivacyRepository
 import app.levitx.testing.FakeProgressRepository
@@ -55,6 +58,7 @@ class SyncEnginesTest {
     private val watchNext = FakeNextSessionRepository()
     private val watchSettings = FakeSettingsRepository(AppSettings(units = WeightUnit.KG))
     private val watchWorkouts = FakeWorkoutOutbox(watchProgress, next = watchNext)
+    private val watchIntervals = FakeIntervalOutbox()
 
     // Deleting everything on the watch empties its fakes, as the real database is emptied.
     private val watchPrivacy = FakePrivacyRepository {
@@ -63,6 +67,7 @@ class SyncEnginesTest {
         watchProgress.clear()
         watchEquipment.replaceBands(emptyList())
         watchWorkouts.current.forEach { watchWorkouts.markDelivered(it.run.id) }
+        watchIntervals.current.forEach { watchIntervals.markDelivered(it.id) }
     }
     private val watch = watchEngine()
 
@@ -80,6 +85,7 @@ class SyncEnginesTest {
         PhoneStateApplier(goal, watchProgress, watchEquipment, watchNext, watchSettings),
         watchSessions,
         watchWorkouts,
+        watchIntervals,
         watchPrivacy,
     )
 
@@ -96,6 +102,19 @@ class SyncEnginesTest {
     private fun session(id: String, best: Int) = StoredSession(
         id = id,
         session = CompletedSession(dips.id, 1_000, 2_000, listOf(LoggedSet(4, 2, false), LoggedSet(best, 0, true))),
+    )
+
+    /** Two rounds of burpees on the watch, as the interval timer saves them. */
+    private fun intervals(id: String) = QueuedIntervalWorkout(
+        id = id,
+        sessions = listOf(
+            CompletedSession(
+                gateId = checkNotNull(IntervalCatalogue.moveById("cardio.burpees")).id,
+                startedAtEpochMillis = 1_000,
+                finishedAtEpochMillis = 61_000,
+                sets = listOf(LoggedSet(20, null, false), LoggedSet(18, null, false)),
+            ),
+        ),
     )
 
     private val idA = "00000000-0000-4000-8000-00000000000a"
@@ -402,5 +421,58 @@ class SyncEnginesTest {
         publish()
 
         assertEquals(SyncOutcome.DATA_LOCKED, lockedWatch.sync().outcome)
+    }
+
+    @Test
+    fun aCardioWorkoutGoesToThePhonesHistoryWithoutTheCoachAndLeavesTheWatch() = runTest {
+        watchIntervals.queue(intervals(idA))
+        watch.sync()
+        assertEquals(listOf(SyncPaths.intervals(idA)), network.paths)
+
+        // History doesn't need the coach, so it doesn't wait for one.
+        val noCoachPhone = phoneEngine(coach = FakeCoachRepository())
+        assertEquals(1, noCoachPhone.receive().delivered)
+        assertEquals(listOf(listOf(20, 18)), phoneSessions.sessions.map { session -> session.sets.map { it.value } })
+        assertTrue(phoneCoach.recordedWorkouts.isEmpty())
+        assertTrue(phoneProgress.current.keys.none { it.startsWith("cardio.") })
+
+        // The watch sees the confirmation and deletes its copy.
+        assertEquals(1, watch.sync().delivered)
+        assertTrue(watchIntervals.current.isEmpty())
+
+        noCoachPhone.receive()
+        assertTrue(network.paths.isEmpty())
+    }
+
+    @Test
+    fun aCardioWorkoutSentTwiceIsSavedOnce() = runTest {
+        watchIntervals.queue(intervals(idA))
+        watch.sync()
+
+        assertEquals(1, phone.receive().delivered)
+        assertEquals(0, phone.receive().delivered)
+        assertEquals(1, phoneSessions.sessions.size)
+    }
+
+    @Test
+    fun unreadableCardioWorkoutsAreSkippedAndNeverConfirmed() = runTest {
+        network.plant("watch", SyncPaths.intervals(idA), "not json".encodeToByteArray())
+        // A valid payload on the wrong path: the id inside must match the path.
+        network.plant("watch", SyncPaths.intervals(idB), SyncCodec.encodeIntervals(intervals(idA)))
+
+        assertEquals(2, phone.receive().skipped)
+        assertTrue(phoneSessions.sessions.isEmpty())
+        assertEquals(listOf(SyncPaths.intervals(idA), SyncPaths.intervals(idB)), network.paths)
+    }
+
+    @Test
+    fun deletingEverythingOnThePhoneDeletesTheWatchsCardioWorkouts() = runTest {
+        watchIntervals.queue(intervals(idA))
+        phone.forget()
+
+        watch.sync()
+
+        assertTrue(watchIntervals.current.isEmpty())
+        assertTrue(network.paths.none { it.startsWith(SyncPaths.INTERVALS_PREFIX) })
     }
 }

@@ -2,6 +2,7 @@ package app.levitx.sync
 
 import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.WorkoutOutbox
+import app.levitx.data.intervals.IntervalOutbox
 import app.levitx.data.privacy.PrivacyRepository
 import app.levitx.data.session.SessionOutbox
 import javax.inject.Inject
@@ -15,9 +16,9 @@ import kotlinx.coroutines.sync.withLock
  *
  * - **In:** the phone's state is copied into the watch's own database by
  *   [PhoneStateApplier].
- * - **Out:** every queued workout is put on the Data Layer and stays queued
- *   until the phone's confirmation arrives. Only then is it taken off the
- *   queue and its data item deleted. Sessions queued by an older version of
+ * - **Out:** every queued workout, cardio and mobility included, is put on
+ *   the Data Layer and stays queued until the phone's confirmation arrives.
+ *   Only then is it taken off the queue and its data item deleted. Sessions queued by an older version of
  *   the app go the same way.
  *
  * - **Forgetting:** when the person deletes everything on the phone, the
@@ -33,6 +34,7 @@ internal class WatchSyncEngine @Inject constructor(
     private val applier: PhoneStateApplier,
     private val outbox: SessionOutbox,
     private val workoutOutbox: WorkoutOutbox,
+    private val intervalOutbox: IntervalOutbox,
     private val privacy: PrivacyRepository,
 ) {
     // One pass at a time: the listener service and the app can both ask for one.
@@ -75,6 +77,7 @@ internal class WatchSyncEngine @Inject constructor(
     private suspend fun forgetEverything(): SyncReport {
         val holdsAnything = applier.holdsAnything() ||
             workoutOutbox.observeQueued().first().isNotEmpty() ||
+            intervalOutbox.observeQueued().first().isNotEmpty() ||
             outbox.observeQueued().first().isNotEmpty()
         if (holdsAnything) privacy.deleteEverything()
         // The queues are empty now, so this deletes whatever the watch still had on the Data Layer.
@@ -91,14 +94,20 @@ internal class WatchSyncEngine @Inject constructor(
         }
     }
 
-    /** @return How many workouts (and sessions from an older version of the app) the phone confirmed. */
+    /**
+     * @return How many workouts, cardio and mobility workouts and sessions
+     *   from an older version of the app the phone confirmed.
+     */
     private suspend fun sendQueued(): Int {
         val confirmed = confirmedIds()
         val workouts = workoutOutbox.observeQueued().first()
             .associate { workout -> workout.run.id to { SyncCodec.encodeWorkout(workout) } }
+        val intervals = intervalOutbox.observeQueued().first()
+            .associate { workout -> workout.id to { SyncCodec.encodeIntervals(workout) } }
         val sessions = outbox.observeQueued().first()
             .associate { stored -> stored.id to { SyncCodec.encodeSession(stored) } }
         return send(SyncPaths.WORKOUTS_PREFIX, workouts, confirmed, workoutOutbox::markDelivered) +
+            send(SyncPaths.INTERVALS_PREFIX, intervals, confirmed, intervalOutbox::markDelivered) +
             send(SyncPaths.SESSIONS_PREFIX, sessions, confirmed, outbox::markDelivered)
     }
 
