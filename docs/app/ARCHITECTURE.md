@@ -147,12 +147,20 @@ The main thread only draws. It never waits on I/O or heavy work.
 ## A session on the watch
 
 - **It is the coach's session,** exercise by exercise, run by the same `WorkoutRun` as the phone. The watch shows the exercise, the set and the target, times rest, and lets the person skip an exercise or end early. It doesn't offer the coach's "Lighter" choice: that is made on the phone, which then sends the lighter plan.
-- **The load chosen on the watch is for the skill work,** as it was when the watch ran one gate. Other exercises are logged at bodyweight; their loads are set on the phone.
+- **The load chosen on the watch is for the skill work,** as it was when the watch ran one gate. Other exercises are logged with the weight the coach prescribed, shown in the unit the phone uses.
+- **Which session it is depends on the time.** `NextSession` picks between the plan's two sessions by the watch's clock, for the home screen, the Tile and the start button alike.
 - **`WorkoutController` owns the session,** not a screen. It lives as long as the app process, so swiping back to the watch face mid-rest and returning lands on the same set. This follows the [Wear OS workout guidance](https://developer.android.com/health-and-fitness/health-services/active-data), which keeps workout state out of the activity.
 - **Every change is saved as a draft** in the encrypted database, so a session survives the app being killed or crashing between sets.
 - **The workout id is made at the start.** If the app dies between the last set and the save, the restart saves it once, not twice.
 - **Screens only watch and tap.** `SessionViewModel` maps the controller's state to UI state and passes actions on.
 - **`WorkoutService` runs alongside,** a foreground service of type `health`. It reads heart rate through Health Services, shows the ongoing activity, and buzzes when rest ends. It watches the controller and stops when no session is running. The session doesn't depend on it. See [ADR 0006](adr/0006-watch-workout-service.md).
+
+## Cardio and mobility
+
+- **Outside the coach on purpose.** The nine built-in workouts (`IntervalCatalogue`) are run on a timer and logged to the history. They never change rungs, targets or the week's hard sets, and a plan can't hold one of their moves (`ExercisePlan` rejects it).
+- **One set of rules.** `IntervalTimeline` turns a workout into timed steps, `IntervalRun` moves through them, and `IntervalRun.cueFrom` says when to signal. The phone beeps and buzzes; the watch only buzzes.
+- **On the phone** the timer lives with its screen (`IntervalTimerViewModel`) and ends when the screen is left, keeping the work done. While it runs it shows itself as in progress (`LiveIntervals`), and the same `LiveWorkoutService` that keeps a strength workout going keeps it going with the phone locked or another app in front.
+- **On the watch** it lives with the app (`IntervalController`), like a strength session, so lowering the wrist or swiping home doesn't stop it. The work done is queued in the encrypted database, sent to the phone's history, and deleted from the watch once the phone confirms it.
 
 ## The Tile
 
