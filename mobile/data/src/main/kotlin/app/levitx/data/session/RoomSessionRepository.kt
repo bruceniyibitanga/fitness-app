@@ -9,6 +9,7 @@ import app.levitx.data.database.LoggedSetEntity
 import app.levitx.data.database.SessionOutboxEntity
 import app.levitx.data.database.SessionWithSets
 import app.levitx.data.database.TrainingSessionEntity
+import app.levitx.data.time.TrainingClock
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,10 +22,17 @@ import kotlinx.coroutines.flow.map
 /** Room's "nothing was inserted" row id, returned when an insert is ignored. */
 private const val NOT_INSERTED = -1L
 
-/** Stores sessions, and the queue of sessions waiting to sync, in the encrypted database. */
+/**
+ * Stores sessions, and the queue of sessions waiting to sync, in the encrypted
+ * database. Nothing is stored as finishing after this device's clock: a
+ * session that says it did was timed by a clock that was ahead, and is moved
+ * back to end now, keeping its length.
+ */
 @Singleton
-internal class RoomSessionRepository @Inject constructor(private val databaseProvider: LevitxDatabaseProvider) :
-    SessionRepository,
+internal class RoomSessionRepository @Inject constructor(
+    private val databaseProvider: LevitxDatabaseProvider,
+    private val clock: TrainingClock,
+) : SessionRepository,
     SessionOutbox {
     override suspend fun saveCompletedSession(session: CompletedSession) {
         val database = databaseProvider.database()
@@ -35,7 +43,8 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
         val database = databaseProvider.database()
         return database.withTransaction {
             if (database.sessionDao().hasWorkout(workoutId)) return@withTransaction false
-            sessions.forEachIndexed { index, session ->
+            val now = clock.currentTimeMillis()
+            sessions.map { it.endingBy(now) }.forEachIndexed { index, session ->
                 val rowId = "$workoutId/$index"
                 database.sessionDao().insertSession(
                     TrainingSessionEntity(
@@ -55,7 +64,8 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
 
     override suspend fun saveReceivedSession(received: StoredSession): Boolean {
         val database = databaseProvider.database()
-        return database.withTransaction { database.insertIfNew(received) }
+        val dated = received.copy(session = received.session.endingBy(clock.currentTimeMillis()))
+        return database.withTransaction { database.insertIfNew(dated) }
     }
 
     override suspend fun saveAndQueue(queued: StoredSession) {
@@ -65,7 +75,7 @@ internal class RoomSessionRepository @Inject constructor(private val databasePro
             // been queued already or has been delivered and taken off the queue.
             if (database.insertIfNew(queued)) {
                 database.sessionOutboxDao().queue(
-                    SessionOutboxEntity(sessionId = queued.id, queuedAtEpochMillis = System.currentTimeMillis()),
+                    SessionOutboxEntity(sessionId = queued.id, queuedAtEpochMillis = clock.currentTimeMillis()),
                 )
             }
         }

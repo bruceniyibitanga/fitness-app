@@ -43,4 +43,16 @@ class WorkoutCodecTest {
         assertNull(WorkoutCodec.decodePlanOrNull(unknown))
         assertNull(WorkoutCodec.decodeRunOrNull("{}"))
     }
+
+    @Test
+    fun aPlanHoldingACardioMoveReadsAsNothing() {
+        // The coach has no ladder for cardio, so a plan with one in it must never reach the coach.
+        val first = session.plans.first().exercise.id
+        val plan = WorkoutCodec.encodePlan(session).replace(first, "cardio.burpees")
+        val run = WorkoutCodec.encodeRun(WorkoutRun("w1", session, startedAtEpochMillis = 5))
+            .replace(first, "cardio.burpees")
+
+        assertNull(WorkoutCodec.decodePlanOrNull(plan))
+        assertNull(WorkoutCodec.decodeRunOrNull(run))
+    }
 }

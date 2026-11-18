@@ -14,8 +14,20 @@ internal object SyncPaths {
      * Put there by the phone when the person deletes everything, and taken
      * away when the phone has a plan again. While it is there, the watch
      * deletes its own copy too. Written by the phone; one item, no payload.
+     * [RESET] covers what this can't: a watch that only reconnects after
+     * the phone has a plan again. This one stays for watches on an older
+     * version of the app.
      */
     const val FORGET = "/levitx/forget"
+
+    /**
+     * The id of the phone's last "delete everything", kept there for good.
+     * A watch that hasn't acted on that id deletes its own copy first, so a
+     * delete reaches a watch that was out of touch when it happened, even if
+     * the person has set up again since. Written by the phone; one item, the
+     * id as text.
+     */
+    const val RESET = "/levitx/reset"
 
     /** Finished sessions on their way to the phone. Written by the watch; one item per session. */
     const val SESSIONS_PREFIX = "/levitx/sessions/"

@@ -2,11 +2,12 @@ package app.levitx.sync
 
 import app.levitx.data.ApplicationScope
 import app.levitx.data.DataUnavailableException
+import app.levitx.data.privacy.ResetMarker
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -21,6 +22,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 @Singleton
 class PhoneSync @Inject internal constructor(
     private val engine: PhoneSyncEngine,
+    private val inbox: PhoneInbox,
+    private val resetMarker: ResetMarker,
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     /**
@@ -30,11 +33,19 @@ class PhoneSync @Inject internal constructor(
      */
     fun start() {
         scope.launch {
+            // Before anything new is published: a delete the watch may not have heard about goes first.
+            resetMarker.current()?.let { engine.announceReset(it).log("phone reset") }
             engine.watchState()
-                .filterNotNull()
                 // Locked data is expected and already shown on screen. Anything else is a bug.
                 .catch { error -> if (error !is DataUnavailableException) throw error }
-                .collect { state -> engine.publish(state).log("phone publish") }
+                .collect { state ->
+                    if (state == null) {
+                        // Nothing to offer: before setup, or after everything was deleted.
+                        engine.withdraw(resetMarker.current()).log("phone withdraw")
+                    } else {
+                        engine.publish(state).log("phone publish")
+                    }
+                }
         }
         scope.launch { receive() }
     }
@@ -45,18 +56,24 @@ class PhoneSync @Inject internal constructor(
      * pass is done.
      */
     suspend fun receive() {
-        engine.receive().log("phone receive")
+        inbox.receive().log("phone receive")
         // A new workout changes the next session and can raise a best, which the watch should hear about now.
         engine.publishCurrent().log("phone publish")
     }
 
     /**
-     * Stops offering the watch anything about the person, after they delete
-     * everything. The watch keeps what it already has until Levitx is cleared
-     * on it. Returns when done.
+     * Stops offering the watch anything about the person and tells it to
+     * delete its copy, when they delete everything. Returns when done.
+     *
+     * The delete gets a new random id, saved before anything is sent. If the
+     * watch can't be told now (no link, or the app is closed first), the id
+     * is offered again every time the app starts, and the watch deletes its
+     * copy when it first sees an id it hasn't acted on.
      */
     suspend fun forget() {
-        engine.forget().log("phone forget")
+        val resetId = UUID.randomUUID().toString()
+        resetMarker.set(resetId)
+        engine.forget(resetId).log("phone forget")
     }
 
     /**

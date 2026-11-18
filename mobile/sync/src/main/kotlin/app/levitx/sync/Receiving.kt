@@ -8,18 +8,33 @@ package app.levitx.sync
 /** Payload of a confirmation item. Only its path matters; the byte is the wire version. */
 private val ACK_PAYLOAD = byteArrayOf(WIRE_VERSION.toByte())
 
+/** What storing one received item came to. */
+internal enum class Stored {
+    /** It was new, and is stored now. */
+    NEW,
+
+    /** It was stored on an earlier pass. */
+    ALREADY_HERE,
+
+    /** It can't be stored yet. It is left on the Data Layer, unconfirmed, for a later pass. */
+    NOT_YET,
+}
+
+/** [Stored] for a save that reports true when the item was new. */
+internal fun Boolean.toStored(): Stored = if (this) Stored.NEW else Stored.ALREADY_HERE
+
 /**
  * Stores and confirms each item under [prefix]: [decode]s it, checks the
  * id inside ([idOf]) is the id in the path it arrived on, then [store]s
- * it, which returns true when it was new. Unreadable items are skipped
- * and left for a newer app. Confirming comes only after storing, and
- * confirming again is harmless.
+ * it. Unreadable items are skipped and left for a newer app. Confirming
+ * comes only after storing, and confirming again is harmless. An item that
+ * can't be stored yet is never confirmed, so the watch keeps it.
  */
 internal suspend fun <T> DataLayer.receiveEach(
     prefix: String,
     decode: (ByteArray) -> Decoded<T>,
     idOf: (T) -> String,
-    store: suspend (T) -> Boolean,
+    store: suspend (T) -> Stored,
 ): Received {
     val items = list(prefix)
     var stored = 0
@@ -30,8 +45,9 @@ internal suspend fun <T> DataLayer.receiveEach(
             skipped++
             continue
         }
-        if (store(decoded.value)) stored++
-        put(SyncPaths.ack(idOf(decoded.value)), ACK_PAYLOAD)
+        val outcome = store(decoded.value)
+        if (outcome == Stored.NEW) stored++
+        if (outcome != Stored.NOT_YET) put(SyncPaths.ack(idOf(decoded.value)), ACK_PAYLOAD)
     }
     return Received(stored, skipped, items.map { it.path.removePrefix(prefix) }.toSet())
 }

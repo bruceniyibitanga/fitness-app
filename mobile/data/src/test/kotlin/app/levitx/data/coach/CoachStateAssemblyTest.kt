@@ -4,10 +4,14 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.WeighIn
+import app.levitx.data.DataUnavailableException
 import app.levitx.data.database.BodyweightEntity
 import app.levitx.data.database.GateBestEntity
 import java.time.DayOfWeek
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class CoachStateAssemblyTest {
@@ -36,5 +40,27 @@ class CoachStateAssemblyTest {
         val state = assembleCoachState(document, emptyList(), readings)
         assertEquals(listOf(WeighIn(10, 80.0), WeighIn(20, 79.5)), state.model.weighIns)
         assertEquals(setOf(DayOfWeek.TUESDAY), state.trainingDays)
+    }
+
+    @Test
+    fun aValueTheModelRejectsMakesTheStateUnreadableNotACrash() {
+        // A goal this version doesn't have, and a session length outside the limits.
+        val noSuchGoal = document.copy(profile = document.profile.copy(goalPathId = "no_such_path"))
+        val tooLong = document.copy(profile = document.profile.copy(sessionMinutes = 100_000))
+
+        listOf(noSuchGoal, tooLong).forEach { broken ->
+            val error = assertThrows(UnreadableCoachStateException::class.java) {
+                assembleCoachState(broken, emptyList(), emptyList())
+            }
+            // The cause could quote the document, so it is dropped.
+            assertNull(error.cause)
+            assertFalse(error.message.orEmpty().contains("no_such_path"))
+        }
+    }
+
+    @Test
+    fun unreadableStateIsHandledLikeAnyOtherDataThatCantBeRead() {
+        // Screens, sync and the watch all catch this one type.
+        assertThrows(DataUnavailableException::class.java) { CoachCodec.decodeCoach("not a document") }
     }
 }

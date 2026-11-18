@@ -8,4 +8,4 @@ package app.levitx.data
  * unencrypted or empty database, which could hide or overwrite real data.
  * The message never contains data or key material.
  */
-class DataUnavailableException(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class DataUnavailableException(message: String, cause: Throwable? = null) : Exception(message, cause)

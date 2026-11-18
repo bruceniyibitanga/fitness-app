@@ -1,9 +1,6 @@
 package app.levitx.sync
 
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.coach.CoachRepository
-import app.levitx.data.equipment.EquipmentRepository
-import app.levitx.data.session.SessionRepository
 import app.levitx.data.settings.SettingsRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,33 +10,25 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
- * The phone's side of sync.
+ * What the phone offers the watch.
  *
- * - **Out:** the goal, bests, bands and the coach's next session go to the
- *   watch as one data item. The coach itself stays on the phone.
- * - **In:** each finished workout, cardio and mobility workouts included
- *   (and each session from an older watch app), arrives as its own data
- *   item. Cardio and mobility go straight into the history, never the
- *   coach. The phone records it, then writes a confirmation item with the
- *   same id. The watch deletes its item when it sees the confirmation, and
- *   the phone then deletes the confirmation, so nothing is left behind.
+ * The goal, bests, bands, the unit and the coach's next session go to the
+ * watch as one data item. The coach itself stays on the phone. When the
+ * person deletes everything, the item is taken away and the watch is told to
+ * delete its copy. What comes back from the watch is [PhoneInbox]'s job.
  *
- * Every step can be repeated safely. An id is only recorded once, so a pass
- * that is interrupted and run again never double-counts.
+ * Every step can be repeated safely: putting the same item again changes
+ * nothing.
  */
 @Singleton
 internal class PhoneSyncEngine @Inject constructor(
     private val dataLayer: DataLayer,
     private val stateSource: PhoneStateSource,
-    private val equipmentRepository: EquipmentRepository,
-    private val sessionRepository: SessionRepository,
-    private val coachRepository: CoachRepository,
     private val settingsRepository: SettingsRepository,
 ) {
-    // One pass at a time: the listener service and the app can both ask for one.
+    // One pass at a time: a publish and a delete must not interleave.
     private val mutex = Mutex()
 
     /**
@@ -53,7 +42,7 @@ internal class PhoneSyncEngine @Inject constructor(
     ) { state, units -> state?.copy(units = units) }
 
     /** Publishes [state] for the watch. It is delivered when the watch is next reachable. */
-    suspend fun publish(state: PhoneState): SyncReport = guarded {
+    suspend fun publish(state: PhoneState): SyncReport = mutex.syncPass {
         dataLayer.put(SyncPaths.STATE, SyncCodec.encodeState(state))
         // The person set up again after deleting everything: the watch can keep what it gets from now on.
         dataLayer.delete(SyncPaths.FORGET)
@@ -65,11 +54,37 @@ internal class PhoneSyncEngine @Inject constructor(
      * too, and takes the phone's published state off the Data Layer, so
      * nothing about them is offered to the watch again. The watch acts on it
      * the next time it is connected, even if that is days later.
+     *
+     * @param resetId The id of this delete, which stays on offer for good.
      */
-    suspend fun forget(): SyncReport = guarded {
-        dataLayer.put(SyncPaths.FORGET, ByteArray(0))
+    suspend fun forget(resetId: String): SyncReport = withdraw(resetId)
+
+    /**
+     * Makes the Data Layer say what is true when the phone has nothing to
+     * offer: no state, and, if the person has ever deleted everything
+     * ([resetId] isn't null), the request to delete and its id.
+     *
+     * The publisher calls this whenever the state turns out empty, so the
+     * end result is right whatever order a delete and a last publish from
+     * the emptying database happen to land in.
+     */
+    suspend fun withdraw(resetId: String?): SyncReport = mutex.syncPass {
         dataLayer.delete(SyncPaths.STATE)
+        if (resetId != null) {
+            dataLayer.put(SyncPaths.RESET, ResetCodec.encode(resetId))
+            dataLayer.put(SyncPaths.FORGET, ByteArray(0))
+        }
         SyncReport(SyncOutcome.DONE, stateChanged = true)
+    }
+
+    /**
+     * Offers the watch the id of the last "delete everything" again. The
+     * item is the same every time, so repeating it costs nothing, and it
+     * heals a delete whose first announcement never got through.
+     */
+    suspend fun announceReset(resetId: String): SyncReport = mutex.syncPass {
+        dataLayer.put(SyncPaths.RESET, ResetCodec.encode(resetId))
+        SyncReport(SyncOutcome.DONE)
     }
 
     /**
@@ -84,71 +99,5 @@ internal class PhoneSyncEngine @Inject constructor(
             return SyncReport(SyncOutcome.DATA_LOCKED)
         }
         return if (state == null) SyncReport(SyncOutcome.DONE) else publish(state)
-    }
-
-    /**
-     * Records and confirms every workout and session waiting on the Data
-     * Layer, and tidies up old confirmations.
-     */
-    suspend fun receive(): SyncReport = guarded {
-        val received = listOf(receiveWorkouts(), receiveIntervals(), receiveSessions())
-        removeFinishedAcks(received.flatMap { it.waitingIds }.toSet())
-        SyncReport(
-            SyncOutcome.DONE,
-            delivered = received.sumOf { it.stored },
-            skipped = received.sumOf { it.skipped },
-        )
-    }
-
-    /**
-     * Records each workout the watch finished with the coach. With no coach
-     * set up yet, they wait: confirming them would lose them.
-     */
-    private suspend fun receiveWorkouts(): Received {
-        if (coachRepository.observeState().first() == null) {
-            val items = dataLayer.list(SyncPaths.WORKOUTS_PREFIX)
-            return Received(waitingIds = items.map { it.path.removePrefix(SyncPaths.WORKOUTS_PREFIX) }.toSet())
-        }
-        return dataLayer.receiveEach(SyncPaths.WORKOUTS_PREFIX, SyncCodec::decodeWorkout, { it.run.id }) { workout ->
-            val result = checkNotNull(workout.run.result(workout.finishedAtEpochMillis)) { "checked when decoded" }
-            coachRepository.recordWorkout(workout.run.id, result)
-        }
-    }
-
-    /**
-     * Saves each cardio and mobility workout the watch finished straight into
-     * the history. They never reach the coach, so they don't wait for one.
-     */
-    private suspend fun receiveIntervals(): Received =
-        dataLayer.receiveEach(SyncPaths.INTERVALS_PREFIX, SyncCodec::decodeIntervals, { it.id }) { workout ->
-            sessionRepository.saveIntervalWorkout(workout.id, workout.sessions)
-        }
-
-    /** Stores each gate session sent by a watch still on an older version of the app. */
-    private suspend fun receiveSessions(): Received {
-        // Bodyweight never crosses the link, so it is added here from the phone's own record.
-        val bodyweightKg = equipmentRepository.observeBodyweightKg().first()
-        return dataLayer.receiveEach(SyncPaths.SESSIONS_PREFIX, SyncCodec::decodeSession, { it.id }) { received ->
-            sessionRepository.saveReceivedSession(
-                received.copy(session = received.session.copy(bodyweightKg = bodyweightKg)),
-            )
-        }
-    }
-
-    /** A confirmation has done its job once the watch has deleted the item it answers. */
-    private suspend fun removeFinishedAcks(waitingIds: Set<String>) {
-        dataLayer.list(SyncPaths.ACKS_PREFIX)
-            .filter { ack -> ack.isOwn && ack.path.removePrefix(SyncPaths.ACKS_PREFIX) !in waitingIds }
-            .forEach { ack -> dataLayer.delete(ack.path) }
-    }
-
-    private suspend fun guarded(pass: suspend () -> SyncReport): SyncReport = mutex.withLock {
-        try {
-            pass()
-        } catch (error: DataLayerUnavailableException) {
-            SyncReport(SyncOutcome.NO_LINK)
-        } catch (error: DataUnavailableException) {
-            SyncReport(SyncOutcome.DATA_LOCKED)
-        }
     }
 }

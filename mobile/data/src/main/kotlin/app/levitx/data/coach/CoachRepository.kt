@@ -53,10 +53,13 @@ interface CoachRepository {
      * coach learns, then clears the workout in progress. Safe to call again with
      * the same [workoutId]: nothing changes.
      *
-     * @return True when the workout was new.
-     * @throws IllegalStateException before setup.
+     * A result dated after this device's clock is recorded as finishing now,
+     * keeping its length: the device that timed it had its clock ahead.
+     *
+     * @return What happened. [Recorded.NOT_SET_UP] leaves everything as it
+     *   was, so the caller can keep the workout and try again after setup.
      */
-    suspend fun recordWorkout(workoutId: String, result: SessionResult): Boolean
+    suspend fun recordWorkout(workoutId: String, result: SessionResult): Recorded
 
     /**
      * Ids of the workouts recorded most recently, newest first, at most
@@ -65,7 +68,11 @@ interface CoachRepository {
      */
     fun observeRecentWorkoutIds(): Flow<List<String>>
 
-    /** Records that the person took the rest day the coach offered, at [nowEpochMillis]. */
+    /**
+     * Records that the person took the rest day the coach offered, at
+     * [nowEpochMillis]. This and the other small updates below do nothing
+     * before setup, or after everything was deleted: there is nothing to update.
+     */
     suspend fun recordRest(nowEpochMillis: Long)
 
     /** Records the advice from a pain check-in for [area]. */
@@ -88,6 +95,18 @@ interface CoachRepository {
      * @return True when there was such a workout.
      */
     suspend fun deleteWorkout(workoutId: String): Boolean
+}
+
+/** What [CoachRepository.recordWorkout] did with a workout. */
+enum class Recorded {
+    /** It was new, and is now stored. */
+    NEW,
+
+    /** It was stored before. Nothing changed. */
+    ALREADY_STORED,
+
+    /** The coach isn't set up (yet, or any more), so it couldn't be recorded. Nothing changed. */
+    NOT_SET_UP,
 }
 
 /** How many recent workout ids [CoachRepository.observeRecentWorkoutIds] reports. */
