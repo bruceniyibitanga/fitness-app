@@ -127,4 +127,16 @@ class IntervalControllerTest {
         controller.dismiss()
         assertEquals(IntervalState.Idle, controller.state.value)
     }
+
+    @Test
+    fun aNewWorkoutReplacesTheLastOnesSummaryAtOnce() {
+        controller.start("tabata")
+        controller.end()
+        assertTrue(controller.state.value is IntervalState.Done)
+
+        controller.start("quiet_cardio")
+
+        assertEquals("Quiet cardio", running().workout.name)
+        assertEquals(IntervalPhase.PREPARE, running().run.current?.phase)
+    }
 }
