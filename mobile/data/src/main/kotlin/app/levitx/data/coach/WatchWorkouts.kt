@@ -1,6 +1,6 @@
 package app.levitx.data.coach
 
-import app.levitx.core.coach.PlannedSession
+import app.levitx.core.coach.PlanAhead
 import app.levitx.core.coach.WorkoutRun
 import kotlinx.coroutines.flow.Flow
 
@@ -12,8 +12,12 @@ import kotlinx.coroutines.flow.Flow
  * reach without holding any health data.
  */
 interface NextSessionRepository {
-    /** The next session, or null when there isn't one. Emits straight away and on every change. */
-    fun observeNext(): Flow<PlannedSession?>
+    /**
+     * The coach's plan for the next session, or null when there isn't one.
+     * Emits straight away and on every change. Which of its sessions to do
+     * depends on when the person starts: see [PlanAhead.at].
+     */
+    fun observeNext(): Flow<PlanAhead?>
 
     /**
      * A workout finished on the watch that the phone hasn't recorded yet, or
@@ -21,8 +25,8 @@ interface NextSessionRepository {
      */
     suspend fun awaitingWorkoutId(): String?
 
-    /** Saves [session] from the phone as the next one, or null for none, and stops waiting. */
-    suspend fun replace(session: PlannedSession?)
+    /** Saves [plan] from the phone as the next one, or null for none, and stops waiting. */
+    suspend fun replace(plan: PlanAhead?)
 }
 
 /**

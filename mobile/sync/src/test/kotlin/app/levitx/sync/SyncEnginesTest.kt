@@ -627,4 +627,32 @@ class SyncEnginesTest {
         assertTrue(network.paths.isEmpty())
         scope.cancel()
     }
+
+    @Test
+    fun afterAWorkoutTheWatchHoldsTheRealNextSessionForOnceItHasRested() = runTest {
+        publish()
+        watch.sync()
+        // The whole session is done on the watch, then the two sync both ways.
+        var run = WorkoutRun(idA, checkNotNull(watchNext.current), startedAtEpochMillis = clock.now)
+        while (!run.isComplete) run = run.logSet(checkNotNull(run.nextSet).target, 2, clock.elapsed).endRest()
+        clock.now += 45 * 60_000
+        watchWorkouts.finishAndQueue(run, clock.now)
+        watch.sync()
+        inbox.receive()
+        publish()
+        watch.sync()
+
+        val plan = checkNotNull(watchNext.plan)
+        val model = checkNotNull(phoneCoach.current).model
+        val restedAt = checkNotNull(plan.restedAtEpochMillis)
+
+        // Started straight away, the watch gives what the phone gives now: light work on what was just trained.
+        assertEquals(Coach().recommend(model, clock.now).session, plan.at(clock.now))
+        assertTrue(plan.now.plans.any { !it.isHard })
+        // Started two days later, with the phone never opened in between, it gives what the phone would give then.
+        val twoDaysOn = clock.now + 2 * 24 * 60 * 60_000L
+        assertTrue(twoDaysOn >= restedAt)
+        assertEquals(Coach().recommend(model, restedAt).session, plan.at(twoDaysOn))
+        assertTrue(plan.at(twoDaysOn).plans.all { it.isHard })
+    }
 }

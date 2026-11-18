@@ -1,7 +1,7 @@
 package app.levitx.data.coach
 
 import androidx.room.withTransaction
-import app.levitx.core.coach.PlannedSession
+import app.levitx.core.coach.PlanAhead
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.data.database.LevitxDatabaseProvider
 import app.levitx.data.database.NextSessionEntity
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.map
 @Singleton
 internal class RoomNextSessionRepository @Inject constructor(private val databaseProvider: LevitxDatabaseProvider) :
     NextSessionRepository {
-    override fun observeNext(): Flow<PlannedSession?> = flow {
+    override fun observeNext(): Flow<PlanAhead?> = flow {
         emitAll(databaseProvider.database().watchWorkoutDao().observeNext())
     }
         // A plan this version can't read is treated as no plan: the phone sends a new one.
@@ -30,9 +30,9 @@ internal class RoomNextSessionRepository @Inject constructor(private val databas
     override suspend fun awaitingWorkoutId(): String? =
         databaseProvider.database().watchWorkoutDao().observeNext().first()?.awaitingWorkoutId
 
-    override suspend fun replace(session: PlannedSession?) {
+    override suspend fun replace(plan: PlanAhead?) {
         databaseProvider.database().watchWorkoutDao()
-            .replaceNext(NextSessionEntity(json = session?.let(WorkoutCodec::encodePlan)))
+            .replaceNext(NextSessionEntity(json = plan?.let(WorkoutCodec::encodePlan)))
     }
 }
 

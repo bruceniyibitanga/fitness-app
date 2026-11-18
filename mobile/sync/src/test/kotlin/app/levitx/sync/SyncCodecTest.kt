@@ -1,5 +1,6 @@
 package app.levitx.sync
 
+import app.levitx.core.coach.PlanAhead
 import app.levitx.core.load.WeightUnit
 import app.levitx.core.session.CompletedSession
 import app.levitx.core.session.LoggedSet
@@ -67,10 +68,42 @@ class SyncCodecTest {
             path = null,
             bests = emptyMap(),
             bands = emptyList(),
-            next = run.session,
+            next = PlanAhead(run.session),
             recentWorkoutIds = listOf(workoutId),
         )
         assertEquals(Decoded.Ok(state), SyncCodec.decodeState(SyncCodec.encodeState(state)))
+    }
+
+    @Test
+    fun thePlanForOnceRestedTravelsWithItsTimeAndAnOlderWatchStillReadsThePlanForNow() {
+        val plan =
+            PlanAhead(now = run.session.lightened(), rested = run.session, restedAtEpochMillis = 1_700_000_500_000)
+        val state = PhoneState(path = null, bests = emptyMap(), bands = emptyList(), next = plan)
+        val payload = SyncCodec.encodeState(state)
+
+        assertEquals(Decoded.Ok(state), SyncCodec.decodeState(payload))
+        // An older watch knows nothing of the later session. What it does read is the session for now.
+        val wire = payload.decodeToString()
+        val olderSees = wire.replace("later", "unknownLater")
+        assertEquals(
+            PlanAhead(plan.now),
+            (SyncCodec.decodeState(olderSees.encodeToByteArray()) as Decoded.Ok).value.next,
+        )
+    }
+
+    @Test
+    fun aLaterSessionThisVersionCantReadIsDroppedAndTheRestOfThePlanStands() {
+        val plan =
+            PlanAhead(now = run.session.lightened(), rested = run.session, restedAtEpochMillis = 1_700_000_500_000)
+        val wire = SyncCodec.encodeState(PhoneState(null, emptyMap(), emptyList(), next = plan)).decodeToString()
+        // The later session names an exercise this version doesn't have. Only its copy of the id is changed.
+        val split = wire.indexOf("later")
+        val exerciseId = run.session.plans.first().exercise.id
+        val broken = wire.substring(0, split) + wire.substring(split).replace(exerciseId, "gone.exercise")
+
+        val decoded = SyncCodec.decodeState(broken.encodeToByteArray()) as Decoded.Ok
+
+        assertEquals(PlanAhead(plan.now), decoded.value.next)
     }
 
     @Test
