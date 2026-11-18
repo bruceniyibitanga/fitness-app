@@ -91,7 +91,7 @@ class SyncEnginesTest {
         marker,
     )
 
-    /** Does what the app does from its start for as long as it runs: announces the last delete, then keeps publishing. */
+    /** Does what the app does while it runs: announces the last delete, then keeps publishing. */
     private fun CoroutineScope.running(engine: PhoneSyncEngine) = launch {
         engine.announceLastReset()
         engine.publishing().collect {}
