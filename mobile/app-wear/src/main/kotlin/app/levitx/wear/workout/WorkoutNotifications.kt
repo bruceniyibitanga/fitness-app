@@ -10,6 +10,8 @@ import androidx.core.app.NotificationCompat
 import androidx.wear.ongoing.OngoingActivity
 import androidx.wear.ongoing.Status
 import app.levitx.core.coach.WorkoutRun
+import app.levitx.core.intervals.IntervalPhase
+import app.levitx.core.intervals.IntervalStep
 import app.levitx.wear.MainActivity
 import app.levitx.wear.R
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,7 +31,8 @@ internal const val WORKOUT_NOTIFICATION_ID = 1
  * launcher, one tap away from the app, as the Wear OS quality guidelines
  * require for anything long-running.
  *
- * The notification says where the session is up to (a set number, or rest).
+ * The notification says where the workout is up to (a set number, a round,
+ * or rest).
  * It is marked public, so that much shows on a locked watch; it never
  * includes reps, heart rate or anything else personal.
  */
@@ -50,6 +53,16 @@ class WorkoutNotifications @Inject constructor(@param:ApplicationContext private
                 run.nextSetIndex + 1,
                 run.current?.sets?.size ?: 0,
             )
+        },
+    )
+
+    /** The notification for a cardio or mobility workout at [step]: "Work, round 3 of 8", say. */
+    fun forStep(step: IntervalStep): Notification = build(
+        when (step.phase) {
+            IntervalPhase.PREPARE -> context.getString(R.string.workout_status_interval_ready)
+            IntervalPhase.WORK -> context.getString(R.string.workout_status_interval_work, step.round, step.rounds)
+            IntervalPhase.SWITCH -> context.getString(R.string.workout_status_interval_switch)
+            IntervalPhase.REST -> context.getString(R.string.workout_status_rest)
         },
     )
 

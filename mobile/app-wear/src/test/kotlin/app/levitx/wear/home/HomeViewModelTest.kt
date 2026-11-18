@@ -32,10 +32,11 @@ class HomeViewModelTest {
     private val path = SkillCatalogue.muscleUp
     private val fakes = WatchFakes()
     private val controller = fakes.controller()
+    private val intervals = fakes.intervals()
     private val equipment = FakeEquipmentRepository(bands = listOf(Band("b1", "Red", 20.0)))
 
     private fun viewModel(goal: GoalRepository = FakeGoalRepository(path)) =
-        HomeViewModel(goal, fakes.next, equipment, fakes.outbox, controller)
+        HomeViewModel(goal, fakes.next, equipment, fakes.pending, controller, intervals)
 
     @Test
     fun showsTheCoachsNextSession() = runTest {
@@ -74,6 +75,24 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun aRunningCardioWorkoutIsTheWayBackAndCountsOnceFinished() = runTest {
+        val viewModel = viewModel()
+        intervals.start("tabata")
+
+        assertEquals("Tabata", (currentState(viewModel) as HomeUiState.Ready).intervalName)
+
+        fakes.clock.elapsed += 20_000
+        intervals.tick()
+        intervals.end()
+        val state = currentState(viewModel) as HomeUiState.Ready
+        assertNull(state.intervalName)
+        assertEquals(1, state.waitingToSync)
+        // Cardio never holds up the coach's next session.
+        assertFalse(state.isWaitingForPlan)
+        assertTrue(state.next != null)
+    }
+
+    @Test
     fun aRunningWorkoutCanBeResumed() = runTest {
         val viewModel = viewModel()
         viewModel.startSession()
@@ -96,6 +115,7 @@ class HomeViewModelTest {
         assertEquals(1, state.waitingToSync)
         // The plan waits for the phone to take the workout in.
         assertNull(state.next)
+        assertTrue(state.isWaitingForPlan)
     }
 
     @Test

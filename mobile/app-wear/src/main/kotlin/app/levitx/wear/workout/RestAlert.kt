@@ -1,11 +1,7 @@
 package app.levitx.wear.workout
 
 import android.content.Context
-import android.os.Build
 import android.os.PowerManager
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import app.levitx.data.time.TrainingClock
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -16,10 +12,6 @@ private const val WAKE_LOCK_TAG = "levitx:rest"
 
 /** Extra time on the wake lock's own limit, so it outlasts the delay it protects. */
 private const val WAKE_LOCK_MARGIN_MILLIS = 5_000L
-
-/** Two firm pulses: clear on the wrist without looking, and unlike a notification. */
-private val REST_OVER_PATTERN = longArrayOf(0, 250, 150, 250)
-private const val NO_REPEAT = -1
 
 /**
  * Waits out a rest and buzzes when it ends, even with the screen off.
@@ -49,18 +41,9 @@ class RestAlert @Inject constructor(
         wakeLock.acquire(remainingMillis + WAKE_LOCK_MARGIN_MILLIS)
         try {
             delay(remainingMillis)
-            buzz()
+            context.buzz(TWO_PULSES)
         } finally {
             if (wakeLock.isHeld) wakeLock.release()
         }
-    }
-
-    private fun buzz() {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            context.getSystemService(VibratorManager::class.java)?.defaultVibrator
-        } else {
-            context.getSystemService(Vibrator::class.java)
-        }
-        vibrator?.vibrate(VibrationEffect.createWaveform(REST_OVER_PATTERN, NO_REPEAT))
     }
 }

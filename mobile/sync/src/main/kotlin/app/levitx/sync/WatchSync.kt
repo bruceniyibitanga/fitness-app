@@ -3,11 +3,13 @@ package app.levitx.sync
 import app.levitx.data.ApplicationScope
 import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.WorkoutOutbox
+import app.levitx.data.intervals.IntervalOutbox
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -20,16 +22,17 @@ import kotlinx.coroutines.withTimeoutOrNull
 class WatchSync @Inject internal constructor(
     private val engine: WatchSyncEngine,
     private val workoutOutbox: WorkoutOutbox,
+    private val intervalOutbox: IntervalOutbox,
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     /**
-     * Syncs now, and again whenever a workout is queued. Call once, when the
-     * app process starts.
+     * Syncs now, and again whenever a workout of any kind is queued. Call
+     * once, when the app process starts.
      */
     fun start() {
         scope.launch {
             // The first emission also sends any sessions an older version of the app left queued.
-            workoutOutbox.observeQueued()
+            merge(workoutOutbox.observeQueued(), intervalOutbox.observeQueued())
                 // If workouts are queued faster than passes run, one pass covers them all.
                 .conflate()
                 // Locked data is expected and already shown on screen. Anything else is a bug.

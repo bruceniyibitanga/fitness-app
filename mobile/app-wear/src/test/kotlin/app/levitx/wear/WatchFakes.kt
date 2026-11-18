@@ -1,9 +1,11 @@
 package app.levitx.wear
 
 import app.levitx.core.coach.PlannedSession
+import app.levitx.core.intervals.IntervalCue
 import app.levitx.core.session.SessionRun
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.coach.WorkoutDraftRepository
+import app.levitx.testing.FakeIntervalOutbox
 import app.levitx.testing.FakeNextSessionRepository
 import app.levitx.testing.FakeProgressRepository
 import app.levitx.testing.FakeSessionDraftRepository
@@ -12,6 +14,9 @@ import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
 import app.levitx.testing.FakeWorkoutOutbox
 import app.levitx.testing.skillSession
+import app.levitx.wear.home.PendingWorkouts
+import app.levitx.wear.intervals.IntervalController
+import app.levitx.wear.intervals.IntervalSignals
 import app.levitx.wear.session.LeftoverGateSession
 import app.levitx.wear.session.WorkoutController
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +54,18 @@ internal class WatchFakes(
     /** The clocks. */
     val clock = FakeTrainingClock()
 
+    /** Cardio and mobility workouts on their way to the phone. */
+    val intervalOutbox = FakeIntervalOutbox()
+
+    /** The buzzes the interval timer gave, and whether it is holding the watch awake. */
+    val signals = RecordingIntervalSignals()
+
+    /** Workouts of every kind waiting for the phone. */
+    val pending = PendingWorkouts(outbox, intervalOutbox)
+
+    /** An interval timer on these fakes. Its actions run unconfined, like [controller]'s. */
+    fun intervals() = IntervalController(intervalOutbox, clock, signals, CoroutineScope(UnconfinedTestDispatcher()))
+
     /**
      * A controller on these fakes. Its actions run unconfined, so each has
      * finished by the time the call returns.
@@ -61,4 +78,26 @@ internal class WatchFakes(
         clock,
         CoroutineScope(UnconfinedTestDispatcher()),
     )
+}
+
+/** [IntervalSignals] that remembers what it was asked to do. */
+internal class RecordingIntervalSignals : IntervalSignals {
+    /** Every cue played, in order. */
+    val played = mutableListOf<IntervalCue>()
+
+    /** True while the timer is holding the watch awake. */
+    var isAwake = false
+        private set
+
+    override fun play(cue: IntervalCue) {
+        played += cue
+    }
+
+    override fun stayAwakeFor(millis: Long) {
+        isAwake = true
+    }
+
+    override fun letSleep() {
+        isAwake = false
+    }
 }

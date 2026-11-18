@@ -15,7 +15,10 @@ sealed interface HomeUiState {
      * @property next The next session the phone's coach planned, or null when there is none on the watch.
      * @property isSessionRunning True when a workout is in progress and can be resumed.
      * @property load The load for the next session's skill work, or null when there is none to choose.
-     * @property waitingToSync Finished workouts the phone hasn't confirmed yet.
+     * @property waitingToSync Finished workouts of any kind the phone hasn't confirmed yet.
+     * @property isWaitingForPlan True while a strength session waits for the phone,
+     *   which plans the next one once it has it.
+     * @property intervalName The cardio or mobility workout running now, or null.
      */
     data class Ready(
         val goalName: String? = null,
@@ -23,6 +26,8 @@ sealed interface HomeUiState {
         val isSessionRunning: Boolean = false,
         val load: LoadSummary? = null,
         val waitingToSync: Int = 0,
+        val isWaitingForPlan: Boolean = false,
+        val intervalName: String? = null,
     ) : HomeUiState
 }
 
