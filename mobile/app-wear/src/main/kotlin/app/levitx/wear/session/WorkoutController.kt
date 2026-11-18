@@ -238,13 +238,18 @@ class WorkoutController @Inject constructor(
 }
 
 /**
- * The load a set of this plan is logged with, given the [chosen] load. The
- * load chosen on the watch is for the skill work, as it always was: that is
- * what a vest or band is set up for. Other exercises are logged at
- * bodyweight, and holds have no load to track at all.
+ * The load a set of this plan is logged with, given the [chosen] load.
+ *
+ * A vest or band chosen on the watch is for the skill work, as it always
+ * was. Everything else is logged with the weight the coach prescribed, as on
+ * the phone: logging a weighted set as bodyweight would teach the coach the
+ * wrong thing. Holds have no load to track.
  */
-private fun ExercisePlan.loadWith(chosen: SetLoad): SetLoad =
-    if (gateId != null && exercise.loadProfile != null) chosen else SetLoad.None
+internal fun ExercisePlan.loadWith(chosen: SetLoad): SetLoad = when {
+    gateId != null && exercise.loadProfile != null && chosen != SetLoad.None -> chosen
+    addedKg > 0.0 -> SetLoad(addedKg = addedKg)
+    else -> SetLoad.None
+}
 
 /** The biggest of the [raised] gate bests, or null when none was raised. */
 private fun biggestNewBest(raised: Map<String, Int>): GateBest? = raised

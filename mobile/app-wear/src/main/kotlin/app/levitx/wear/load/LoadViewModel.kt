@@ -20,12 +20,6 @@ import kotlinx.coroutines.flow.stateIn
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
 /**
- * One tap of plus or minus, in kilograms. Whole kilograms keep a 10 kg vest
- * to ten taps on a small screen; half kilograms are entered on the phone.
- */
-internal const val ADDED_KG_STEP = 1.0
-
-/**
  * What the load screen shows.
  *
  * @property addedKg Vest or belt weight for the next session.
@@ -68,11 +62,15 @@ class LoadViewModel @Inject constructor(
             .catch { error -> if (error is DataUnavailableException) emit(LoadUiState()) else throw error }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), LoadUiState())
 
-    /** One step more added weight. */
-    fun increaseAdded() = changeAddedBy(ADDED_KG_STEP)
+    /**
+     * [stepKg] more added weight. The screen passes one tap in the person's
+     * unit: whole kilograms keep a 10 kg vest to ten taps on a small screen,
+     * and 2.5 lb is the smallest common plate.
+     */
+    fun increaseAdded(stepKg: Double) = changeAddedBy(stepKg)
 
-    /** One step less added weight. */
-    fun decreaseAdded() = changeAddedBy(-ADDED_KG_STEP)
+    /** [stepKg] less added weight. */
+    fun decreaseAdded(stepKg: Double) = changeAddedBy(-stepKg)
 
     /** Chooses [band] for the next session's skill work, or no band when null. */
     fun chooseBand(band: Band?) {

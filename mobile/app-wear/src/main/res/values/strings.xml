@@ -36,15 +36,15 @@
     <!-- Load -->
     <string name="load_title">Load</string>
     <string name="load_bodyweight">Bodyweight only</string>
-    <string name="load_added">+%1$s kg</string>
+    <string name="load_added">+%1$s %2$s</string>
     <string name="load_band">%1$s band</string>
     <string name="load_added_and_band">%1$s, %2$s</string>
-    <string name="load_added_label">VEST OR BELT, KG</string>
-    <string name="load_less_description">One kilogram less</string>
-    <string name="load_more_description">One kilogram more</string>
+    <string name="load_added_label">VEST OR BELT, %1$s</string>
+    <string name="load_less_description">%1$s %2$s less</string>
+    <string name="load_more_description">%1$s %2$s more</string>
     <string name="load_band_label">BAND</string>
     <string name="load_band_none">No band</string>
-    <string name="load_band_help">%1$s kg of help</string>
+    <string name="load_band_help">%1$s %2$s of help</string>
     <string name="load_no_bands">Add and calibrate bands in the Levitx app on your phone.</string>
 
     <!-- Session -->
@@ -58,6 +58,9 @@
         <item quantity="other">Stop with about %1$d reps left in the tank.</item>
     </plurals>
     <string name="session_work_hint_hold">Stop a little before your limit.</string>
+    <string name="session_with_weight">With +%1$s %2$s. %3$s</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_lb">lb</string>
     <string name="session_best_effort_hint">Best effort. Stop when your form breaks, not after.</string>
     <string name="session_aim">Aim for %1$s</string>
     <string name="session_log_set">Save set</string>

@@ -35,25 +35,25 @@ class LoadViewModelTest {
     @Test
     fun addedWeightStepsUpAndDownAndNeverBelowZero() = runTest {
         currentState()
-        viewModel.increaseAdded()
-        viewModel.increaseAdded()
-        assertEquals(2 * ADDED_KG_STEP, currentState().addedKg, 0.0)
+        viewModel.increaseAdded(STEP_KG)
+        viewModel.increaseAdded(STEP_KG)
+        assertEquals(2 * STEP_KG, currentState().addedKg, 0.0)
 
-        repeat(3) { viewModel.decreaseAdded() }
+        repeat(3) { viewModel.decreaseAdded(STEP_KG) }
         assertEquals(0.0, currentState().addedKg, 0.0)
     }
 
     @Test
     fun choosingABandKeepsTheAddedWeight() = runTest {
         currentState()
-        viewModel.increaseAdded()
+        viewModel.increaseAdded(STEP_KG)
         viewModel.chooseBand(red)
 
-        assertEquals(WorkoutState.Idle(SetLoad(addedKg = ADDED_KG_STEP, assistanceKg = 20.0)), controller.state.value)
+        assertEquals(WorkoutState.Idle(SetLoad(addedKg = STEP_KG, assistanceKg = 20.0)), controller.state.value)
 
         viewModel.chooseBand(null)
         assertEquals(0.0, currentState().assistanceKg, 0.0)
-        assertEquals(ADDED_KG_STEP, currentState().addedKg, 0.0)
+        assertEquals(STEP_KG, currentState().addedKg, 0.0)
     }
 
     /** Subscribes like a screen would, then returns the latest state. */
@@ -62,3 +62,6 @@ class LoadViewModelTest {
         return viewModel.uiState.value
     }
 }
+
+/** One tap in kilograms, as the screen passes it for someone who reads kg. */
+private const val STEP_KG = 1.0

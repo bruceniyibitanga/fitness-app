@@ -4,10 +4,14 @@ import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.session.SessionRepository
+import app.levitx.data.settings.SettingsRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -35,12 +39,20 @@ internal class PhoneSyncEngine @Inject constructor(
     private val equipmentRepository: EquipmentRepository,
     private val sessionRepository: SessionRepository,
     private val coachRepository: CoachRepository,
+    private val settingsRepository: SettingsRepository,
 ) {
     // One pass at a time: the listener service and the app can both ask for one.
     private val mutex = Mutex()
 
-    /** What the watch needs, emitted again whenever any of it changes. Null until there is anything to send. */
-    fun watchState(): Flow<PhoneState?> = stateSource.observe()
+    /**
+     * What the watch needs, emitted again whenever any of it changes. Null
+     * until there is anything to send. The unit rides along so the watch
+     * shows weights the way the phone does.
+     */
+    fun watchState(): Flow<PhoneState?> = combine(
+        stateSource.observe(),
+        settingsRepository.observe().map { it.units }.distinctUntilChanged(),
+    ) { state, units -> state?.copy(units = units) }
 
     /** Publishes [state] for the watch. It is delivered when the watch is next reachable. */
     suspend fun publish(state: PhoneState): SyncReport = guarded {

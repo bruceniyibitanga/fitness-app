@@ -14,23 +14,27 @@ import androidx.wear.compose.material3.RadioButton
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
-import app.levitx.core.load.formatKg
 import app.levitx.data.equipment.Band
 import app.levitx.design.LevitxColors
 import app.levitx.wear.R
 import app.levitx.wear.theme.LevitxWearTheme
 import app.levitx.wear.ui.CenteredText
+import app.levitx.wear.ui.LocalWeightUnit
 import app.levitx.wear.ui.SectionLabel
 import app.levitx.wear.ui.StepperRow
+import app.levitx.wear.ui.stepKg
+import app.levitx.wear.ui.unitLabel
+import app.levitx.wear.ui.weightNumber
 
 /** Load destination: connects [LoadViewModel] to [LoadScreen]. */
 @Composable
 fun LoadRoute(viewModel: LoadViewModel = hiltViewModel()) {
+    val unit = LocalWeightUnit.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LoadScreen(
         uiState = uiState,
-        onIncreaseAdded = viewModel::increaseAdded,
-        onDecreaseAdded = viewModel::decreaseAdded,
+        onIncreaseAdded = { viewModel.increaseAdded(unit.stepKg()) },
+        onDecreaseAdded = { viewModel.decreaseAdded(unit.stepKg()) },
         onChooseBand = viewModel::chooseBand,
     )
 }
@@ -48,17 +52,19 @@ fun LoadScreen(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberTransformingLazyColumnState()
+    // What one tap adds, in the person's unit: "1" kg or "2.5" lb.
+    val step = weightNumber(LocalWeightUnit.current.stepKg())
     ScreenScaffold(scrollState = listState, modifier = modifier) { contentPadding ->
         TransformingLazyColumn(state = listState, contentPadding = contentPadding) {
             item { ListHeader { Text(stringResource(R.string.load_title)) } }
-            item { SectionLabel(stringResource(R.string.load_added_label)) }
+            item { SectionLabel(stringResource(R.string.load_added_label, unitLabel().uppercase())) }
             item {
                 StepperRow(
-                    valueText = formatKg(uiState.addedKg),
+                    valueText = weightNumber(uiState.addedKg),
                     onDecrease = onDecreaseAdded,
                     onIncrease = onIncreaseAdded,
-                    decreaseDescription = stringResource(R.string.load_less_description),
-                    increaseDescription = stringResource(R.string.load_more_description),
+                    decreaseDescription = stringResource(R.string.load_less_description, step, unitLabel()),
+                    increaseDescription = stringResource(R.string.load_more_description, step, unitLabel()),
                     canDecrease = uiState.canDecrease,
                     canIncrease = uiState.canIncrease,
                 )
@@ -80,7 +86,7 @@ fun LoadScreen(
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text(band.name) },
                         secondaryLabel = {
-                            Text(stringResource(R.string.load_band_help, formatKg(band.assistanceKg)))
+                            Text(stringResource(R.string.load_band_help, weightNumber(band.assistanceKg), unitLabel()))
                         },
                     )
                 }

@@ -1,6 +1,7 @@
 package app.levitx.sync
 
 import app.levitx.core.coach.PlannedSession
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.skills.SkillPath
 import app.levitx.data.equipment.Band
 
@@ -17,6 +18,7 @@ import app.levitx.data.equipment.Band
  * @property next The next session the coach planned, or null when there is nothing safe to train.
  * @property recentWorkoutIds The workouts the coach has recorded most recently,
  *   so the watch can tell [next] already takes in one it finished.
+ * @property units The unit the person reads weights in. A display choice, not personal data.
  */
 internal data class PhoneState(
     val path: SkillPath?,
@@ -24,4 +26,5 @@ internal data class PhoneState(
     val bands: List<Band>,
     val next: PlannedSession? = null,
     val recentWorkoutIds: List<String> = emptyList(),
+    val units: WeightUnit = WeightUnit.KG,
 )

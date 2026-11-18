@@ -1,5 +1,6 @@
 package app.levitx.sync
 
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.session.CompletedSession
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.skills.SkillCatalogue
@@ -70,6 +71,17 @@ class SyncCodecTest {
             recentWorkoutIds = listOf(workoutId),
         )
         assertEquals(Decoded.Ok(state), SyncCodec.decodeState(SyncCodec.encodeState(state)))
+    }
+
+    @Test
+    fun theUnitSurvivesTheRoundTripAndAMissingOneReadsAsKilograms() {
+        val pounds = PhoneState(path = path, bests = emptyMap(), bands = emptyList(), units = WeightUnit.LB)
+        assertEquals(Decoded.Ok(pounds), SyncCodec.decodeState(SyncCodec.encodeState(pounds)))
+        // What an older phone sends, and a unit from a newer one: both read as kilograms.
+        val older = state("""{"v":2,"pathId":"${path.id}"}""")
+        val unknown = state("""{"v":2,"pathId":"${path.id}","units":"STONE"}""")
+        assertEquals(WeightUnit.KG, (older as Decoded.Ok).value.units)
+        assertEquals(WeightUnit.KG, (unknown as Decoded.Ok).value.units)
     }
 
     @Test

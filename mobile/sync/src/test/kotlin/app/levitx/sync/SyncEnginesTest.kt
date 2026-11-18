@@ -2,6 +2,7 @@ package app.levitx.sync
 
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.WorkoutRun
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.session.CompletedSession
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.skills.SkillCatalogue
@@ -11,6 +12,7 @@ import app.levitx.data.coach.CoachRepository
 import app.levitx.data.equipment.Band
 import app.levitx.data.goal.GoalRepository
 import app.levitx.data.session.StoredSession
+import app.levitx.data.settings.AppSettings
 import app.levitx.testing.FakeCoachRepository
 import app.levitx.testing.FakeEquipmentRepository
 import app.levitx.testing.FakeGoalRepository
@@ -18,6 +20,7 @@ import app.levitx.testing.FakeNextSessionRepository
 import app.levitx.testing.FakePrivacyRepository
 import app.levitx.testing.FakeProgressRepository
 import app.levitx.testing.FakeSessionRepository
+import app.levitx.testing.FakeSettingsRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutOutbox
 import app.levitx.testing.coachState
@@ -42,6 +45,7 @@ class SyncEnginesTest {
     private val phoneSessions = FakeSessionRepository(phoneProgress)
     private val phoneCoach = FakeCoachRepository(coachState())
     private val clock = FakeTrainingClock()
+    private val phoneSettings = FakeSettingsRepository(AppSettings(units = WeightUnit.LB))
     private val phone = phoneEngine()
 
     private val watchGoal = FakeGoalRepository()
@@ -49,6 +53,7 @@ class SyncEnginesTest {
     private val watchEquipment = FakeEquipmentRepository()
     private val watchSessions = FakeSessionRepository(watchProgress)
     private val watchNext = FakeNextSessionRepository()
+    private val watchSettings = FakeSettingsRepository(AppSettings(units = WeightUnit.KG))
     private val watchWorkouts = FakeWorkoutOutbox(watchProgress, next = watchNext)
 
     // Deleting everything on the watch empties its fakes, as the real database is emptied.
@@ -67,11 +72,12 @@ class SyncEnginesTest {
         phoneEquipment,
         phoneSessions,
         coach,
+        phoneSettings,
     )
 
     private fun watchEngine(goal: GoalRepository = watchGoal) = WatchSyncEngine(
         network.onDevice("watch"),
-        PhoneStateApplier(goal, watchProgress, watchEquipment, watchNext),
+        PhoneStateApplier(goal, watchProgress, watchEquipment, watchNext, watchSettings),
         watchSessions,
         watchWorkouts,
         watchPrivacy,
@@ -108,8 +114,20 @@ class SyncEnginesTest {
         assertEquals(phoneEquipment.bands, watchEquipment.bands)
         assertEquals(coachsPlan(), watchNext.current)
         assertTrue(watchNext.current != null)
+        assertEquals(WeightUnit.LB, watchSettings.settings.value.units)
         // A second pass finds nothing to do.
         assertEquals(SyncReport(SyncOutcome.DONE), watch.sync())
+    }
+
+    @Test
+    fun changingTheUnitOnThePhoneReachesTheWatch() = runTest {
+        publish()
+        watch.sync()
+        phoneSettings.setUnits(WeightUnit.KG)
+        publish()
+
+        assertTrue(watch.sync().stateChanged)
+        assertEquals(WeightUnit.KG, watchSettings.settings.value.units)
     }
 
     @Test
