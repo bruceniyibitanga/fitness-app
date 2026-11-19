@@ -165,7 +165,7 @@ fun PullUpScreenshot() = onboarding(
 @PreviewTest
 @Preview(name = "03d Bodyweight, in pounds", widthDp = 390, heightDp = 844)
 @Composable
-fun BodyScreenshot() = onboarding(
+fun BodyweightStepScreenshot() = onboarding(
     OnboardingUiState(
         step = OnboardingStep.BODY,
         goalChosen = true,
