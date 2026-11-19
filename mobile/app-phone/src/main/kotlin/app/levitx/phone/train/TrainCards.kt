@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,81 +31,81 @@ import app.levitx.core.coach.Exercise
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
+import app.levitx.phone.ui.PhotoCard
+import app.levitx.phone.ui.PhotoTileTitle
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.focusPhoto
+import app.levitx.phone.ui.focusPhotoKey
 import app.levitx.phone.ui.kitShort
 import app.levitx.phone.ui.pathPhoto
 import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.programMeta
+import app.levitx.phone.ui.programPhotoKey
 
 /*
  * The pieces of the Train tab, sized as on the Train artboard.
  */
 
-private val ProgramCardWidth = 220.dp
-private val ProgramPhotoHeight = 112.dp
+private val ProgramCardWidth = 300.dp
+private val ProgramCardHeight = 190.dp
+private val WorkoutTileHeight = 140.dp
 private val WorkoutRowHeight = 68.dp
 private val WorkoutThumbSize = 52.dp
 private val ExerciseRowHeight = 56.dp
 
 /**
- * A skill program as a card: its photo with a tag in the corner, then its
- * name and how far through it the person is. The tag says YOUR PLAN on the
- * program they are following.
+ * A skill program as a big photo card with its name over the photo and, under
+ * the name, how far through it the person is or how long it takes. The one
+ * they are following is tagged YOUR PLAN. Opening it grows the photo into
+ * the program's page.
  */
 @Composable
 internal fun ProgramCard(program: ProgramSummary, onClick: () -> Unit) {
-    Column(
+    val path = program.path
+    val caption = if (program.passed > 0 || program.isCurrent) {
+        pluralStringResource(R.plurals.train_program_gates, path.gates.size, path.gates.size, program.passed)
+    } else {
+        programMeta(path)
+    }
+    Box(
         modifier = Modifier
-            .width(ProgramCardWidth)
-            .background(LevitxColors.Surface)
+            .size(ProgramCardWidth, ProgramCardHeight)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
-        Box(modifier = Modifier.fillMaxWidth().height(ProgramPhotoHeight)) {
-            Image(
-                painter = painterResource(pathPhoto(program.path.id)),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Text(
-                text = stringResource(
-                    if (program.isCurrent) R.string.train_current_program else R.string.train_tag_skill,
-                ),
-                style = LevitxType.Micro,
-                color = LevitxColors.Background,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .background(LevitxColors.Accent)
-                    .padding(horizontal = 6.dp, vertical = 3.dp),
-            )
-        }
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 12.dp),
-        ) {
-            Text(program.path.name, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = LevitxColors.Text)
-            Text(
-                text = if (program.passed > 0 || program.isCurrent) {
-                    pluralStringResource(
-                        R.plurals.train_program_gates,
-                        program.path.gates.size,
-                        program.path.gates.size,
-                        program.passed,
-                    )
-                } else {
-                    programMeta(program.path)
-                },
-                style = LevitxType.Micro,
-                color = LevitxColors.TextMuted,
-            )
-        }
+        PhotoCard(
+            photo = pathPhoto(path.id),
+            title = path.name,
+            caption = caption,
+            sharedKey = programPhotoKey(path.id),
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (program.isCurrent) Tag(stringResource(R.string.train_current_program), Modifier.padding(10.dp))
     }
 }
 
 /**
- * A single workout as a row: a square photo, the name, minutes and moves (or
- * why it can't be done today), and a chevron.
+ * A single workout as a photo tile, two to a row: its name, and how long it
+ * takes today or that it can't be done today. Opening it grows the photo
+ * into the workout's page.
+ */
+@Composable
+internal fun WorkoutTile(workout: WorkoutSummary, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    PhotoCard(
+        photo = focusPhoto(workout.focus),
+        title = focusName(workout.focus),
+        caption = workout.session?.let { stringResource(R.string.minutes_short, it.estimatedMinutes) }
+            ?: stringResource(R.string.train_not_today),
+        titleSize = PhotoTileTitle,
+        sharedKey = focusPhotoKey(workout.focus.name),
+        modifier = modifier
+            .height(WorkoutTileHeight)
+            .clickable(role = Role.Button, onClick = onClick),
+    )
+}
+
+/**
+ * A single workout as a row, for search results: a square photo, the name,
+ * minutes and moves (or why it can't be done today), and a chevron.
  */
 @Composable
 internal fun WorkoutRow(workout: WorkoutSummary, onClick: () -> Unit) {
@@ -206,11 +205,11 @@ internal fun ExerciseRow(exercise: Exercise, onClick: () -> Unit) {
 
 /** A small orange label, like YOUR PLAN. */
 @Composable
-private fun Tag(text: String) {
+private fun Tag(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = LevitxType.Micro,
         color = LevitxColors.Background,
-        modifier = Modifier.background(LevitxColors.Accent).padding(horizontal = 5.dp, vertical = 2.dp),
+        modifier = modifier.background(LevitxColors.Accent).padding(horizontal = 5.dp, vertical = 2.dp),
     )
 }

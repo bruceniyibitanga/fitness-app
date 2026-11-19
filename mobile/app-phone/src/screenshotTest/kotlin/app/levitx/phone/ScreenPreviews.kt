@@ -30,6 +30,7 @@ import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.history.ExerciseRecord
 import app.levitx.core.history.WorkoutRecord
 import app.levitx.core.load.LoadKit
+import app.levitx.core.load.WeightUnit
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.session.SetLoad
@@ -107,7 +108,7 @@ import java.time.ZoneOffset
  * The data is what a real person would see, worked out by the real coach.
  */
 
-private val noOnboardingActions = OnboardingActions({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+private val noOnboardingActions = OnboardingActions()
 private val noTodayActions =
     TodayActions(
         onStart = {},
@@ -115,7 +116,6 @@ private val noTodayActions =
         onRest = {},
         onAcknowledgeWeightNotice = {},
         onOpenExercise = {},
-        onOpenProgress = {},
         onOpenWeekReview = {},
     )
 
@@ -145,22 +145,47 @@ fun GoalScreenshot() =
     onboarding(OnboardingUiState(step = OnboardingStep.GOAL, goalChosen = true, goalPathId = "first_pull_up"))()
 
 @PreviewTest
-@Preview(name = "03 How", widthDp = 390, heightDp = 844)
+@Preview(name = "03 Plan style", widthDp = 390, heightDp = 844)
 @Composable
-fun HowScreenshot() = onboarding(
+fun StyleScreenshot() =
+    onboarding(OnboardingUiState(step = OnboardingStep.STYLE, goalChosen = true, goalPathId = "first_pull_up"))()
+
+@PreviewTest
+@Preview(name = "03b Aim", widthDp = 390, heightDp = 844)
+@Composable
+fun AimScreenshot() = onboarding(OnboardingUiState(step = OnboardingStep.AIM, goalChosen = true))()
+
+@PreviewTest
+@Preview(name = "03c Pull-up", widthDp = 390, heightDp = 844)
+@Composable
+fun PullUpScreenshot() = onboarding(
+    OnboardingUiState(step = OnboardingStep.PULL_UP, goalChosen = true, pullUp = PullUpAnswer.NOT_YET),
+)()
+
+@PreviewTest
+@Preview(name = "03d Bodyweight, in pounds", widthDp = 390, heightDp = 844)
+@Composable
+fun BodyweightStepScreenshot() = onboarding(
     OnboardingUiState(
-        step = OnboardingStep.HOW,
+        step = OnboardingStep.BODY,
         goalChosen = true,
-        goalPathId = "first_pull_up",
-        pullUp = PullUpAnswer.NOT_YET,
+        bodyweightText = "165",
+        bodyweightUnit = WeightUnit.LB,
     ),
 )()
 
 @PreviewTest
-@Preview(name = "04 Week, no kit", widthDp = 390, heightDp = 844)
+@Preview(name = "04 Week", widthDp = 390, heightDp = 844)
 @Composable
 fun WeekScreenshot() = onboarding(
     OnboardingUiState(step = OnboardingStep.WEEK, goalChosen = true, goalPathId = "muscle_up"),
+)()
+
+@PreviewTest
+@Preview(name = "04a Kit, goal needs a bar", widthDp = 390, heightDp = 844)
+@Composable
+fun KitScreenshot() = onboarding(
+    OnboardingUiState(step = OnboardingStep.KIT, goalChosen = true, goalPathId = "muscle_up"),
 )()
 
 @PreviewTest
@@ -184,7 +209,7 @@ fun QuickTestNoneScreenshot() = onboarding(
 )()
 
 @PreviewTest
-@Preview(name = "05 Ready", widthDp = 390, heightDp = 1200)
+@Preview(name = "05 Ready", widthDp = 390, heightDp = 844)
 @Composable
 fun ReadyScreenshot() {
     val model = muscleUp()
@@ -211,7 +236,6 @@ fun TodayScreenshot() {
                 uiState = TodayUiState.Ready(
                     nowEpochMillis = 0,
                     recommendation = Coach().recommend(muscleUp(), 0),
-                    bodyweightKg = 75.6,
                     hasWorkoutInProgress = false,
                     sessionsLastWeek = 1,
                     sessionsPerWeek = 3,
@@ -241,7 +265,6 @@ fun TodayComebackScreenshot() {
                 uiState = TodayUiState.Ready(
                     nowEpochMillis = 0,
                     recommendation = comeback,
-                    bodyweightKg = 75.6,
                     hasWorkoutInProgress = false,
                     sessionsLastWeek = 0,
                     sessionsPerWeek = 3,
@@ -262,7 +285,6 @@ fun TodayNoKitScreenshot() {
                 uiState = TodayUiState.Ready(
                     nowEpochMillis = 0,
                     recommendation = Coach().recommend(muscleUp(kit = emptySet()), 0),
-                    bodyweightKg = null,
                     hasWorkoutInProgress = false,
                     sessionsPerWeek = 3,
                 ),
@@ -404,7 +426,6 @@ fun WorkoutDetailScreenshot() {
             uiState = FocusWorkoutUiState.Ready(
                 focus = WorkoutFocus.UPPER,
                 session = Coach().workout(muscleUp(), WorkoutFocus.UPPER, 0),
-                bodyweightKg = 75.6,
                 hasWorkoutInProgress = false,
             ),
             onStart = {},

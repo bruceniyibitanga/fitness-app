@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.design.LevitxColors
@@ -32,6 +33,18 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = LevitxType.Title,
+        color = LevitxColors.Text,
+        modifier = modifier.semantics { heading() },
+    )
+}
+
+/** The name of a section of a screen, like "Programs" on Train, read out as a heading. */
+@Composable
+fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
         color = LevitxColors.Text,
         modifier = modifier.semantics { heading() },
     )

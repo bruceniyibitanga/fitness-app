@@ -98,7 +98,7 @@ internal fun QuickTestBar(state: OnboardingUiState, actions: OnboardingActions, 
         Box(modifier = Modifier.weight(2f)) {
             AccentBar(
                 text = next?.let { stringResource(R.string.test_next, stringResource(it.words.short)) }
-                    ?: stringResource(R.string.week_build),
+                    ?: stringResource(R.string.test_done),
                 onClick = actions.onNext,
                 height = BAR_HEIGHT,
             )
@@ -109,7 +109,7 @@ internal fun QuickTestBar(state: OnboardingUiState, actions: OnboardingActions, 
                 .weight(1f)
                 .fillMaxHeight()
                 .background(LevitxColors.Surface)
-                .clickable(role = Role.Button, onClick = actions.onSkipTest),
+                .clickable(role = Role.Button, onClick = actions.onSkip),
         ) {
             Text(stringResource(R.string.test_skip), fontSize = 15.sp, color = LevitxColors.Text)
         }

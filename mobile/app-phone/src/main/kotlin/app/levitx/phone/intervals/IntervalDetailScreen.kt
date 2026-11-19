@@ -63,7 +63,7 @@ fun IntervalDetailRoute(workoutId: String, navigation: IntervalDetailNavigation)
 data class IntervalDetailNavigation(val onBack: () -> Unit, val onStart: () -> Unit, val onOpenMove: (String) -> Unit)
 
 private val TitleOverlap = (-20).dp
-private val PhotoHeight = 150.dp
+private val PhotoHeight = 240.dp
 private val StartBarHeight = 64.dp
 private val MoveRowHeight = 58.dp
 

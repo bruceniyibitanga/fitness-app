@@ -1,6 +1,8 @@
 package app.levitx.phone.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,11 +18,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -34,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
+import kotlin.math.roundToInt
 
 /*
  * The tops of screens from the design: the Levitx wordmark, a tab's header,
@@ -42,7 +45,7 @@ import app.levitx.phone.R
 
 private const val WORDMARK_TRACKING = 2.4f
 private val ProgressHeight = 2.dp
-private val PhotoHeaderHeight = 230.dp
+private val PhotoHeaderHeight = 300.dp
 
 /** Where a header photo starts fading into the background, as a fraction of its height. */
 private const val PHOTO_FADE_START = 0.52f
@@ -146,6 +149,7 @@ fun BackHeader(
 /**
  * A photo across the top of a detail screen, fading into the background at
  * the bottom so the title can sit over its edge, with back in the corner.
+ * With a [sharedKey], the photo grows out of the card that opened the screen.
  */
 @Composable
 fun PhotoHeader(
@@ -153,14 +157,10 @@ fun PhotoHeader(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = PhotoHeaderHeight,
+    sharedKey: String? = null,
 ) {
     Box(modifier = modifier.fillMaxWidth().height(height)) {
-        Image(
-            painter = painterResource(photo),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
+        Photo(photo, sharedKey = sharedKey, modifier = Modifier.fillMaxSize())
         Box(
             Modifier
                 .fillMaxSize()
@@ -180,31 +180,34 @@ fun PhotoHeader(
 }
 
 /**
- * The top of a step in a flow: back on the left, "2 / 4" on the right, and a
- * 2 dp progress line under it.
+ * The top of a step in a flow: back on the left and a thin progress line
+ * beside it. The line is the only progress marker, and it moves smoothly as
+ * [progress] (0 to 1) changes.
  */
 @Composable
-fun StepHeader(index: Int, count: Int, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(BarHeight)
-                .padding(start = 4.dp, end = ScreenPadding),
-        ) {
-            BackButton(onBack)
-            Box(Modifier.weight(1f))
-            Text(
-                text = stringResource(R.string.step_of, index, count),
-                style = LevitxType.Caption,
-                color = LevitxColors.TextMuted,
-            )
-        }
+fun StepHeader(progress: Float, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val shown by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(LevitxMotion.DURATION_MILLIS),
+        label = "step progress",
+    )
+    val description = stringResource(R.string.step_progress, (progress * PERCENT).roundToInt())
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(BarHeight)
+            .padding(start = 4.dp, end = ScreenPadding),
+    ) {
+        BackButton(onBack)
         FlatProgressBar(
-            fraction = index.toFloat() / count,
+            fraction = shown,
             height = ProgressHeight,
-            modifier = Modifier.padding(horizontal = ScreenPadding),
+            modifier = Modifier
+                .weight(1f)
+                .semantics { contentDescription = description },
         )
     }
 }
+
+private const val PERCENT = 100

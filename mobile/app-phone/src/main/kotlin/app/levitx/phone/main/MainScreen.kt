@@ -1,6 +1,7 @@
 package app.levitx.phone.main
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.today.TodayRoute
 import app.levitx.phone.train.TrainNavigation
 import app.levitx.phone.train.TrainRoute
+import app.levitx.phone.ui.LevitxMotion
 
 /** Material's minimum touch target, so every tab is easy to hit. */
 private val TabHeight = 56.dp
@@ -80,35 +82,43 @@ enum class MainTab(@param:StringRes val label: Int) {
 fun MainRoute(navigation: MainNavigation) {
     var tab by rememberSaveable { mutableStateOf(MainTab.TODAY) }
     MainScreen(selected = tab, onSelect = { tab = it }) {
-        when (tab) {
-            MainTab.TODAY -> TodayRoute(
-                onOpenWorkout = navigation.onOpenWorkout,
-                onOpenExercise = navigation.onOpenExercise,
-                onOpenProgress = navigation.onOpenProgress,
-                onOpenWeekReview = navigation.onOpenWeekReview,
-            )
-
-            MainTab.TRAIN -> TrainRoute(
-                TrainNavigation(
-                    onOpenWorkout = navigation.onOpenFocusWorkout,
-                    onOpenProgram = navigation.onOpenProgram,
-                    onOpenInterval = navigation.onOpenInterval,
-                    onOpenExercise = navigation.onOpenExercise,
-                    onOpenSearch = navigation.onOpenSearch,
-                    onOpenAllPrograms = navigation.onOpenAllPrograms,
-                ),
-            )
-
-            MainTab.PLAN -> PathRoute(
-                onTrain = { tab = MainTab.TODAY },
-                onChangeGoal = { tab = MainTab.TRAIN },
-                onOpenProgress = navigation.onOpenProgress,
-            )
-
-            MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
-
-            MainTab.BODY -> BodyRoute(onOpenSettings = navigation.onOpenSettings)
+        // Tabs are equals, so one fades into the next: no direction to imply.
+        AnimatedContent(targetState = tab, transitionSpec = { LevitxMotion.fade() }, label = "tab") { shown ->
+            TabContent(shown, navigation, onSelect = { tab = it })
         }
+    }
+}
+
+/** What [tab] shows. A tab can send the person to another one through [onSelect]. */
+@Composable
+private fun TabContent(tab: MainTab, navigation: MainNavigation, onSelect: (MainTab) -> Unit) {
+    when (tab) {
+        MainTab.TODAY -> TodayRoute(
+            onOpenWorkout = navigation.onOpenWorkout,
+            onOpenExercise = navigation.onOpenExercise,
+            onOpenWeekReview = navigation.onOpenWeekReview,
+        )
+
+        MainTab.TRAIN -> TrainRoute(
+            TrainNavigation(
+                onOpenWorkout = navigation.onOpenFocusWorkout,
+                onOpenProgram = navigation.onOpenProgram,
+                onOpenInterval = navigation.onOpenInterval,
+                onOpenExercise = navigation.onOpenExercise,
+                onOpenSearch = navigation.onOpenSearch,
+                onOpenAllPrograms = navigation.onOpenAllPrograms,
+            ),
+        )
+
+        MainTab.PLAN -> PathRoute(
+            onTrain = { onSelect(MainTab.TODAY) },
+            onChangeGoal = { onSelect(MainTab.TRAIN) },
+            onOpenProgress = navigation.onOpenProgress,
+        )
+
+        MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
+
+        MainTab.BODY -> BodyRoute(onOpenSettings = navigation.onOpenSettings)
     }
 }
 

@@ -23,13 +23,33 @@ internal fun OnboardingUiState.forward(): OnboardingUiState {
     return when {
         testing && testIndex < tests.lastIndex -> copy(testIndex = testIndex + 1, testsDone = testIndex + 1)
         testing -> copy(step = OnboardingStep.READY, testsDone = tests.size)
-        else -> copy(step = OnboardingStep.entries[step.ordinal + 1], testIndex = 0)
+        else -> copy(step = steps[steps.indexOf(step) + 1], testIndex = 0)
     }
 }
 
-/** Straight to the plan from the quick test. Movements already confirmed are kept; the rest are dropped. */
-internal fun OnboardingUiState.skippingTest(): OnboardingUiState =
-    if (step == OnboardingStep.TEST) copy(step = OnboardingStep.READY, testsDone = testIndex) else this
+/**
+ * Past the step on screen without answering it, where that is allowed.
+ * Bodyweight is optional: skipping drops whatever was typed. In the quick
+ * test it goes straight to the plan: movements already confirmed are kept,
+ * the rest are dropped.
+ */
+internal fun OnboardingUiState.skipping(): OnboardingUiState = when (step) {
+    OnboardingStep.BODY -> copy(bodyweightText = "").forward()
+    OnboardingStep.TEST -> copy(step = OnboardingStep.READY, testsDone = testIndex)
+    else -> this
+}
+
+/**
+ * True when [answer] is the whole of the step on screen, so taking it moves
+ * setup on without a second tap. Steps with several answers, or typing, wait
+ * for Continue.
+ */
+internal fun OnboardingUiState.answers(answer: SetupAnswer): Boolean = when (answer) {
+    is SetupAnswer.Style -> step == OnboardingStep.STYLE
+    is SetupAnswer.Aim -> step == OnboardingStep.AIM
+    is SetupAnswer.PullUp -> step == OnboardingStep.PULL_UP
+    else -> false
+}
 
 /**
  * One step back, or one movement back in the quick test. From the plan it
@@ -45,7 +65,7 @@ internal fun OnboardingUiState.backward(): OnboardingUiState = when {
         testIndex = testIndex.coerceAtMost(tests.lastIndex),
     )
 
-    else -> copy(step = OnboardingStep.entries[step.ordinal - 1])
+    else -> copy(step = steps[steps.indexOf(step) - 1])
 }
 
 /** One answer given during setup. */
@@ -72,12 +92,20 @@ sealed interface SetupAnswer {
     data class PullUp(val answer: PullUpAnswer) : SetupAnswer
 
     /**
-     * What is typed in the bodyweight field, and the [unit] it is in.
+     * What is typed in the bodyweight field.
      *
      * @property text As typed.
+     */
+    data class Bodyweight(val text: String) : SetupAnswer
+
+    /**
+     * The unit weights are typed and shown in. The number already typed is
+     * kept as it is: someone who typed 75 under "lb" and switches to kg meant
+     * 75 kg.
+     *
      * @property unit Kilograms or pounds.
      */
-    data class Bodyweight(val text: String, val unit: WeightUnit = WeightUnit.KG) : SetupAnswer
+    data class Unit(val unit: WeightUnit) : SetupAnswer
 
     /**
      * A training day added or removed.
@@ -129,7 +157,9 @@ internal fun OnboardingUiState.with(answer: SetupAnswer): OnboardingUiState = wh
 
     is SetupAnswer.PullUp -> copy(pullUp = answer.answer)
 
-    is SetupAnswer.Bodyweight -> copy(bodyweightText = answer.text.take(MAX_WEIGHT_CHARS), bodyweightUnit = answer.unit)
+    is SetupAnswer.Bodyweight -> copy(bodyweightText = answer.text.take(MAX_WEIGHT_CHARS))
+
+    is SetupAnswer.Unit -> copy(bodyweightUnit = answer.unit)
 
     is SetupAnswer.Day -> copy(days = days.toggled(answer.day))
 

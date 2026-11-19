@@ -1,17 +1,13 @@
 package app.levitx.phone.onboarding
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -19,62 +15,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.TrainingAim
+import app.levitx.core.load.WeightUnit
 import app.levitx.design.LevitxColors
-import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
-import app.levitx.phone.ui.Caption
-import app.levitx.phone.ui.Help
-import app.levitx.phone.ui.Lede
-import app.levitx.phone.ui.LocalWeightUnit
-import app.levitx.phone.ui.Rule
+import app.levitx.phone.ui.LevitxMotion
+import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.ScreenPadding
-import app.levitx.phone.ui.ScreenTitle
-import app.levitx.phone.ui.StatStrip
 import app.levitx.phone.ui.StepHeader
-import app.levitx.phone.ui.Wordmark
-import app.levitx.phone.ui.unitLabel
 import java.time.DayOfWeek
 import kotlinx.coroutines.launch
 
-/** Steps after the welcome, which the "2 / 4" counter counts. */
-private val CountedSteps = OnboardingStep.entries.drop(1)
+/** The header's height, which the steps leave clear because the header sits over them. */
+internal val HeaderHeight = 56.dp
 
-/** How much of the welcome screen the photo covers, as on the artboard (560 of 844). */
-private const val WELCOME_PHOTO_FRACTION = 0.66f
-
-/** Where the photo starts fading into the background, as a fraction of its height. */
-private const val PHOTO_FADE_START = 0.5f
+/** The gap under the header on a step with no photo. */
+private val PlainTitleGap = 14.dp
 
 /** Setup destination: connects [OnboardingViewModel] to [OnboardingScreen]. */
 @Composable
 fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
-    val unit = LocalWeightUnit.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     // Back steps through setup before it leaves the app.
@@ -84,18 +58,19 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
         actions = OnboardingActions(
             onNext = { viewModel.next() },
             onBack = { viewModel.back() },
+            onSkip = { viewModel.next(skip = true) },
             onChooseGoal = { viewModel.answer(SetupAnswer.Goal(it)) },
             onChooseStyle = { viewModel.answer(SetupAnswer.Style(it)) },
             onChooseAim = { viewModel.answer(SetupAnswer.Aim(it)) },
             onAnswerPullUp = { viewModel.answer(SetupAnswer.PullUp(it)) },
-            onTypeBodyweight = { viewModel.answer(SetupAnswer.Bodyweight(it, unit)) },
+            onTypeBodyweight = { viewModel.answer(SetupAnswer.Bodyweight(it)) },
+            onChooseUnit = viewModel::chooseUnit,
             onToggleDay = { viewModel.answer(SetupAnswer.Day(it)) },
             onChooseMinutes = { viewModel.answer(SetupAnswer.Minutes(it)) },
             onToggleEquipment = { viewModel.answer(SetupAnswer.Kit(it)) },
             onChooseNoEquipment = { viewModel.answer(SetupAnswer.Kit(null)) },
-            onFinish = { scope.launch { if (viewModel.finish()) onFinished() } },
             onCountTest = { viewModel.answer(SetupAnswer.TestCount(it)) },
-            onSkipTest = { viewModel.next(skipTest = true) },
+            onFinish = { scope.launch { if (viewModel.finish()) onFinished() } },
         ),
     )
 }
@@ -105,40 +80,44 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
  *
  * @property onNext Moves to the next step.
  * @property onBack Goes back a step, or a movement in the quick test.
+ * @property onSkip Leaves the step on screen unanswered: bodyweight, or the rest of the quick test.
  * @property onChooseGoal Picks a skill path by id, or general fitness with null.
- * @property onChooseStyle Picks all-round or focused.
- * @property onAnswerPullUp Answers "Can you do a strict pull-up?".
+ * @property onChooseStyle Picks all-round or focused, and moves on.
+ * @property onChooseAim Picks what the training is tuned for, and moves on.
+ * @property onAnswerPullUp Answers "Can you do a strict pull-up?", and moves on.
  * @property onTypeBodyweight Updates the bodyweight field.
+ * @property onChooseUnit Switches between kilograms and pounds, for the whole app.
  * @property onToggleDay Adds or removes a training day.
  * @property onChooseMinutes Picks the time per session.
  * @property onToggleEquipment Adds or removes a piece of kit.
  * @property onChooseNoEquipment Says they have no kit.
- * @property onFinish Saves the answers and starts training.
  * @property onCountTest Sets the reps counted for the quick test movement on screen.
- * @property onSkipTest Skips the rest of the quick test.
- * @property onChooseAim Picks what the ladder work is tuned for.
+ * @property onFinish Saves the answers and starts training.
  */
 data class OnboardingActions(
-    val onNext: () -> Unit,
-    val onBack: () -> Unit,
-    val onChooseGoal: (String?) -> Unit,
-    val onChooseStyle: (PlanStyle) -> Unit,
-    val onAnswerPullUp: (PullUpAnswer) -> Unit,
-    val onTypeBodyweight: (String) -> Unit,
-    val onToggleDay: (DayOfWeek) -> Unit,
-    val onChooseMinutes: (Int) -> Unit,
-    val onToggleEquipment: (Equipment) -> Unit,
-    val onChooseNoEquipment: () -> Unit,
-    val onFinish: () -> Unit,
-    val onCountTest: (Int) -> Unit = {},
+    val onNext: () -> Unit = {},
+    val onBack: () -> Unit = {},
+    val onSkip: () -> Unit = {},
+    val onChooseGoal: (String?) -> Unit = {},
+    val onChooseStyle: (PlanStyle) -> Unit = {},
     val onChooseAim: (TrainingAim) -> Unit = {},
-    val onSkipTest: () -> Unit = {},
+    val onAnswerPullUp: (PullUpAnswer) -> Unit = {},
+    val onTypeBodyweight: (String) -> Unit = {},
+    val onChooseUnit: (WeightUnit) -> Unit = {},
+    val onToggleDay: (DayOfWeek) -> Unit = {},
+    val onChooseMinutes: (Int) -> Unit = {},
+    val onToggleEquipment: (Equipment) -> Unit = {},
+    val onChooseNoEquipment: () -> Unit = {},
+    val onCountTest: (Int) -> Unit = {},
+    val onFinish: () -> Unit = {},
 )
 
 /**
- * Setup, one step at a time, laid out as the onboarding artboards: the
- * welcome over a photo, then each step under a back arrow, a "2 / 4" counter
- * and a progress line, with the main action pinned to the bottom.
+ * Setup, as the onboarding artboards: the welcome over a full-screen photo,
+ * then one question a screen. Each step has a photo behind its top, the
+ * question as its title, and big answers; a step with one answer moves on
+ * when it is tapped. A back arrow and a thin progress line stay in place
+ * while the steps move under them.
  */
 @Composable
 fun OnboardingScreen(uiState: OnboardingUiState, actions: OnboardingActions, modifier: Modifier = Modifier) {
@@ -147,212 +126,135 @@ fun OnboardingScreen(uiState: OnboardingUiState, actions: OnboardingActions, mod
             .fillMaxSize()
             .background(LevitxColors.Background),
     ) {
-        if (uiState.step == OnboardingStep.WELCOME) {
-            Welcome(onStart = actions.onNext)
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-                    .imePadding(),
-            ) {
-                StepHeader(
-                    index = CountedSteps.indexOf(uiState.step) + 1,
-                    count = CountedSteps.size,
-                    onBack = actions.onBack,
-                )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                        .padding(top = 22.dp, bottom = 20.dp),
-                ) {
-                    when (uiState.step) {
-                        OnboardingStep.GOAL -> GoalStep(uiState, actions)
-                        OnboardingStep.HOW -> HowStep(uiState, actions)
-                        OnboardingStep.WEEK -> WeekStep(uiState, actions)
-                        OnboardingStep.TEST -> QuickTestStep(uiState, actions)
-                        OnboardingStep.READY -> ReadyStep(uiState)
-                        OnboardingStep.WELCOME -> Unit
-                    }
-                    if (uiState.unavailable) {
-                        Text(
-                            text = stringResource(R.string.data_unavailable),
-                            color = LevitxColors.Accent,
-                            modifier = Modifier.padding(horizontal = ScreenPadding, vertical = 12.dp),
-                        )
-                    }
-                }
-                StepBar(
-                    uiState,
-                    actions,
-                    modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, bottom = ScreenPadding),
-                )
-            }
+        AnimatedContent(
+            targetState = uiState.step == OnboardingStep.WELCOME,
+            transitionSpec = { if (targetState) LevitxMotion.back() else LevitxMotion.forward() },
+            label = "welcome",
+        ) { welcome ->
+            if (welcome) WelcomeScreen(onStart = actions.onNext) else Steps(uiState, actions)
         }
     }
 }
 
-/** The main action pinned under a step: on, start, or in the quick test, on or skip. */
+/** The steps after the welcome: the step on screen, with the header fixed over it. */
 @Composable
-private fun StepBar(uiState: OnboardingUiState, actions: OnboardingActions, modifier: Modifier = Modifier) {
-    if (uiState.step == OnboardingStep.TEST) {
-        QuickTestBar(uiState, actions, modifier = modifier)
-    } else {
-        val ready = uiState.step == OnboardingStep.READY
-        AccentBar(
-            text = stringResource(if (ready) R.string.ready_start else R.string.continue_button),
-            onClick = if (ready) actions.onFinish else actions.onNext,
-            enabled = uiState.canContinue && !uiState.saving,
-            modifier = modifier,
-        )
-    }
-}
-
-/** The first screen: a photo, the promise, three facts and "Build my plan". */
-@Composable
-private fun Welcome(onStart: () -> Unit) {
+private fun Steps(uiState: OnboardingUiState, actions: OnboardingActions) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(WELCOME_PHOTO_FRACTION),
-        ) {
-            Image(
-                painter = painterResource(R.drawable.photo_welcome),
-                contentDescription = stringResource(R.string.welcome_photo_description),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            PHOTO_FADE_START to Color.Transparent,
-                            1f to LevitxColors.Background,
-                        ),
-                    ),
-            )
+        AnimatedContent(
+            targetState = uiState.step,
+            // Later steps come in from the right, earlier ones from the left.
+            transitionSpec = { if (targetState > initialState) LevitxMotion.forward() else LevitxMotion.back() },
+            label = "step",
+        ) { step ->
+            Step(step, uiState, actions)
         }
+        StepHeader(progress = uiState.progress, onBack = actions.onBack, modifier = Modifier.statusBarsPadding())
+    }
+}
+
+/**
+ * One step: its photo behind, its content scrolling over the photo, and its
+ * actions pinned to the bottom.
+ *
+ * @param step The step to draw. While steps change, the one leaving is still
+ *   drawn for a moment, so this isn't always the step in [uiState].
+ */
+@Composable
+private fun Step(step: OnboardingStep, uiState: OnboardingUiState, actions: OnboardingActions) {
+    val art = stepArt(step, uiState.goalPathId)
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (art != null) StepPhoto(art)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .imePadding()
+                // Clear of the header, so what scrolls is cut off under it instead of running behind it.
+                .padding(top = HeaderHeight),
         ) {
-            Wordmark(
-                modifier = Modifier
-                    .height(56.dp)
-                    .padding(horizontal = ScreenPadding),
-            )
-            Spacer(Modifier.weight(1f))
-            WelcomeText()
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, bottom = ScreenPadding),
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 20.dp),
             ) {
-                AccentBar(
-                    text = stringResource(R.string.welcome_start),
-                    hint = stringResource(R.string.welcome_minutes),
-                    onClick = onStart,
-                )
-                Text(
-                    text = stringResource(R.string.welcome_private),
-                    fontSize = 12.sp,
-                    color = LevitxColors.TextMuted,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Spacer(Modifier.height(art?.titleGap ?: PlainTitleGap))
+                StepContent(step, uiState, actions)
+                if (uiState.unavailable) StepNote(stringResource(R.string.data_unavailable), warning = true)
             }
-        }
-    }
-}
-
-@Composable
-private fun ColumnScope.WelcomeText() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, bottom = 28.dp),
-    ) {
-        Caption(stringResource(R.string.welcome_kicker), color = LevitxColors.Accent)
-        Text(
-            text = stringResource(R.string.welcome_title),
-            style = LevitxType.Poster,
-            color = LevitxColors.Text,
-            modifier = Modifier.semantics { heading() },
-        )
-        Text(
-            text = stringResource(R.string.welcome_body, unitLabel()),
-            fontSize = 15.sp,
-            lineHeight = 22.sp,
-            color = LevitxColors.TextMuted,
-        )
-        Column {
-            Rule()
-            StatStrip(
-                listOf(
-                    unitLabel() to stringResource(R.string.welcome_fact_kg_caption),
-                    stringResource(R.string.welcome_fact_gates) to stringResource(R.string.welcome_fact_gates_caption),
-                    stringResource(R.string.welcome_fact_watch) to stringResource(R.string.welcome_fact_watch_caption),
-                ),
+            StepBar(
+                step,
+                uiState,
+                actions,
+                modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, bottom = ScreenPadding),
             )
-            Rule()
         }
     }
 }
 
-/** A step's title and the line under it, padded to the screen edges. */
 @Composable
-internal fun StepTitle(title: String, lede: String? = null) {
-    Column(modifier = Modifier.padding(horizontal = ScreenPadding)) {
-        ScreenTitle(title)
-        if (lede != null) Lede(lede, modifier = Modifier.padding(top = 8.dp))
+private fun StepContent(step: OnboardingStep, uiState: OnboardingUiState, actions: OnboardingActions) {
+    when (step) {
+        OnboardingStep.GOAL -> GoalStep(uiState, actions)
+        OnboardingStep.STYLE -> StyleStep(uiState, actions)
+        OnboardingStep.AIM -> AimStep(uiState, actions)
+        OnboardingStep.PULL_UP -> PullUpStep(uiState, actions)
+        OnboardingStep.BODY -> BodyStep(uiState, actions)
+        OnboardingStep.WEEK -> WeekStep(uiState, actions)
+        OnboardingStep.KIT -> KitStep(uiState, actions)
+        OnboardingStep.TEST -> QuickTestStep(uiState, actions)
+        OnboardingStep.READY -> ReadyStep(uiState)
+        OnboardingStep.WELCOME -> Unit
     }
 }
 
-/** A step's group of controls: a sentence-case question and what goes under it. */
+/**
+ * The actions pinned under a step. The steps answered with one tap have
+ * none: tapping the answer is the action.
+ */
 @Composable
-internal fun Question(
-    text: String,
+private fun StepBar(
+    step: OnboardingStep,
+    uiState: OnboardingUiState,
+    actions: OnboardingActions,
     modifier: Modifier = Modifier,
-    trailing: String? = null,
-    help: String? = null,
-    asCaption: Boolean = false,
-    content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = ScreenPadding, end = ScreenPadding, top = 22.dp),
-    ) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            if (asCaption) {
-                Caption(text, modifier = Modifier.weight(1f))
-            } else {
-                Text(
-                    text = text,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = LevitxColors.Text,
-                    modifier = Modifier
-                        .weight(1f)
-                        .semantics { heading() },
+    // Only the step on screen can be acted on, not one that is on its way out.
+    val live = step == uiState.step && !uiState.saving
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = modifier) {
+        when (step) {
+            OnboardingStep.GOAL -> {
+                GeneralGoalLink(
+                    selected = uiState.goalChosen && uiState.goalPathId == null,
+                    onClick = { actions.onChooseGoal(null) },
                 )
+                Continue(actions.onNext, enabled = live && uiState.canContinue)
             }
-            if (trailing != null) Caption(trailing, color = LevitxColors.Accent)
+
+            OnboardingStep.BODY -> {
+                QuietBar(stringResource(R.string.body_skip), onClick = actions.onSkip, enabled = live)
+                Continue(actions.onNext, enabled = live && uiState.canContinue)
+            }
+
+            OnboardingStep.WEEK, OnboardingStep.KIT -> Continue(actions.onNext, enabled = live && uiState.canContinue)
+
+            OnboardingStep.TEST -> QuickTestBar(uiState, actions)
+
+            OnboardingStep.READY -> AccentBar(
+                text = stringResource(R.string.ready_start),
+                onClick = actions.onFinish,
+                enabled = live,
+            )
+
+            OnboardingStep.WELCOME, OnboardingStep.STYLE, OnboardingStep.AIM, OnboardingStep.PULL_UP -> Unit
         }
-        content()
-        if (help != null) Help(help)
     }
 }
 
-@Preview(widthDp = 390, heightDp = 844)
 @Composable
-private fun WelcomePreview() {
-    LevitxTheme { OnboardingScreen(OnboardingUiState(), PreviewActions) }
+private fun Continue(onClick: () -> Unit, enabled: Boolean) {
+    AccentBar(text = stringResource(R.string.continue_button), onClick = onClick, enabled = enabled)
 }
 
 @Preview(widthDp = 390, heightDp = 844)
@@ -361,10 +263,15 @@ private fun GoalStepPreview() {
     LevitxTheme {
         OnboardingScreen(
             OnboardingUiState(step = OnboardingStep.GOAL, goalChosen = true, goalPathId = "first_pull_up"),
-            PreviewActions,
+            OnboardingActions(),
         )
     }
 }
 
-/** Does nothing; for previews. */
-internal val PreviewActions = OnboardingActions({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun BodyStepPreview() {
+    LevitxTheme {
+        OnboardingScreen(OnboardingUiState(step = OnboardingStep.BODY, bodyweightText = "74.2"), OnboardingActions())
+    }
+}

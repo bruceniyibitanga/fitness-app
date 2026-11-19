@@ -1,10 +1,10 @@
 package app.levitx.phone.ui
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,11 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.design.LevitxColors
@@ -42,8 +41,13 @@ import app.levitx.phone.R
  * square-marked notes.
  */
 
-private val PhotoTileHeight = 80.dp
-private val CheckBadgeSize = 20.dp
+/** The name on a full-width photo card. */
+val PhotoCardTitle = 24.sp
+
+/** The name on a photo tile, two to a row. */
+val PhotoTileTitle = 18.sp
+
+private val CheckBadgeSize = 22.dp
 private val SelectedOutline = 2.dp
 private val Fade = Color(0xFF0B0B0A)
 private const val FADE_TOP = 0.1f
@@ -90,30 +94,26 @@ fun StatStrip(figures: List<Pair<String, String>>, modifier: Modifier = Modifier
 }
 
 /**
- * A goal as a photo with its name over a dark fade, as on the goal step. The
- * selected one gets an orange outline and a tick.
+ * A photo with a name over a dark fade at its foot: a program, a workout or
+ * a goal. The caller sizes it and makes it tappable through [modifier], so
+ * the same card is a big program card, a small workout tile or a choice at
+ * setup. A [selected] one gets an orange outline and a tick. With a
+ * [sharedKey] the photo grows into the page the card opens.
+ *
+ * @param titleSize How big the name is: larger on a full-width card than on a tile.
  */
 @Composable
-fun PhotoTile(
+fun PhotoCard(
     @DrawableRes photo: Int,
     title: String,
     caption: String,
-    selected: Boolean,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    titleSize: TextUnit = PhotoCardTitle,
+    selected: Boolean = false,
+    sharedKey: String? = null,
 ) {
-    Box(
-        modifier = modifier
-            .height(PhotoTileHeight)
-            .background(LevitxColors.Surface)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
-    ) {
-        Image(
-            painter = painterResource(photo),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
+    Box(modifier = modifier.background(LevitxColors.Surface)) {
+        Photo(photo, sharedKey = sharedKey, modifier = Modifier.fillMaxSize())
         Box(
             Modifier
                 .fillMaxSize()
@@ -121,26 +121,37 @@ fun PhotoTile(
                     Brush.verticalGradient(listOf(Fade.copy(alpha = FADE_TOP), Fade.copy(alpha = FADE_BOTTOM))),
                 ),
         )
-        if (selected) {
-            Box(Modifier.fillMaxSize().border(SelectedOutline, LevitxColors.Accent))
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .size(CheckBadgeSize)
-                    .background(LevitxColors.Accent),
-            ) { Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = LevitxColors.Background) }
-        }
-        Column(
+        if (selected) Box(Modifier.fillMaxSize().border(SelectedOutline, LevitxColors.Accent))
+        Row(
+            verticalAlignment = Alignment.Bottom,
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 12.dp, bottom = 10.dp, end = 12.dp),
+                .padding(start = 14.dp, bottom = 12.dp, end = 12.dp),
         ) {
-            Text(text = title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = LevitxColors.Text)
-            Text(text = caption.uppercase(), style = LevitxType.Micro, color = LevitxColors.TextSoft)
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = LevitxType.Title,
+                    fontSize = titleSize,
+                    lineHeight = titleSize,
+                    color = LevitxColors.Text,
+                )
+                Text(text = caption.uppercase(), style = LevitxType.Micro, color = LevitxColors.TextSoft)
+            }
+            if (selected) CheckBadge()
         }
     }
+}
+
+/** The orange square with a tick that marks the chosen one of several. */
+@Composable
+fun CheckBadge(modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(CheckBadgeSize)
+            .background(LevitxColors.Accent),
+    ) { Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = LevitxColors.Background) }
 }
 
 /**
@@ -151,8 +162,8 @@ fun PhotoTile(
 fun NumberedRow(
     number: Int,
     title: String,
-    detail: String,
     modifier: Modifier = Modifier,
+    detail: String? = null,
     figure: String? = null,
     figureCaption: String? = null,
     highlighted: Boolean = false,
@@ -163,7 +174,7 @@ fun NumberedRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 64.dp)
+            .heightIn(min = 56.dp)
             .background(if (highlighted) LevitxColors.Surface else Color.Transparent)
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .padding(horizontal = ScreenPadding, vertical = 10.dp),
@@ -175,13 +186,15 @@ fun NumberedRow(
             modifier = Modifier.width(32.dp),
         )
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
-            Text(
-                text = detail,
-                fontSize = 13.sp,
-                color = LevitxColors.TextMuted,
-                modifier = Modifier.padding(top = 2.dp),
-            )
+            Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = LevitxColors.Text)
+            if (detail != null) {
+                Text(
+                    text = detail,
+                    fontSize = 13.sp,
+                    color = LevitxColors.TextMuted,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
         }
         if (figure != null) {
             Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 12.dp)) {
