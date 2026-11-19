@@ -102,11 +102,11 @@ class OnboardingViewModel @Inject constructor(
     fun chooseUnit(unit: WeightUnit) {
         state.update { it.with(SetupAnswer.Unit(unit)) }
         viewModelScope.launch {
-            // If the setting can't be saved, setup still uses the unit picked for the weight typed here.
             try {
                 settings.setUnits(unit)
             } catch (_: IOException) {
-                Unit
+                // The settings file couldn't be written. Setup still reads the weight typed here in the
+                // unit picked, and saves it in kilograms, so nothing is wrong; the app just keeps its old unit.
             }
         }
     }
