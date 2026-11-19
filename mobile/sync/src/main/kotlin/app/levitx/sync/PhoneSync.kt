@@ -6,7 +6,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -21,6 +20,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 @Singleton
 class PhoneSync @Inject internal constructor(
     private val engine: PhoneSyncEngine,
+    private val inbox: PhoneInbox,
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     /**
@@ -30,11 +30,12 @@ class PhoneSync @Inject internal constructor(
      */
     fun start() {
         scope.launch {
-            engine.watchState()
-                .filterNotNull()
+            // Before anything new is published: a delete the watch may not have heard about goes first.
+            engine.announceLastReset()?.log("phone reset")
+            engine.publishing()
                 // Locked data is expected and already shown on screen. Anything else is a bug.
                 .catch { error -> if (error !is DataUnavailableException) throw error }
-                .collect { state -> engine.publish(state).log("phone publish") }
+                .collect { it.log("phone publish") }
         }
         scope.launch { receive() }
     }
@@ -45,15 +46,15 @@ class PhoneSync @Inject internal constructor(
      * pass is done.
      */
     suspend fun receive() {
-        engine.receive().log("phone receive")
+        inbox.receive().log("phone receive")
         // A new workout changes the next session and can raise a best, which the watch should hear about now.
         engine.publishCurrent().log("phone publish")
     }
 
     /**
-     * Stops offering the watch anything about the person, after they delete
-     * everything. The watch keeps what it already has until Levitx is cleared
-     * on it. Returns when done.
+     * Stops offering the watch anything about the person and tells it to
+     * delete its copy, when they delete everything. Returns when done. If
+     * the watch can't be told now, it is told later: see [PhoneSyncEngine.forget].
      */
     suspend fun forget() {
         engine.forget().log("phone forget")

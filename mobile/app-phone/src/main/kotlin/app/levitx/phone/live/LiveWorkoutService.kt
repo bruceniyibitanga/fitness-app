@@ -41,7 +41,8 @@ private const val START_GRACE_MILLIS = 5_000L
  * It doesn't hold the workout (the workout screen does) or play the cues
  * ([WorkoutCuer] does). It follows [LiveWorkout] and stops itself as soon as
  * no workout is running, so a workout works the same, on screen, if the
- * service can't start.
+ * service can't start. A cardio or mobility workout on the interval timer is
+ * kept going the same way, with a simpler notification.
  */
 @AndroidEntryPoint
 class LiveWorkoutService : Service() {
@@ -89,18 +90,30 @@ class LiveWorkoutService : Service() {
     /** The notification for the workout now, or a plain one until it is published. */
     private fun current(): Notification = live.session.value
         ?.let { notifications.forSession(it, liveStatus(it, clock.elapsedRealtimeMillis())) }
-        ?: notifications.starting()
+        ?: live.intervals.value?.let(::forIntervals)
+        ?: notifications.plain()
+
+    /** The notification for a cardio or mobility workout: its name and the step it is on. */
+    private fun forIntervals(intervals: LiveIntervals): Notification =
+        notifications.plain(intervals.workoutName, intervals.noticeText(this))
 
     private suspend fun follow() {
         try {
+            val showing = combine(live.session, live.intervals, live.noticeDismissed) { session, intervals, dismissed ->
+                Showing(session?.forNotice(), intervals, dismissed)
+            }
             // The screen publishes the workout before starting this, but don't count on the order.
-            withTimeoutOrNull(START_GRACE_MILLIS) { live.session.first { it != null } } ?: return
-            combine(live.session, live.noticeDismissed) { session, dismissed -> session?.forNotice() to dismissed }
-                .takeWhile { (session, _) -> session != null }
+            withTimeoutOrNull(START_GRACE_MILLIS) { showing.first { it.hasWorkout } } ?: return
+            showing
+                .takeWhile { it.hasWorkout }
                 .distinctUntilChanged()
                 // A newer value cancels the wait for rest to run out.
-                .collectLatest { (session, dismissed) ->
-                    if (session != null && !dismissed) showUntilSettled(session)
+                .collectLatest { now ->
+                    when {
+                        now.dismissed -> Unit
+                        now.session != null -> showUntilSettled(now.session)
+                        now.intervals != null -> showInForeground(forIntervals(now.intervals))
+                    }
                 }
         } finally {
             ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
@@ -137,6 +150,15 @@ class LiveWorkoutService : Service() {
     } catch (_: SecurityException) {
         // Only if the manifest lost the permissions the health type needs.
         false
+    }
+
+    /**
+     * What there is to show: a strength workout, a cardio or mobility
+     * workout, or neither, and whether the person swiped the notification away.
+     */
+    private data class Showing(val session: LiveSession?, val intervals: LiveIntervals?, val dismissed: Boolean) {
+        val hasWorkout: Boolean
+            get() = session != null || intervals != null
     }
 
     /** Starting the service, and what the notification sends it. */

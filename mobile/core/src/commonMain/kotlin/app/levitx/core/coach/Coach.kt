@@ -76,6 +76,27 @@ public class Coach internal constructor(
     }
 
     /**
+     * The next session for [model] as a plan to carry away: what to do if
+     * training starts now, and what to do instead once everything trained
+     * hard recently has had its rest. Null when nothing can be trained safely.
+     *
+     * The rested session is [recommend] asked at the moment the last hard
+     * work is [CoachTuning.MIN_HOURS_BETWEEN_HARD_SESSIONS] old, so it is
+     * exactly what the phone itself would say then. It is left out when that
+     * moment has passed, or when it gives the same session.
+     */
+    public fun planAhead(model: AthleteModel, nowEpochMillis: Long): PlanAhead? {
+        val now = recommend(model, nowEpochMillis).session ?: return null
+        val restedAt = MovementPattern.strength
+            .mapNotNull { model.lastHardAt(it, nowEpochMillis) }
+            .maxOrNull()
+            ?.plus(CoachTuning.MIN_HOURS_BETWEEN_HARD_SESSIONS * MILLIS_PER_HOUR)
+            ?.takeIf { it > nowEpochMillis }
+        val rested = restedAt?.let { recommend(model, it).session }?.takeIf { it != now }
+        return PlanAhead(now, rested, restedAt.takeIf { rested != null })
+    }
+
+    /**
      * A workout the person picked for [focus] from the Train tab, as of
      * [nowEpochMillis], or null when nothing in it can be trained safely.
      *

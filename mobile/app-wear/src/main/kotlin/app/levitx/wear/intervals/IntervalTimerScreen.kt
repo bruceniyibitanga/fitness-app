@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.res.stringResource
@@ -44,12 +41,12 @@ import app.levitx.wear.ui.SectionLabel
 @Composable
 fun IntervalTimerRoute(onClose: () -> Unit, viewModel: IntervalTimerViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // Starting is asynchronous, so the screen can open a moment before the
-    // workout is running. It closes only once there was something to show.
-    var hasShownWorkout by remember { mutableStateOf(false) }
+    // With no workout there is nothing to show here, so return to home. This
+    // is how the screen closes after "Done", and what happens if the system
+    // brings the screen back after closing the app mid-workout. A workout
+    // just picked is already "starting" by the time this screen opens.
     LaunchedEffect(state) {
-        if (state !is IntervalState.Idle) hasShownWorkout = true
-        if (state is IntervalState.Idle && hasShownWorkout) onClose()
+        if (state is IntervalState.Idle) onClose()
     }
     // The workout service may only start while the app is on screen.
     val isRunning = state is IntervalState.Running
@@ -80,6 +77,7 @@ fun IntervalTimerScreen(state: IntervalState, actions: IntervalActions, modifier
     Box(modifier = modifier.fillMaxSize().keepScreenOn()) {
         when (state) {
             IntervalState.Idle -> TimerList { item { CenteredText(stringResource(R.string.interval_none)) } }
+            is IntervalState.Starting -> TimerList { item { CircularProgressIndicator() } }
             is IntervalState.Running -> Running(state.run, actions)
             is IntervalState.Done -> Done(state, actions.onDone)
         }

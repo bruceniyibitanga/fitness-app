@@ -1,6 +1,7 @@
 package app.levitx.sync
 
 import app.levitx.core.coach.Coach
+import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.intervals.IntervalCatalogue
 import app.levitx.core.load.WeightUnit
@@ -22,14 +23,19 @@ import app.levitx.testing.FakeIntervalOutbox
 import app.levitx.testing.FakeNextSessionRepository
 import app.levitx.testing.FakePrivacyRepository
 import app.levitx.testing.FakeProgressRepository
+import app.levitx.testing.FakeResetMarker
 import app.levitx.testing.FakeSessionRepository
 import app.levitx.testing.FakeSettingsRepository
 import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutOutbox
 import app.levitx.testing.coachState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -49,7 +55,9 @@ class SyncEnginesTest {
     private val phoneCoach = FakeCoachRepository(coachState())
     private val clock = FakeTrainingClock()
     private val phoneSettings = FakeSettingsRepository(AppSettings(units = WeightUnit.LB))
+    private val phoneReset = FakeResetMarker()
     private val phone = phoneEngine()
+    private val inbox = phoneInbox()
 
     private val watchGoal = FakeGoalRepository()
     private val watchProgress = FakeProgressRepository()
@@ -69,16 +77,28 @@ class SyncEnginesTest {
         watchWorkouts.current.forEach { watchWorkouts.markDelivered(it.run.id) }
         watchIntervals.current.forEach { watchIntervals.markDelivered(it.id) }
     }
+    private val watchReset = FakeResetMarker()
     private val watch = watchEngine()
 
-    private fun phoneEngine(goal: GoalRepository = phoneGoal, coach: CoachRepository = phoneCoach) = PhoneSyncEngine(
+    private fun phoneEngine(
+        goal: GoalRepository = phoneGoal,
+        coach: CoachRepository = phoneCoach,
+        marker: FakeResetMarker = phoneReset,
+    ) = PhoneSyncEngine(
         network.onDevice("phone"),
         PhoneStateSource(goal, phoneProgress, phoneEquipment, coach, Coach(), clock),
-        phoneEquipment,
-        phoneSessions,
-        coach,
         phoneSettings,
+        marker,
     )
+
+    /** Does what the app does while it runs: announces the last delete, then keeps publishing. */
+    private fun CoroutineScope.running(engine: PhoneSyncEngine) = launch {
+        engine.announceLastReset()
+        engine.publishing().collect {}
+    }
+
+    private fun phoneInbox(coach: CoachRepository = phoneCoach) =
+        PhoneInbox(network.onDevice("phone"), phoneEquipment, phoneSessions, coach)
 
     private fun watchEngine(goal: GoalRepository = watchGoal) = WatchSyncEngine(
         network.onDevice("watch"),
@@ -86,7 +106,7 @@ class SyncEnginesTest {
         watchSessions,
         watchWorkouts,
         watchIntervals,
-        watchPrivacy,
+        WatchWipe(watchPrivacy, watchReset),
     )
 
     /** What the phone's coach would plan right now. */
@@ -163,8 +183,8 @@ class SyncEnginesTest {
         assertNull(watchGoal.current)
         assertNull(watchNext.current)
         assertTrue(watchWorkouts.current.isEmpty())
-        // Only the phone's request is left: no plan, and no workout from the watch.
-        assertEquals(listOf(SyncPaths.FORGET), network.paths)
+        // Only the phone's request and the id of the delete are left: no plan, and no workout from the watch.
+        assertEquals(listOf(SyncPaths.FORGET, SyncPaths.RESET), network.paths)
         // Deleting again would find nothing, so it doesn't happen.
         assertEquals(SyncReport(SyncOutcome.DONE), watch.sync())
         assertEquals(1, watchPrivacy.deletions)
@@ -180,7 +200,8 @@ class SyncEnginesTest {
         publish()
         watch.sync()
 
-        assertEquals(listOf(SyncPaths.STATE), network.paths)
+        // The id of the delete stays for good; the watch has acted on it, so it deletes nothing more.
+        assertEquals(listOf(SyncPaths.RESET, SyncPaths.STATE), network.paths)
         assertEquals(path, watchGoal.current)
         assertEquals(coachsPlan(), watchNext.current)
         assertEquals(1, watchPrivacy.deletions)
@@ -210,7 +231,7 @@ class SyncEnginesTest {
         watch.sync()
         assertEquals(listOf(SyncPaths.STATE, SyncPaths.workout(idA)), network.paths)
 
-        assertEquals(1, phone.receive().delivered)
+        assertEquals(1, inbox.receive().delivered)
         assertEquals(setOf(idA), phoneCoach.recordedWorkouts)
 
         // The phone publishes a plan that takes the workout in, and the watch takes it.
@@ -221,7 +242,7 @@ class SyncEnginesTest {
         assertTrue(watchWorkouts.current.isEmpty())
 
         // The phone sees the workout item is gone and deletes its confirmation.
-        phone.receive()
+        inbox.receive()
         assertEquals(listOf(SyncPaths.STATE), network.paths)
     }
 
@@ -249,10 +270,30 @@ class SyncEnginesTest {
         finishOnTheWatch(idA)
         watch.sync()
 
-        val noCoachPhone = phoneEngine(coach = FakeCoachRepository())
+        val noCoachPhone = phoneInbox(coach = FakeCoachRepository())
 
         assertEquals(0, noCoachPhone.receive().delivered)
         assertEquals(listOf(SyncPaths.STATE, SyncPaths.workout(idA)), network.paths)
+    }
+
+    @Test
+    fun aWorkoutThatWaitedForSetupIsRecordedOnceAndOnlyOnce() = runTest {
+        publish()
+        watch.sync()
+        finishOnTheWatch(idA)
+        watch.sync()
+        // Everything was deleted on the phone, then set up again.
+        val lateCoach = FakeCoachRepository()
+        val phoneAgain = phoneInbox(coach = lateCoach)
+        assertEquals(0, phoneAgain.receive().delivered)
+        assertTrue(network.paths.none { it.startsWith(SyncPaths.ACKS_PREFIX) })
+
+        lateCoach.start(checkNotNull(phoneCoach.current).model.profile, PullUpAnswer.NOT_YET, emptySet())
+
+        assertEquals(1, phoneAgain.receive().delivered)
+        assertEquals(0, phoneAgain.receive().delivered)
+        assertEquals(setOf(idA), lateCoach.recordedWorkouts)
+        assertTrue(SyncPaths.ack(idA) in network.paths)
     }
 
     @Test
@@ -265,7 +306,7 @@ class SyncEnginesTest {
         // A valid payload on the wrong path: the id inside must match the path.
         network.plant("watch", SyncPaths.workout(idB), SyncCodec.encodeWorkout(queued))
 
-        val report = phone.receive()
+        val report = inbox.receive()
 
         assertEquals(2, report.skipped)
         assertTrue(phoneCoach.recordedWorkouts.isEmpty())
@@ -290,7 +331,7 @@ class SyncEnginesTest {
         watch.sync()
         assertEquals(listOf(SyncPaths.session(idA)), network.paths)
 
-        val received = phone.receive()
+        val received = inbox.receive()
         assertEquals(1, received.delivered)
         assertEquals(8, phoneProgress.current[dips.id])
         // The phone adds its own bodyweight record to the session.
@@ -302,7 +343,7 @@ class SyncEnginesTest {
         assertEquals(listOf(SyncPaths.ack(idA)), network.paths)
 
         // The phone sees the session item is gone and deletes its confirmation.
-        phone.receive()
+        inbox.receive()
         assertTrue(network.paths.isEmpty())
         // The session is still stored on both devices.
         assertEquals(1, watchSessions.stored.size)
@@ -333,9 +374,9 @@ class SyncEnginesTest {
     fun retriesNeverDoubleCount() = runTest {
         watchSessions.saveAndQueue(session(idA, best = 8))
         repeat(3) { watch.sync() }
-        repeat(3) { phone.receive() }
+        repeat(3) { inbox.receive() }
         repeat(3) { watch.sync() }
-        repeat(3) { phone.receive() }
+        repeat(3) { inbox.receive() }
 
         assertEquals(1, phoneSessions.stored.size)
         assertTrue(network.paths.isEmpty())
@@ -350,7 +391,7 @@ class SyncEnginesTest {
         repeat(2) { watch.sync() }
         assertEquals(2, watchSessions.queued.size)
 
-        assertEquals(2, phone.receive().delivered)
+        assertEquals(2, inbox.receive().delivered)
         assertEquals(2, watch.sync().delivered)
         assertTrue(watchSessions.queued.isEmpty())
     }
@@ -361,13 +402,13 @@ class SyncEnginesTest {
         network.isAvailable = false
 
         assertEquals(SyncOutcome.NO_LINK, watch.sync().outcome)
-        assertEquals(SyncOutcome.NO_LINK, phone.receive().outcome)
+        assertEquals(SyncOutcome.NO_LINK, inbox.receive().outcome)
         assertEquals(SyncOutcome.NO_LINK, publish().outcome)
         assertEquals(1, watchSessions.queued.size)
 
         network.isAvailable = true
         watch.sync()
-        assertEquals(1, phone.receive().delivered)
+        assertEquals(1, inbox.receive().delivered)
     }
 
     @Test
@@ -376,7 +417,7 @@ class SyncEnginesTest {
         // A valid payload on the wrong path: the id inside must match the path.
         network.plant("watch", SyncPaths.session(idB), SyncCodec.encodeSession(session(idA, best = 8)))
 
-        val report = phone.receive()
+        val report = inbox.receive()
 
         assertEquals(2, report.skipped)
         assertTrue(phoneSessions.stored.isEmpty())
@@ -430,7 +471,7 @@ class SyncEnginesTest {
         assertEquals(listOf(SyncPaths.intervals(idA)), network.paths)
 
         // History doesn't need the coach, so it doesn't wait for one.
-        val noCoachPhone = phoneEngine(coach = FakeCoachRepository())
+        val noCoachPhone = phoneInbox(coach = FakeCoachRepository())
         assertEquals(1, noCoachPhone.receive().delivered)
         assertEquals(listOf(listOf(20, 18)), phoneSessions.sessions.map { session -> session.sets.map { it.value } })
         assertTrue(phoneCoach.recordedWorkouts.isEmpty())
@@ -449,8 +490,8 @@ class SyncEnginesTest {
         watchIntervals.queue(intervals(idA))
         watch.sync()
 
-        assertEquals(1, phone.receive().delivered)
-        assertEquals(0, phone.receive().delivered)
+        assertEquals(1, inbox.receive().delivered)
+        assertEquals(0, inbox.receive().delivered)
         assertEquals(1, phoneSessions.sessions.size)
     }
 
@@ -460,7 +501,7 @@ class SyncEnginesTest {
         // A valid payload on the wrong path: the id inside must match the path.
         network.plant("watch", SyncPaths.intervals(idB), SyncCodec.encodeIntervals(intervals(idA)))
 
-        assertEquals(2, phone.receive().skipped)
+        assertEquals(2, inbox.receive().skipped)
         assertTrue(phoneSessions.sessions.isEmpty())
         assertEquals(listOf(SyncPaths.intervals(idA), SyncPaths.intervals(idB)), network.paths)
     }
@@ -474,5 +515,144 @@ class SyncEnginesTest {
 
         assertTrue(watchIntervals.current.isEmpty())
         assertTrue(network.paths.none { it.startsWith(SyncPaths.INTERVALS_PREFIX) })
+    }
+
+    @Test
+    fun aDeleteReachesAWatchThatWasAwayUntilThePhoneWasSetUpAgain() = runTest {
+        publish()
+        watch.sync()
+        watchIntervals.queue(intervals(idA))
+        watchProgress.recordBest(dips.id, 9)
+
+        // The watch is out of reach for all of this: delete everything, then set up again.
+        phone.forget()
+        publish()
+        assertTrue(SyncPaths.FORGET !in network.paths)
+
+        assertTrue(watch.sync().stateChanged)
+        assertEquals(1, watchPrivacy.deletions)
+        assertTrue(watchIntervals.current.isEmpty())
+        // What it holds now is only what the phone offers now.
+        assertEquals(phoneProgress.current[dips.id], watchProgress.current[dips.id])
+        assertEquals(coachsPlan(), watchNext.current)
+        assertEquals(checkNotNull(phoneReset.id), watchReset.id)
+    }
+
+    @Test
+    fun eachDeleteIsActedOnOnceAndHasItsOwnId() = runTest {
+        phone.forget()
+        val first = checkNotNull(phoneReset.id)
+        publish()
+        watch.sync()
+        watch.sync()
+        assertEquals(1, watchPrivacy.deletions)
+
+        phone.forget()
+        publish()
+        watch.sync()
+        watch.sync()
+        assertEquals(2, watchPrivacy.deletions)
+        assertTrue(first != phoneReset.id)
+        assertEquals(phoneReset.id, watchReset.id)
+    }
+
+    @Test
+    fun aResetItemThatIsntAnIdIsIgnored() = runTest {
+        publish()
+        watch.sync()
+        network.plant("phone", SyncPaths.RESET, "delete please".encodeToByteArray())
+
+        watch.sync()
+
+        assertEquals(0, watchPrivacy.deletions)
+        assertNull(watchReset.id)
+        assertEquals(coachsPlan(), watchNext.current)
+    }
+
+    @Test
+    fun aDeleteThatCouldntBeAnnouncedIsAnnouncedWhenTheAppNextStarts() = runTest {
+        publish()
+        watch.sync()
+
+        // Play services is down at the moment of the delete. The id is saved all the same.
+        network.isAvailable = false
+        assertEquals(SyncOutcome.NO_LINK, phone.forget().outcome)
+        network.isAvailable = true
+        assertTrue(SyncPaths.RESET !in network.paths)
+        watch.sync()
+        assertEquals(0, watchPrivacy.deletions)
+
+        // The next time the app starts, the saved id goes out before anything else.
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        scope.running(phoneEngine())
+        watch.sync()
+
+        assertEquals(1, watchPrivacy.deletions)
+        assertEquals(checkNotNull(phoneReset.id), watchReset.id)
+        scope.cancel()
+    }
+
+    @Test
+    fun whenTheDatabaseEmptiesTheLastWordIsAlwaysTheDelete() = runTest {
+        publish()
+        watch.sync()
+        val goal = FakeGoalRepository(path)
+        val coach = FakeCoachRepository(coachState())
+        val engine = phoneEngine(goal, coach)
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        scope.running(engine)
+
+        // The delete is announced first, then the tables empty one after another. Each change
+        // on the way is a state the publisher sees, some of them still holding the old plan.
+        engine.forget()
+        goal.clearActiveGoal()
+        assertTrue(SyncPaths.STATE in network.paths)
+        coach.deleteEverything()
+
+        // Once nothing is left, the old plan is taken back and the delete stands.
+        assertEquals(listOf(SyncPaths.FORGET, SyncPaths.RESET), network.paths)
+        watch.sync()
+        assertNull(watchNext.current)
+        assertNull(watchGoal.current)
+        scope.cancel()
+    }
+
+    @Test
+    fun beforeSetupThereIsNothingToWithdrawAndNothingToDelete() = runTest {
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+
+        scope.running(phoneEngine(FakeGoalRepository(), FakeCoachRepository(), FakeResetMarker()))
+
+        // A phone that has never deleted anything never asks a watch to delete.
+        assertTrue(network.paths.isEmpty())
+        scope.cancel()
+    }
+
+    @Test
+    fun afterAWorkoutTheWatchHoldsTheRealNextSessionForOnceItHasRested() = runTest {
+        publish()
+        watch.sync()
+        // The whole session is done on the watch, then the two sync both ways.
+        var run = WorkoutRun(idA, checkNotNull(watchNext.current), startedAtEpochMillis = clock.now)
+        while (!run.isComplete) run = run.logSet(checkNotNull(run.nextSet).target, 2, clock.elapsed).endRest()
+        clock.now += 45 * 60_000
+        watchWorkouts.finishAndQueue(run, clock.now)
+        watch.sync()
+        inbox.receive()
+        publish()
+        watch.sync()
+
+        val plan = checkNotNull(watchNext.plan)
+        val model = checkNotNull(phoneCoach.current).model
+        val restedAt = checkNotNull(plan.restedAtEpochMillis)
+
+        // Started straight away, the watch gives what the phone gives now: light work on what was just trained.
+        assertEquals(Coach().recommend(model, clock.now).session, plan.at(clock.now))
+        assertTrue(plan.now.plans.any { !it.isHard })
+        // Started two days later, with the phone never opened in between, it gives what the phone would give then.
+        val twoDaysOn = clock.now + 2 * 24 * 60 * 60_000L
+        assertTrue(twoDaysOn >= restedAt)
+        assertEquals(Coach().recommend(model, restedAt).session, plan.at(twoDaysOn))
+        assertTrue(plan.at(twoDaysOn).plans.all { it.isHard })
     }
 }

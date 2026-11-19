@@ -20,12 +20,15 @@ import org.junit.Test
 // UnconfinedTestDispatcher is still marked experimental in kotlinx-coroutines-test.
 @OptIn(ExperimentalCoroutinesApi::class)
 class TrainViewModelTest {
+    // One dispatcher for the main thread and the planning thread, so planning has run by the time a test looks.
+    private val dispatcher = UnconfinedTestDispatcher()
+
     @get:Rule
-    val mainDispatcher = MainDispatcherRule()
+    val mainDispatcher = MainDispatcherRule(dispatcher)
 
     @Test
     fun listsEveryProgramAndAWorkoutForEveryFocus() = runTest {
-        val viewModel = TrainViewModel(FakeCoachRepository(coachState()), Coach(), FakeTrainingClock())
+        val viewModel = TrainViewModel(FakeCoachRepository(coachState()), Coach(), FakeTrainingClock(), dispatcher)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
         val ready = viewModel.uiState.value as TrainUiState.Ready
 

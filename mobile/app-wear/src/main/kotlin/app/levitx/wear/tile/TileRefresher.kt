@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.wear.tiles.TileService
 import app.levitx.data.ApplicationScope
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.coach.NextSessionRepository
+import app.levitx.wear.session.NextSession
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,13 +25,13 @@ import kotlinx.coroutines.launch
 @Singleton
 class TileRefresher @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val nextSessionRepository: NextSessionRepository,
+    private val nextSession: NextSession,
     @param:ApplicationScope private val scope: CoroutineScope,
 ) {
     /** Starts watching for changes. Call once, when the app process starts. */
     fun start() {
         scope.launch {
-            nextSessionRepository.observeNext()
+            nextSession.observe()
                 .map { tileContentFor(it) }
                 .distinctUntilChanged()
                 // Locked data is expected and shown in the app. Anything else is a bug.

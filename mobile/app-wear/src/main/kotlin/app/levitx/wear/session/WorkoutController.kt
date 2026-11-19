@@ -7,7 +7,6 @@ import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.data.ApplicationScope
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.coach.NextSessionRepository
 import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.coach.WorkoutOutbox
 import app.levitx.data.time.TrainingClock
@@ -73,7 +72,7 @@ data class GateBest(val gateTitle: String, val measure: GateMeasure, val value: 
  * Owns the workout in progress on the watch.
  *
  * The workout is the one the phone's coach planned (see
- * [NextSessionRepository]); the rules for moving through it are
+ * [NextSession]); the rules for moving through it are
  * [WorkoutRun]'s, the same ones the phone uses. This class connects them to
  * the screens and keeps them safe.
  *
@@ -89,7 +88,7 @@ data class GateBest(val gateTitle: String, val measure: GateMeasure, val value: 
  */
 @Singleton
 class WorkoutController @Inject constructor(
-    private val nextSessionRepository: NextSessionRepository,
+    private val nextSession: NextSession,
     private val drafts: WorkoutDraftRepository,
     private val workoutOutbox: WorkoutOutbox,
     private val leftoverGateSession: LeftoverGateSession,
@@ -144,7 +143,8 @@ class WorkoutController @Inject constructor(
         act {
             val current = mutableState.value
             if (current is WorkoutState.Running || current is WorkoutState.Unavailable) return@act
-            val session = nextSessionRepository.observeNext().first()
+            // Whichever of the plan's sessions applies at this moment: see NextSession.
+            val session = nextSession.current()
             if (session == null) {
                 mutableState.value = WorkoutState.Idle(nextLoad)
             } else {

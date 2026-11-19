@@ -1,5 +1,6 @@
 package app.levitx.data.coach
 
+import app.levitx.data.DataUnavailableException
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -55,5 +56,9 @@ internal object CoachCodec {
  * The coach's stored state is from a newer version of the app, or damaged.
  * Nothing is overwritten: the person can update the app, and nothing they've
  * done is lost.
+ *
+ * It is a [DataUnavailableException], so everything that already copes with
+ * data it can't read (screens, sync, the watch) copes with this the same way.
  */
-class UnreadableCoachStateException : IllegalStateException("The coach's stored state can't be read by this version")
+class UnreadableCoachStateException(cause: Throwable? = null) :
+    DataUnavailableException("The coach's stored state can't be read by this version", cause)

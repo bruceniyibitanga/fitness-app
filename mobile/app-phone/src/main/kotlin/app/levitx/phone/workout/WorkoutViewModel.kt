@@ -15,6 +15,7 @@ import app.levitx.phone.handlingDataFailures
 import app.levitx.phone.live.LiveWorkout
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * Runs the workout in progress: shows each set, records what the person did,
@@ -226,10 +228,8 @@ class WorkoutViewModel @Inject constructor(
         } else {
             // A timer belongs to one set, so any change to the run ends it.
             state.value = active.copy(run = next, timer = null, counted = null)
-            viewModelScope.launch {
-                writes.withLock {
-                    handlingDataFailures(onFailure = { state.value = WorkoutUiState.Unavailable }) { drafts.save(next) }
-                }
+            keeping(writes) {
+                handlingDataFailures(onFailure = { state.value = WorkoutUiState.Unavailable }) { drafts.save(next) }
             }
         }
     }
@@ -238,22 +238,20 @@ class WorkoutViewModel @Inject constructor(
         val result = run.result(finishedAtEpochMillis = clock.currentTimeMillis())
         // Shown straight away, so a second tap can't save the workout twice.
         state.value = WorkoutUiState.Saving
-        viewModelScope.launch {
-            // After every draft write already queued, so none of them can bring the draft back.
-            writes.withLock {
-                handlingDataFailures(onFailure = { state.value = WorkoutUiState.Unavailable }) {
-                    if (result == null) {
-                        drafts.discard()
-                        state.value = WorkoutUiState.NoWorkout
+        // After every draft write already queued, so none of them can bring the draft back.
+        keeping(writes) {
+            handlingDataFailures(onFailure = { state.value = WorkoutUiState.Unavailable }) {
+                if (result == null) {
+                    drafts.discard()
+                    state.value = WorkoutUiState.NoWorkout
+                } else {
+                    val before = coachRepository.observeState().first()?.model
+                    coachRepository.recordWorkout(run.id, result)
+                    val after = coachRepository.observeState().first()?.model
+                    state.value = if (before == null || after == null) {
+                        WorkoutUiState.NoWorkout
                     } else {
-                        val before = coachRepository.observeState().first()?.model
-                        coachRepository.recordWorkout(run.id, result)
-                        val after = coachRepository.observeState().first()?.model
-                        state.value = if (before == null || after == null) {
-                            WorkoutUiState.NoWorkout
-                        } else {
-                            WorkoutUiState.Finished(sessionReport(before, after, result, bodyweightKg))
-                        }
+                        WorkoutUiState.Finished(sessionReport(before, after, result, bodyweightKg))
                     }
                 }
             }
@@ -275,3 +273,16 @@ private const val MILLIS_PER_SECOND = 1_000L
 
 /** A vest, belt or band figure the load rules accept: never negative, never above the limit, never NaN. */
 private fun Double.asModifierKg(): Double = if (isFinite()) coerceIn(0.0, LoadLimits.MAX_MODIFIER_KG) else 0.0
+
+/**
+ * Runs [write] after every write already queued on [writes], and to the end
+ * even if the person leaves the screen meanwhile. A set just logged, or a
+ * workout just finished, is never half-saved or dropped because the screen
+ * closed a moment later. Each write is one small transaction, so this holds
+ * nothing open for long.
+ */
+private fun ViewModel.keeping(writes: Mutex, write: suspend () -> Unit) {
+    viewModelScope.launch {
+        withContext(NonCancellable) { writes.withLock { write() } }
+    }
+}

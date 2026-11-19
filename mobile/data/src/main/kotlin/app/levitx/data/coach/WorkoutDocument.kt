@@ -3,6 +3,7 @@ package app.levitx.data.coach
 import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.Intensity
+import app.levitx.core.coach.PlanAhead
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WorkoutRun
@@ -66,16 +67,42 @@ internal data class StoredSet(
 /** Format of a planned session on its own, as the phone sends it to the watch. */
 internal const val PLAN_DOCUMENT_VERSION = 1
 
-/** A stored `PlannedSession`, before it is started. */
+/**
+ * A stored `PlanAhead`, before it is started: the session for now, and the
+ * one that takes over once rested.
+ *
+ * @property plans The session for now.
+ * @property later The session from [laterFrom] on, or null when there is none.
+ *   Added after version 1 shipped: an older phone sends none, and an older
+ *   watch ignores it and runs [plans], as both always did.
+ * @property laterFrom When [later] takes over, in UTC milliseconds.
+ */
 @Serializable
-internal data class PlanDocument(val v: Int, val plans: List<StoredPlan>)
+internal data class PlanDocument(
+    val v: Int,
+    val plans: List<StoredPlan>,
+    val later: List<StoredPlan>? = null,
+    val laterFrom: Long? = null,
+)
 
-/** The document for [session]. */
-internal fun planDocumentOf(session: PlannedSession): PlanDocument =
-    PlanDocument(PLAN_DOCUMENT_VERSION, session.plans.map(::storedPlanOf))
+/** The document for [plan]. */
+internal fun planDocumentOf(plan: PlanAhead): PlanDocument = PlanDocument(
+    v = PLAN_DOCUMENT_VERSION,
+    plans = plan.now.plans.map(::storedPlanOf),
+    later = plan.rested?.plans?.map(::storedPlanOf),
+    laterFrom = plan.restedAtEpochMillis,
+)
 
-/** The session this document describes, or null when it can't be rebuilt. */
-internal fun PlanDocument.toSessionOrNull(): PlannedSession? = runCatching { sessionOf(plans) }.getOrNull()
+/**
+ * The plan this document describes, or null when the session for now can't
+ * be rebuilt. A later session that can't be rebuilt, or has no time, is
+ * dropped on its own: the session for now is still right, only more careful
+ * than it need be once the person has rested.
+ */
+internal fun PlanDocument.toPlanOrNull(): PlanAhead? = runCatching { sessionOf(plans) }.getOrNull()?.let { now ->
+    val rested = later?.let { stored -> runCatching { sessionOf(stored) }.getOrNull() }?.takeIf { laterFrom != null }
+    PlanAhead(now, rested, laterFrom.takeIf { rested != null })
+}
 
 /** The document for [run]. */
 internal fun workoutDocumentOf(run: WorkoutRun): WorkoutDocument = WorkoutDocument(

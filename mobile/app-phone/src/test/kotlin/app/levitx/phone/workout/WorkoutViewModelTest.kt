@@ -1,14 +1,19 @@
 package app.levitx.phone.workout
 
+import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Effort
 import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.Intensity
 import app.levitx.core.coach.PlannedSession
+import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.SkillTraining
 import app.levitx.core.coach.WorkoutRun
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.skills.SkillCatalogue
+import app.levitx.data.coach.CoachRepository
+import app.levitx.data.coach.Recorded
+import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.settings.AppSettings
 import app.levitx.phone.MainDispatcherRule
 import app.levitx.phone.live.LiveWorkout
@@ -19,6 +24,8 @@ import app.levitx.testing.FakeTrainingClock
 import app.levitx.testing.FakeWorkoutDraftRepository
 import app.levitx.testing.coachState
 import app.levitx.testing.startedWorkout
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.cancel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -301,5 +308,56 @@ class WorkoutViewModelTest {
         val active = chosen.uiState.value as WorkoutUiState.Active
         assertEquals(false, active.soundsOn)
         assertEquals(10, active.leadInSeconds)
+    }
+
+    @Test
+    fun aSetLoggedJustBeforeLeavingTheScreenIsStillSaved() {
+        val slow = SlowDrafts(drafts)
+        val leaving =
+            WorkoutViewModel(coachRepository, slow, FakeEquipmentRepository(), clock, FakeSettingsRepository(), live)
+        val target = (leaving.uiState.value as WorkoutUiState.Active).nextSet.target
+
+        leaving.logSet(target, Effort.RIGHT.repsInReserve)
+        // The screen closes while the write is still on its way to the database.
+        leaving.viewModelScope.cancel()
+        slow.letThrough()
+
+        assertEquals(1, checkNotNull(drafts.current).logged.sumOf { it.size })
+    }
+
+    @Test
+    fun aWorkoutFinishedJustBeforeLeavingTheScreenIsStillRecorded() {
+        val gate = CompletableDeferred<Unit>()
+        val slowCoach = object : CoachRepository by coachRepository {
+            override suspend fun recordWorkout(workoutId: String, result: SessionResult): Recorded {
+                gate.await()
+                return coachRepository.recordWorkout(workoutId, result)
+            }
+        }
+        val leaving =
+            WorkoutViewModel(slowCoach, drafts, FakeEquipmentRepository(), clock, FakeSettingsRepository(), live)
+        val target = (leaving.uiState.value as WorkoutUiState.Active).nextSet.target
+        leaving.logSet(target, Effort.RIGHT.repsInReserve)
+
+        leaving.finish()
+        leaving.viewModelScope.cancel()
+        gate.complete(Unit)
+
+        assertEquals(1, coachRepository.recordedWorkouts.size)
+        assertNull(drafts.current)
+    }
+}
+
+/** Drafts whose saves wait until [letThrough], to stand in for a write that is slow to reach the database. */
+private class SlowDrafts(private val drafts: FakeWorkoutDraftRepository) : WorkoutDraftRepository by drafts {
+    private val gate = CompletableDeferred<Unit>()
+
+    fun letThrough() {
+        gate.complete(Unit)
+    }
+
+    override suspend fun save(run: WorkoutRun) {
+        gate.await()
+        drafts.save(run)
     }
 }

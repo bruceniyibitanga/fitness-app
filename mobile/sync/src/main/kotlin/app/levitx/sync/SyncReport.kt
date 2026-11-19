@@ -1,6 +1,9 @@
 package app.levitx.sync
 
 import android.util.Log
+import app.levitx.data.DataUnavailableException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "LevitxSync"
 
@@ -38,4 +41,21 @@ internal data class SyncReport(
 /** Writes the report to the log. Counts and codes only. */
 internal fun SyncReport.log(pass: String) {
     Log.i(TAG, "$pass: outcome=$outcome delivered=$delivered skipped=$skipped stateChanged=$stateChanged")
+}
+
+/**
+ * Runs one sync [pass] on its own, after any pass already holding this lock,
+ * and reports the two expected ways it can fail instead of throwing them: no
+ * Data Layer on this device right now, and data that can't be read (locked,
+ * or saved by a newer version of the app). Anything else is a bug and passes
+ * through.
+ */
+internal suspend fun Mutex.syncPass(pass: suspend () -> SyncReport): SyncReport = withLock {
+    try {
+        pass()
+    } catch (error: DataLayerUnavailableException) {
+        SyncReport(SyncOutcome.NO_LINK)
+    } catch (error: DataUnavailableException) {
+        SyncReport(SyncOutcome.DATA_LOCKED)
+    }
 }

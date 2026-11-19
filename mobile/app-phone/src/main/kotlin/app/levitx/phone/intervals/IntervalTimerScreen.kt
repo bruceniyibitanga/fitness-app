@@ -48,6 +48,7 @@ import app.levitx.core.intervals.Side
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
+import app.levitx.phone.live.LiveWorkoutEffects
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.BackButton
 import app.levitx.phone.ui.Caption
@@ -80,6 +81,8 @@ fun IntervalTimerRoute(
         onEnd = viewModel::end,
         onDone = onDone,
     )
+    // Keeps the timer going with the phone locked or another app in front, as for strength workouts.
+    LiveWorkoutEffects(active = uiState is IntervalTimerUiState.Running)
     // Back mid-workout asks first, so a stray swipe doesn't end it.
     BackHandler(enabled = uiState is IntervalTimerUiState.Running) { actions.onAskToEnd(true) }
     IntervalTimerScreen(uiState, actions)

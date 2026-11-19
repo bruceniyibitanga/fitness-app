@@ -13,13 +13,21 @@ import app.levitx.data.database.GateBestEntity
  * the table's best without going through the coach, and the coach must still
  * see it. Bodyweight readings come only from their table, which the weigh-in,
  * the bodyweight screen and Health Connect all write to.
+ *
+ * @throws UnreadableCoachStateException when the document holds a value the
+ *   model's own rules reject, such as a goal this version doesn't have. The
+ *   cause is dropped with its message, which could quote the document.
  */
 internal fun assembleCoachState(
     document: CoachDocument,
     bests: List<GateBestEntity>,
     bodyweights: List<BodyweightEntity>,
 ): CoachState {
-    val model = document.toModel()
+    val model = try {
+        document.toModel()
+    } catch (_: IllegalArgumentException) {
+        throw UnreadableCoachStateException()
+    }
     val mergedBests = (model.gateBests.keys + bests.map { it.gateId }).associateWith { gateId ->
         maxOf(model.gateBests[gateId] ?: 0, bests.firstOrNull { it.gateId == gateId }?.best ?: 0)
     }

@@ -7,7 +7,10 @@ import app.levitx.data.coach.WorkoutDraftRepository
 import app.levitx.data.time.TrainingClock
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * Starts a workout by saving it as the draft, the one place the workout in
@@ -19,6 +22,9 @@ class WorkoutStarter @Inject constructor(
     private val drafts: WorkoutDraftRepository,
     private val clock: TrainingClock,
 ) {
+    /** True while a workout is in progress. Emits straight away and when one starts or ends. */
+    fun observeInProgress(): Flow<Boolean> = drafts.observeDraft().map { it != null }.distinctUntilChanged()
+
     /**
      * Saves [session] as a new workout, unless one is already in progress.
      *

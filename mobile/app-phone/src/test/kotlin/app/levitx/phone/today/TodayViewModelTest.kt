@@ -23,8 +23,11 @@ import org.junit.Test
 // UnconfinedTestDispatcher is still marked experimental in kotlinx-coroutines-test.
 @OptIn(ExperimentalCoroutinesApi::class)
 class TodayViewModelTest {
+    // One dispatcher for the main thread and the planning thread, so planning has run by the time a test looks.
+    private val dispatcher = UnconfinedTestDispatcher()
+
     @get:Rule
-    val mainDispatcher = MainDispatcherRule()
+    val mainDispatcher = MainDispatcherRule(dispatcher)
 
     private val drafts = FakeWorkoutDraftRepository()
     private val coachRepository = FakeCoachRepository(coachState(), drafts)
@@ -33,7 +36,7 @@ class TodayViewModelTest {
 
     // Lazy, so it is built after the rule has swapped in the test main dispatcher.
     private val viewModel by lazy {
-        TodayViewModel(coachRepository, drafts, Coach(), clock, WorkoutStarter(drafts, clock), equipment)
+        TodayViewModel(coachRepository, Coach(), clock, WorkoutStarter(drafts, clock), equipment, dispatcher)
     }
 
     private val ready: TodayUiState.Ready

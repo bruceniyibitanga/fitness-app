@@ -14,6 +14,7 @@ import dagger.hilt.components.SingletonComponent
 import java.io.FileNotFoundException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
 /** Writes the person's export to a file they chose. */
@@ -29,7 +30,7 @@ interface DataExport {
 
 /** Deletes everything Levitx keeps about the person on this phone. */
 interface DataEraser {
-    /** Deletes the database's rows, the settings, and what the phone offers the watch. */
+    /** Deletes what the phone offers the watch, the database's rows and the settings. Runs to the end once begun. */
     suspend fun eraseEverything()
 }
 
@@ -53,16 +54,26 @@ internal class DocumentDataExport @Inject constructor(
     }
 }
 
-/** [DataEraser] for the phone: the database, the settings, then the watch link. */
+/**
+ * [DataEraser] for the phone: the watch link, the database, then the settings.
+ *
+ * Once begun it runs to the end, even if the person leaves the screen or the
+ * screen is torn down: half a delete helps nobody. The watch is told first,
+ * because that step saves the delete's id before anything is gone. If the
+ * app dies partway, the id is still there at the next start and the watch is
+ * told then (see [PhoneSync.forget]).
+ */
 internal class AppDataEraser @Inject constructor(
     private val privacy: PrivacyRepository,
     private val settings: SettingsRepository,
     private val phoneSync: PhoneSync,
 ) : DataEraser {
     override suspend fun eraseEverything() {
-        privacy.deleteEverything()
-        settings.clear()
-        phoneSync.forget()
+        withContext(NonCancellable) {
+            phoneSync.forget()
+            privacy.deleteEverything()
+            settings.clear()
+        }
     }
 }
 

@@ -11,6 +11,7 @@ import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.history.Forgetting
 import app.levitx.core.pain.PainAssessment
+import app.levitx.data.DefaultDispatcher
 import app.levitx.data.database.CoachStateEntity
 import app.levitx.data.database.LevitxDatabase
 import app.levitx.data.database.LevitxDatabaseProvider
@@ -19,11 +20,13 @@ import app.levitx.data.time.TrainingClock
 import java.time.DayOfWeek
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1_000
 
@@ -36,6 +39,7 @@ internal class RoomCoachRepository @Inject constructor(
     private val databaseProvider: LevitxDatabaseProvider,
     private val coach: Coach,
     private val clock: TrainingClock,
+    @param:DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : CoachRepository {
     override fun observeState(): Flow<CoachState?> = flow {
         val database = databaseProvider.database()
@@ -49,7 +53,10 @@ internal class RoomCoachRepository @Inject constructor(
                 row?.let { assembleCoachState(CoachCodec.decodeCoach(it.json), bests, bodyweights) }
             },
         )
-    }.distinctUntilChanged()
+    }
+        // Reading the document and merging the tables is real work, so it is kept off the caller's thread.
+        .flowOn(defaultDispatcher)
+        .distinctUntilChanged()
 
     override suspend fun start(
         profile: CoachProfile,
@@ -75,20 +82,27 @@ internal class RoomCoachRepository @Inject constructor(
         }
     }
 
-    override suspend fun recordWorkout(workoutId: String, result: SessionResult): Boolean {
+    override suspend fun recordWorkout(workoutId: String, result: SessionResult): Recorded {
         val database = databaseProvider.database()
         return database.withTransaction {
+            // Both read inside the transaction, so neither can change between the check and the write.
             if (database.sessionDao().hasWorkout(workoutId)) {
-                false
+                Recorded.ALREADY_STORED
             } else {
                 val now = clock.currentTimeMillis()
-                val current = database.load(now) ?: error("The coach isn't set up")
-                val updated = coach.record(current.model, result)
-                database.storeSets(workoutId, result, current.model)
-                database.raiseBests(before = current.model, after = updated, at = result.finishedAtEpochMillis)
-                database.write(updated, current.trainingDays, now)
-                database.coachDao().clearDraft()
-                true
+                val current = database.load(now)
+                if (current == null) {
+                    Recorded.NOT_SET_UP
+                } else {
+                    // Nothing is stored as finishing in the future, whatever the clock that timed it said.
+                    val dated = result.endingBy(now)
+                    val updated = coach.record(current.model, dated)
+                    database.storeSets(workoutId, dated, current.model)
+                    database.raiseBests(before = current.model, after = updated, at = dated.finishedAtEpochMillis)
+                    database.write(updated, current.trainingDays, now)
+                    database.coachDao().clearDraft()
+                    Recorded.NEW
+                }
             }
         }
     }
@@ -126,13 +140,18 @@ internal class RoomCoachRepository @Inject constructor(
         }
     }
 
-    /** Reads the model, changes it with [change] and writes it back, in one transaction. */
+    /**
+     * Reads the model, changes it with [change] and writes it back, in one
+     * transaction. With no coach set up there is nothing to change: a tap
+     * that lands just after everything was deleted is dropped, not a crash.
+     */
     private suspend fun update(change: (AthleteModel) -> AthleteModel) {
         val database = databaseProvider.database()
         val now = clock.currentTimeMillis()
         database.withTransaction {
-            val current = database.load(now) ?: error("The coach isn't set up")
-            database.write(change(current.model), current.trainingDays, now)
+            database.load(now)?.let { current ->
+                database.write(change(current.model), current.trainingDays, now)
+            }
         }
     }
 }

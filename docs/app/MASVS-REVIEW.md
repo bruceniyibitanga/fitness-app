@@ -74,7 +74,7 @@ Levitx keeps training and bodyweight data, which is health data, so storage and 
 
 **MASVS-PRIVACY-3: data use is transparent. Met.** The privacy policy at levitx.app/privacy covers the app, and the Data safety answers are drafted in [RELEASE.md](RELEASE.md). Notifications are asked for in context, once.
 
-**MASVS-PRIVACY-4: the person controls their data. Met.** They can export everything, delete one workout, or delete everything, from Settings and History. Deleting everything on the phone deletes the watch's copy too, the next time the watch is connected. Uninstalling the phone app can't reach the watch, which the privacy policy says.
+**MASVS-PRIVACY-4: the person controls their data. Met.** They can export everything, delete one workout, or delete everything, from Settings and History. Deleting everything on the phone deletes the watch's copy too, the next time the watch is connected, even if the person has set up again by then (each delete has an id the watch acts on once). Uninstalling the phone app can't reach the watch, which the privacy policy says.
 
 ## Open items
 

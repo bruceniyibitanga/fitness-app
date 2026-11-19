@@ -1,15 +1,12 @@
 package app.levitx.sync
 
-import app.levitx.data.DataUnavailableException
 import app.levitx.data.coach.WorkoutOutbox
 import app.levitx.data.intervals.IntervalOutbox
-import app.levitx.data.privacy.PrivacyRepository
 import app.levitx.data.session.SessionOutbox
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
  * The watch's side of sync.
@@ -24,6 +21,9 @@ import kotlinx.coroutines.sync.withLock
  * - **Forgetting:** when the person deletes everything on the phone, the
  *   phone puts up [SyncPaths.FORGET]. While it is there, the watch deletes
  *   everything it holds, queued workouts included, and takes nothing new.
+ *   The phone also keeps the id of its last delete at [SyncPaths.RESET]; a
+ *   watch that hasn't acted on that id deletes first, whatever else is
+ *   there. See [WatchWipe].
  *
  * A workout has a unique id and is recorded once per device, so nothing here
  * can lose or double-count anything, whatever order things happen in.
@@ -35,7 +35,7 @@ internal class WatchSyncEngine @Inject constructor(
     private val outbox: SessionOutbox,
     private val workoutOutbox: WorkoutOutbox,
     private val intervalOutbox: IntervalOutbox,
-    private val privacy: PrivacyRepository,
+    private val wipe: WatchWipe,
 ) {
     // One pass at a time: the listener service and the app can both ask for one.
     private val mutex = Mutex()
@@ -44,14 +44,10 @@ internal class WatchSyncEngine @Inject constructor(
      * Runs one full pass: take in the phone's state, then send and confirm
      * workouts. Or, if the phone asked, delete everything instead.
      */
-    suspend fun sync(): SyncReport = mutex.withLock {
-        try {
-            if (phoneForgot()) forgetEverything() else exchange()
-        } catch (error: DataLayerUnavailableException) {
-            SyncReport(SyncOutcome.NO_LINK)
-        } catch (error: DataUnavailableException) {
-            SyncReport(SyncOutcome.DATA_LOCKED)
-        }
+    suspend fun sync(): SyncReport = mutex.syncPass {
+        val wiped = applyReset()
+        val report = if (phoneForgot()) forgetEverything() else exchange()
+        report.copy(stateChanged = report.stateChanged || wiped)
     }
 
     private suspend fun exchange(): SyncReport {
@@ -64,6 +60,17 @@ internal class WatchSyncEngine @Inject constructor(
             stateChanged = stateResult == StateResult.APPLIED,
         )
     }
+
+    /**
+     * Deletes everything if the phone's last "delete everything" is one this
+     * watch hasn't acted on. A payload that isn't a reset id is ignored.
+     *
+     * @return True when it deleted.
+     */
+    private suspend fun applyReset(): Boolean = dataLayer.list(SyncPaths.RESET)
+        .firstOrNull { it.path == SyncPaths.RESET }
+        ?.let { ResetCodec.decodeOrNull(it.payload) }
+        ?.let { wipe.applyReset(it) } == true
 
     private suspend fun phoneForgot(): Boolean = dataLayer.list(SyncPaths.FORGET).any { it.path == SyncPaths.FORGET }
 
@@ -79,7 +86,7 @@ internal class WatchSyncEngine @Inject constructor(
             workoutOutbox.observeQueued().first().isNotEmpty() ||
             intervalOutbox.observeQueued().first().isNotEmpty() ||
             outbox.observeQueued().first().isNotEmpty()
-        if (holdsAnything) privacy.deleteEverything()
+        if (holdsAnything) wipe.wipe()
         // The queues are empty now, so this deletes whatever the watch still had on the Data Layer.
         sendQueued()
         return SyncReport(SyncOutcome.DONE, stateChanged = holdsAnything)

@@ -1,5 +1,6 @@
 package app.levitx.phone.live
 
+import app.levitx.core.intervals.IntervalPhase
 import app.levitx.phone.workout.SetTimer
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,22 +45,52 @@ data class LiveSession(
 )
 
 /**
+ * A cardio or mobility workout in progress, as its notification needs it:
+ * which workout, and the step it is on. Nothing from the person's log.
+ *
+ * @property workoutName The workout, for the notification's title.
+ * @property phase What the step under way is: work, rest, getting ready or switching sides.
+ * @property moveName The move of that step.
+ * @property round Which round of the move, from 1.
+ * @property rounds How many rounds the move has.
+ * @property paused True while the person has paused the clock.
+ */
+data class LiveIntervals(
+    val workoutName: String,
+    val phase: IntervalPhase,
+    val moveName: String,
+    val round: Int,
+    val rounds: Int,
+    val paused: Boolean,
+)
+
+/**
  * Where the workout screen tells the rest of the app what is happening.
  *
  * The workout itself stays with the screen's view model, which saves it after
  * every change. This only carries a read-only picture of it to the two things
  * that have to keep going when the screen is off or another app is in front:
  * [WorkoutCuer], which beeps and buzzes, and [LiveWorkoutService], which shows
- * the workout on the lock screen and keeps the app running.
+ * the workout on the lock screen and keeps the app running. The interval
+ * timer publishes its own, smaller picture ([LiveIntervals]) for the service.
  */
 @Singleton
 class LiveWorkout @Inject constructor() {
     private val current = MutableStateFlow<LiveSession?>(null)
     private val dismissed = MutableStateFlow(false)
     private var owner: Any? = null
+    private val timed = MutableStateFlow<LiveIntervals?>(null)
+    private var timedOwner: Any? = null
 
     /** The workout in progress, or null when there is none. */
     val session: StateFlow<LiveSession?> = current.asStateFlow()
+
+    /**
+     * The cardio or mobility workout in progress, or null when there is
+     * none. [LiveWorkoutService] follows it the same way as [session], which
+     * is what keeps the interval timer beeping with another app in front.
+     */
+    val intervals: StateFlow<LiveIntervals?> = timed.asStateFlow()
 
     /** True once the person swipes the workout notification away. It isn't shown again until the next workout. */
     val noticeDismissed: StateFlow<Boolean> = dismissed.asStateFlow()
@@ -80,6 +111,21 @@ class LiveWorkout @Inject constructor() {
         if (owner !== from) return
         owner = null
         current.value = null
+        dismissed.value = false
+    }
+
+    /** Shows [intervals] as the cardio or mobility workout in progress. [from] is the timer publishing it. */
+    fun publishIntervals(from: Any, intervals: LiveIntervals) {
+        if (timedOwner !== from) dismissed.value = false
+        timedOwner = from
+        timed.value = intervals
+    }
+
+    /** Clears the cardio or mobility workout, if [from] is still the timer showing it. */
+    fun clearIntervals(from: Any) {
+        if (timedOwner !== from) return
+        timedOwner = null
+        timed.value = null
         dismissed.value = false
     }
 

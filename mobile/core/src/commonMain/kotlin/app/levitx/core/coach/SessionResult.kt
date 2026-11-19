@@ -1,5 +1,6 @@
 package app.levitx.core.coach
 
+import app.levitx.core.endingBy
 import app.levitx.core.session.LoggedSet
 
 /**
@@ -80,6 +81,17 @@ public data class SessionResult(
 ) {
     init {
         require(finishedAtEpochMillis >= startedAtEpochMillis) { "a session can't finish before it starts" }
+    }
+
+    /**
+     * This result moved back so it finishes no later than [epochMillis],
+     * keeping its length. A session can't have finished in the future: a
+     * result that claims to came from a clock that was ahead, and left as it
+     * is it would look like training that hasn't happened yet.
+     */
+    public fun endingBy(epochMillis: Long): SessionResult {
+        val (started, finished) = endingBy(startedAtEpochMillis, finishedAtEpochMillis, epochMillis)
+        return copy(startedAtEpochMillis = started, finishedAtEpochMillis = finished)
     }
 
     /**

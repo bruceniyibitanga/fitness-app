@@ -51,9 +51,12 @@ internal class LevitxDatabaseProvider @Inject constructor(
             }
             keyStore.create()
         }
+        val rawKey = key.toSqlCipherRawKey()
+        // SQLCipher has its own copy now. This one is wiped rather than left in memory until it is collected.
+        key.fill(0)
         System.loadLibrary("sqlcipher")
         Room.databaseBuilder(context, LevitxDatabase::class.java, DATABASE_NAME)
-            .openHelperFactory(SupportOpenHelperFactory(key.toSqlCipherRawKey()))
+            .openHelperFactory(SupportOpenHelperFactory(rawKey))
             .build()
     }
 }

@@ -43,9 +43,14 @@ class LiveNotifications @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val clock: TrainingClock,
 ) {
-    /** The notification for a workout the service hasn't caught up with yet. */
-    fun starting(): Notification = builder()
-        .setContentTitle(context.getString(R.string.live_starting))
+    /**
+     * A notification with just a [title] and a line of [text]. The default
+     * is the one for a workout the service hasn't caught up with yet.
+     */
+    fun plain(title: String = context.getString(R.string.live_starting), text: String? = null): Notification = builder()
+        .setContentTitle(title)
+        .setContentText(text)
+        .setShowWhen(false)
         .build()
 
     /** The notification for [session], which is doing [status]. */

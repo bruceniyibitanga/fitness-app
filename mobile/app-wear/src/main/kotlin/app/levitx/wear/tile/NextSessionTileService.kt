@@ -13,10 +13,10 @@ import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.coach.NextSessionRepository
 import app.levitx.wear.MainActivity
 import app.levitx.wear.R
 import app.levitx.wear.home.NextSummary
+import app.levitx.wear.session.NextSession
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -24,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 
 /** The Tile uses no images, so its resources never change. */
@@ -52,9 +51,9 @@ private const val MAIN_TEXT_MAX_LINES = 3
  */
 @AndroidEntryPoint
 class NextSessionTileService : TileService() {
-    /** The session the phone's coach planned. Set by Hilt. */
+    /** The session the phone's coach planned for right now. Set by Hilt. */
     @Inject
-    lateinit var nextSessionRepository: NextSessionRepository
+    lateinit var nextSession: NextSession
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -80,7 +79,7 @@ class NextSessionTileService : TileService() {
         scope.future { ResourceBuilders.Resources.Builder().setVersion(RESOURCES_VERSION).build() }
 
     private suspend fun loadContent(): TileContent = try {
-        tileContentFor(nextSessionRepository.observeNext().first())
+        tileContentFor(nextSession.current())
     } catch (error: DataUnavailableException) {
         TileContent.Unavailable
     }

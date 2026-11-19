@@ -69,6 +69,11 @@ internal class DataStoreSettingsRepository @Inject constructor(private val store
     }
 
     override suspend fun clear() {
-        store.edit { it.clear() }
+        // Everything but the reset marker, which has to outlive "delete everything" to do its job.
+        store.edit { prefs ->
+            val resetId = prefs[RESET_ID]
+            prefs.clear()
+            if (resetId != null) prefs[RESET_ID] = resetId
+        }
     }
 }

@@ -877,4 +877,8 @@
     <string name="live_text_ready">Set %1$d of %2$d · exercise %3$d of %4$d</string>
     <!-- The status bar chip. Seven characters or fewer, or Android cuts it. -->
     <string name="live_chip_set">Set %1$d</string>
+    <string name="live_interval_paused">Paused</string>
+    <string name="live_interval_ready">Get ready: %1$s</string>
+    <string name="live_interval_work">%1$s, round %2$d of %3$d</string>
+    <string name="live_interval_switch">Switch sides</string>
 </resources>

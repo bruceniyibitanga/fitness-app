@@ -12,6 +12,7 @@ import app.levitx.data.coach.CoachPrompt
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.coach.CoachState
 import app.levitx.data.coach.RECENT_WORKOUTS
+import app.levitx.data.coach.Recorded
 import app.levitx.data.coach.withShown
 import java.time.DayOfWeek
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +43,12 @@ class FakeCoachRepository(
     val recordedWorkouts: Set<String>
         get() = recorded.value.toSet()
 
+    /** Empties the coach, as "delete everything" empties the real one. */
+    fun deleteEverything() {
+        state.value = null
+        recorded.value = emptyList()
+    }
+
     override fun observeState(): Flow<CoachState?> = state.asStateFlow()
 
     override suspend fun start(
@@ -58,24 +65,29 @@ class FakeCoachRepository(
         state.value = CoachState(current.model.copy(profile = profile), trainingDays)
     }
 
-    override suspend fun recordWorkout(workoutId: String, result: SessionResult): Boolean {
-        if (workoutId in recorded.value) return false
-        recorded.update { it + workoutId }
-        update { coach.record(it, result) }
-        drafts?.discard()
-        return true
+    override suspend fun recordWorkout(workoutId: String, result: SessionResult): Recorded = when {
+        workoutId in recorded.value -> Recorded.ALREADY_STORED
+
+        state.value == null -> Recorded.NOT_SET_UP
+
+        else -> {
+            recorded.update { it + workoutId }
+            state.changeModel { coach.record(it, result) }
+            drafts?.discard()
+            Recorded.NEW
+        }
     }
 
     override fun observeRecentWorkoutIds(): Flow<List<String>> = recorded.map { it.reversed().take(RECENT_WORKOUTS) }
 
-    override suspend fun recordRest(nowEpochMillis: Long) = update { coach.recordRest(it, nowEpochMillis) }
+    override suspend fun recordRest(nowEpochMillis: Long) = state.changeModel { coach.recordRest(it, nowEpochMillis) }
 
-    override suspend fun recordPain(area: BodyArea, assessment: PainAssessment) = update {
+    override suspend fun recordPain(area: BodyArea, assessment: PainAssessment) = state.changeModel {
         it.withPain(area, assessment)
     }
 
     override suspend fun markShown(prompt: CoachPrompt, atEpochMillis: Long) =
-        update { it.withShown(prompt, atEpochMillis) }
+        state.changeModel { it.withShown(prompt, atEpochMillis) }
 
     // Forgets the id only: the fake keeps no sets to take back out of the model.
     override suspend fun deleteWorkout(workoutId: String): Boolean {
@@ -83,9 +95,9 @@ class FakeCoachRepository(
         recorded.update { it - workoutId }
         return known
     }
+}
 
-    private fun update(change: (AthleteModel) -> AthleteModel) {
-        val current = checkNotNull(state.value) { "The coach isn't set up" }
-        state.value = current.copy(model = change(current.model))
-    }
+/** Changes the model with [change]. Like the real repository, does nothing before setup. */
+private fun MutableStateFlow<CoachState?>.changeModel(change: (AthleteModel) -> AthleteModel) {
+    update { current -> current?.copy(model = change(current.model)) }
 }

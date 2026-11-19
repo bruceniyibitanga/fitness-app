@@ -28,9 +28,12 @@ internal class PhoneStateSource @Inject constructor(
      * What the watch needs, emitted again whenever any of it changes. Null
      * until the person has a goal or has finished setup.
      *
-     * The next session is worked out when the state changes, not when the
-     * watch starts it. That errs on the safe side: a movement that needed rest
-     * then only gets more rested by the time the watch runs the session.
+     * The plan is worked out when the state changes, not when the watch
+     * starts it, and that is usually straight after a workout, when
+     * everything just trained can only be done light. So it carries two
+     * sessions: the one for now, and the one for once the rest is over
+     * (`Coach.planAhead`). The watch picks by its own clock when the person
+     * starts, and gets the session the phone would have given at that time.
      */
     fun observe(): Flow<PhoneState?> = combine(
         goalRepository.observeActiveGoal(),
@@ -46,7 +49,7 @@ internal class PhoneStateSource @Inject constructor(
                 path = path,
                 bests = bests,
                 bands = bands,
-                next = coachState?.let { coach.recommend(it.model, clock.currentTimeMillis()).session },
+                next = coachState?.let { coach.planAhead(it.model, clock.currentTimeMillis()) },
                 recentWorkoutIds = recent,
             )
         }

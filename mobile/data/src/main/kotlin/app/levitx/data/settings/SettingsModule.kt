@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import app.levitx.data.ApplicationScope
 import app.levitx.data.IoDispatcher
+import app.levitx.data.privacy.ResetMarker
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -29,6 +30,9 @@ private const val SETTINGS_FILE = "settings"
 internal interface SettingsModule {
     @Binds
     fun bindSettingsRepository(repository: DataStoreSettingsRepository): SettingsRepository
+
+    @Binds
+    fun bindResetMarker(marker: DataStoreResetMarker): ResetMarker
 
     companion object {
         /**

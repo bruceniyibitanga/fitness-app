@@ -46,8 +46,11 @@ internal const val MAX_WORKOUT_SETS = 100
 /** Largest reps, seconds or best accepted. Far above anything a person can do. */
 internal const val MAX_RESULT = 10_000
 
-private const val MAX_ID_LENGTH = 64
-private val UUID_PATTERN = Regex("^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$")
+/** Longest id accepted from the other device. A UUID is 36 characters. */
+internal const val MAX_ID_LENGTH = 64
+
+/** What every id that crosses the link looks like: a UUID. */
+internal val UUID_PATTERN = Regex("^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$")
 
 /**
  * The phone's state as it travels. Field names are short because every byte crosses Bluetooth.

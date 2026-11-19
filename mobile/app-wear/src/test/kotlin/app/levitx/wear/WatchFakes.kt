@@ -18,6 +18,7 @@ import app.levitx.wear.home.PendingWorkouts
 import app.levitx.wear.intervals.IntervalController
 import app.levitx.wear.intervals.IntervalSignals
 import app.levitx.wear.session.LeftoverGateSession
+import app.levitx.wear.session.NextSession
 import app.levitx.wear.session.WorkoutController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,6 +55,9 @@ internal class WatchFakes(
     /** The clocks. */
     val clock = FakeTrainingClock()
 
+    /** Which of the plan's sessions applies now. */
+    val nextSession = NextSession(next, clock)
+
     /** Cardio and mobility workouts on their way to the phone. */
     val intervalOutbox = FakeIntervalOutbox()
 
@@ -71,7 +75,7 @@ internal class WatchFakes(
      * finished by the time the call returns.
      */
     fun controller(draftRepository: WorkoutDraftRepository = drafts) = WorkoutController(
-        next,
+        nextSession,
         draftRepository,
         outbox,
         LeftoverGateSession(legacyDrafts, legacySessions, clock),

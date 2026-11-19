@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -36,6 +37,15 @@ private const val AWAKE_MARGIN_MILLIS = 5_000L
 sealed interface IntervalState {
     /** No cardio or mobility workout is running. */
     data object Idle : IntervalState
+
+    /**
+     * A workout was picked and its clock starts in a moment. Set the instant
+     * it is picked, so the timer screen never opens on nothing, or on the
+     * summary of the workout before.
+     *
+     * @property workout The workout about to start.
+     */
+    data class Starting(val workout: IntervalWorkout) : IntervalState
 
     /**
      * The clock is going, or paused.
@@ -105,11 +115,18 @@ class IntervalController @Inject constructor(
 
     /**
      * Starts the workout with [workoutId]. Ignored while another one is
-     * running, so a second tap can't throw away the first.
+     * starting or running, so a second tap can't throw away the first, and
+     * for an id the catalogue doesn't have.
      */
-    fun start(workoutId: String) = act {
-        val workout = IntervalCatalogue.byId(workoutId)
-        if (workout != null && mutableState.value !is IntervalState.Running) {
+    fun start(workoutId: String) {
+        val workout = IntervalCatalogue.byId(workoutId) ?: return
+        val starting = IntervalState.Starting(workout)
+        // Claimed at once and only once: of two taps that land together, one wins and the other does nothing.
+        val claimed = mutableState.updateAndGet { now ->
+            if (now is IntervalState.Idle || now is IntervalState.Done) starting else now
+        } === starting
+        if (!claimed) return
+        act {
             // A random id, like strength workouts, so the history groups the moves as one workout.
             this.workoutId = UUID.randomUUID().toString()
             startedAtEpochMillis = clock.currentTimeMillis()

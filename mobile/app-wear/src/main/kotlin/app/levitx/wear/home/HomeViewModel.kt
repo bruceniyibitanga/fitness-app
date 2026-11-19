@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.session.SetLoad
 import app.levitx.data.DataUnavailableException
-import app.levitx.data.coach.NextSessionRepository
 import app.levitx.data.equipment.Band
 import app.levitx.data.equipment.EquipmentRepository
 import app.levitx.data.goal.GoalRepository
 import app.levitx.wear.intervals.IntervalController
 import app.levitx.wear.intervals.IntervalState
+import app.levitx.wear.session.NextSession
 import app.levitx.wear.session.WorkoutController
 import app.levitx.wear.session.WorkoutState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,7 +39,7 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     goalRepository: GoalRepository,
-    nextSessionRepository: NextSessionRepository,
+    nextSession: NextSession,
     equipmentRepository: EquipmentRepository,
     pendingWorkouts: PendingWorkouts,
     private val controller: WorkoutController,
@@ -52,7 +52,7 @@ class HomeViewModel @Inject constructor(
     // and without the type the compiler can't tell what `catch` may emit.
     private val readyState: Flow<HomeUiState> = combine(
         goalRepository.observeActiveGoal(),
-        nextSessionRepository.observeNext(),
+        nextSession.observe(),
         workouts,
         equipmentRepository.observeBands(),
         pendingWorkouts.observe(),

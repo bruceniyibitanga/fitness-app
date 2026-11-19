@@ -31,8 +31,9 @@ public enum class Intensity {
  * @property addedKg Weight to do the sets with: a vest, a belt or plates. 0 for bodyweight.
  * @property slowLowerSeconds Seconds to take lowering each rep, when the coach
  *   has slowed the exercise down to make it harder. Null for the usual pace.
- * @throws IllegalArgumentException if [sets] is empty, for an attempt that
- *   isn't skill work, or for added weight out of range.
+ * @throws IllegalArgumentException if [exercise] is a cardio or mobility move,
+ *   [sets] is empty, for an attempt that isn't skill work, or for added
+ *   weight out of range.
  */
 public data class ExercisePlan(
     val exercise: Exercise,
@@ -46,6 +47,8 @@ public data class ExercisePlan(
     val slowLowerSeconds: Int? = null,
 ) {
     init {
+        // Cardio and mobility moves have no ladder or volume target, so nothing here could plan or learn from them.
+        require(exercise.pattern.isStrength) { "only strength exercises can be planned" }
         require(sets.isNotEmpty()) { "an exercise needs at least one set" }
         require(addedKg in 0.0..LoadLimits.MAX_MODIFIER_KG) { "addedKg out of range" }
         require(slowLowerSeconds == null || slowLowerSeconds > 0) { "slowLowerSeconds must be positive" }

@@ -36,7 +36,7 @@ class HomeViewModelTest {
     private val equipment = FakeEquipmentRepository(bands = listOf(Band("b1", "Red", 20.0)))
 
     private fun viewModel(goal: GoalRepository = FakeGoalRepository(path)) =
-        HomeViewModel(goal, fakes.next, equipment, fakes.pending, controller, intervals)
+        HomeViewModel(goal, fakes.nextSession, equipment, fakes.pending, controller, intervals)
 
     @Test
     fun showsTheCoachsNextSession() = runTest {

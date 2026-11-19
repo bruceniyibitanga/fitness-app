@@ -1,6 +1,6 @@
 package app.levitx.data.coach
 
-import app.levitx.core.coach.PlannedSession
+import app.levitx.core.coach.PlanAhead
 import app.levitx.core.coach.WorkoutRun
 
 /**
@@ -13,11 +13,11 @@ import app.levitx.core.coach.WorkoutRun
  * version doesn't know, reads as null.
  */
 object WorkoutCodec {
-    /** The text for [session]. */
-    fun encodePlan(session: PlannedSession): String = CoachCodec.encode(planDocumentOf(session))
+    /** The text for [plan]. */
+    fun encodePlan(plan: PlanAhead): String = CoachCodec.encode(planDocumentOf(plan))
 
-    /** The session [text] describes, or null when it isn't one this version can read. */
-    fun decodePlanOrNull(text: String): PlannedSession? = CoachCodec.decodePlanOrNull(text)?.toSessionOrNull()
+    /** The plan [text] describes, or null when it isn't one this version can read. */
+    fun decodePlanOrNull(text: String): PlanAhead? = CoachCodec.decodePlanOrNull(text)?.toPlanOrNull()
 
     /** The text for [run]. */
     fun encodeRun(run: WorkoutRun): String = CoachCodec.encode(workoutDocumentOf(run))
