@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.levitx.core.coach.ExercisePlan
@@ -25,15 +24,11 @@ import app.levitx.phone.R
  * and setup, so a session looks the same wherever it was planned.
  *
  * @param onExerciseClick Opens an exercise by id, or null when rows aren't tappable.
- * @param heading The caption over the rows, with the session's length beside
- *   it, or null where the screen has already said both.
+ * @param heading A caption over the rows, with the session's length beside
+ *   it. Null where the screen has already said how long the session is.
  */
 @Composable
-fun SessionList(
-    session: PlannedSession,
-    onExerciseClick: ((String) -> Unit)? = null,
-    heading: String? = pluralStringResource(R.plurals.today_exercises, session.plans.size, session.plans.size),
-) {
+fun SessionList(session: PlannedSession, onExerciseClick: ((String) -> Unit)? = null, heading: String? = null) {
     if (heading != null) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

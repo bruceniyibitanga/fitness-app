@@ -37,7 +37,6 @@ import app.levitx.phone.ui.ChoiceStyle
 import app.levitx.phone.ui.PhotoCard
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.aimName
-import app.levitx.phone.ui.levelName
 import app.levitx.phone.ui.pathPhoto
 import app.levitx.phone.ui.programMeta
 
@@ -62,7 +61,7 @@ internal fun GoalStep(state: OnboardingUiState, actions: OnboardingActions) {
     ChoiceRow(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 20.dp)) {
         SkillLevel.entries.forEach { each ->
             ChoiceBar(
-                text = stringResource(levelName(each)),
+                text = stringResource(levelTab(each)),
                 selected = each == level,
                 onClick = { level = each },
                 style = ChoiceStyle.CREAM,
@@ -93,6 +92,14 @@ internal fun GoalStep(state: OnboardingUiState, actions: OnboardingActions) {
             )
         }
     }
+}
+
+/** A level's name in sentence case, which fits a third of the screen where the caps used elsewhere don't. */
+@StringRes
+private fun levelTab(level: SkillLevel): Int = when (level) {
+    SkillLevel.BEGINNER -> R.string.goal_level_beginner
+    SkillLevel.INTERMEDIATE -> R.string.goal_level_intermediate
+    SkillLevel.ADVANCED -> R.string.goal_level_advanced
 }
 
 /** "No skill in mind, just get fitter": general fitness, as a quiet line above Continue. */

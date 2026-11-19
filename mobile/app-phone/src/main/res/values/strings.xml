@@ -56,6 +56,9 @@
     <string name="welcome_start">Build my plan</string>
     <string name="welcome_private">Takes about a minute. Your answers stay on this phone.</string>
     <string name="goal_title">What are you training for?</string>
+    <string name="goal_level_beginner">Beginner</string>
+    <string name="goal_level_intermediate">Intermediate</string>
+    <string name="goal_level_advanced">Advanced</string>
     <string name="goal_general_link">No skill in mind, just get fitter</string>
     <string name="step_progress">Setup %1$d%% done</string>
     <string name="style_title">How much of each session is the skill?</string>
@@ -144,10 +147,6 @@
     <string name="ready_first_session">FIRST SESSION</string>
 
     <!-- Today -->
-    <plurals name="today_exercises">
-        <item quantity="one">%1$d EXERCISE</item>
-        <item quantity="other">%1$d EXERCISES</item>
-    </plurals>
     <string name="today_sets">%1$d × %2$s</string>
     <string name="today_kicker_next">%1$s · SESSION %2$d OF %3$d THIS WEEK</string>
     <string name="today_kicker_extra">%1$s · %2$d DONE THIS WEEK</string>
