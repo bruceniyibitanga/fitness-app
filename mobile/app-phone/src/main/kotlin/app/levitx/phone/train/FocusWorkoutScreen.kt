@@ -43,6 +43,7 @@ import app.levitx.phone.ui.PhotoHeader
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.SessionList
 import app.levitx.phone.ui.focusPhoto
+import app.levitx.phone.ui.focusPhotoKey
 import kotlinx.coroutines.launch
 
 /**
@@ -82,7 +83,7 @@ data class FocusWorkoutNavigation(
 
 /** How far the title rides up over the photo's faded edge. */
 private val TitleOverlap = (-20).dp
-private val WorkoutPhotoHeight = 150.dp
+private val WorkoutPhotoHeight = 240.dp
 private val WorkoutBarHeight = 64.dp
 
 /**
@@ -107,7 +108,12 @@ fun FocusWorkoutScreen(
 
             is FocusWorkoutUiState.Ready -> {
                 Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                    PhotoHeader(focusPhoto(uiState.focus), navigation.onBack, height = WorkoutPhotoHeight)
+                    PhotoHeader(
+                        photo = focusPhoto(uiState.focus),
+                        onBack = navigation.onBack,
+                        height = WorkoutPhotoHeight,
+                        sharedKey = focusPhotoKey(uiState.focus.name),
+                    )
                     Workout(uiState, navigation.onOpenExercise)
                 }
                 if (uiState.session != null) StartBar(uiState.hasWorkoutInProgress, onStart)
@@ -152,7 +158,7 @@ private fun Workout(state: FocusWorkoutUiState.Ready, onOpenExercise: (String) -
         Lede(stringResource(R.string.focus_workout_nothing), modifier = Modifier.padding(horizontal = ScreenPadding))
         return
     }
-    SessionList(session, state.bodyweightKg, onExerciseClick = onOpenExercise)
+    SessionList(session, onExerciseClick = onOpenExercise)
     Help(
         text = stringResource(R.string.focus_workout_note),
         modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 14.dp, bottom = 14.dp),
@@ -187,7 +193,6 @@ private fun FocusWorkoutScreenPreview() {
             uiState = FocusWorkoutUiState.Ready(
                 focus = WorkoutFocus.PULL,
                 session = Coach().workout(model, WorkoutFocus.PULL, nowEpochMillis = 0L),
-                bodyweightKg = 74.2,
                 hasWorkoutInProgress = false,
             ),
             onStart = {},

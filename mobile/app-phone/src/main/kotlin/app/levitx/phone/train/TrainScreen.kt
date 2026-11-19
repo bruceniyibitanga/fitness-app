@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -54,6 +55,7 @@ import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.SectionTitle
 import app.levitx.phone.ui.TabHeader
 
 /** Train tab: connects [TrainViewModel] to [TrainScreen]. */
@@ -88,8 +90,8 @@ internal val previewTrainNavigation = TrainNavigation({}, {}, {}, {}, {}, {})
 /**
  * The Train tab, laid out as the Train artboard: chips for everything, each
  * part of the body, cardio and mobility; filters under them; then skill
- * programs as photo cards, single workouts and cardio and mobility workouts
- * as photo rows. Sections the chip and filters leave empty aren't shown.
+ * programs as big photo cards, single workouts as photo tiles, and cardio
+ * and mobility workouts as rows. Sections the chip and filters leave empty aren't shown.
  */
 @Composable
 fun TrainScreen(uiState: TrainUiState, navigation: TrainNavigation, modifier: Modifier = Modifier) {
@@ -169,9 +171,9 @@ private fun NoMatches(onClear: () -> Unit) {
 private fun Programs(programs: List<ProgramSummary>, total: Int, navigation: TrainNavigation) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(start = ScreenPadding, top = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = ScreenPadding, top = 14.dp, bottom = 4.dp),
     ) {
-        Caption(stringResource(R.string.train_programs), modifier = Modifier.weight(1f))
+        SectionTitle(stringResource(R.string.train_programs), modifier = Modifier.weight(1f))
         Box(
             contentAlignment = Alignment.CenterEnd,
             modifier = Modifier
@@ -181,7 +183,7 @@ private fun Programs(programs: List<ProgramSummary>, total: Int, navigation: Tra
         ) { Caption(stringResource(R.string.train_all_programs_link, total), color = LevitxColors.Accent) }
     }
     Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = ScreenPadding),
@@ -203,25 +205,35 @@ private fun SearchButton(onOpenSearch: () -> Unit) {
     ) { Icon(painterResource(R.drawable.ic_search), contentDescription = null, tint = LevitxColors.Text) }
 }
 
-/** The single workouts heading and a row for each. */
+/** The single workouts heading and a photo tile for each, two to a row. */
 @Composable
 private fun Workouts(workouts: List<WorkoutSummary>, onOpen: (String) -> Unit) {
-    Caption(
+    SectionTitle(
         stringResource(R.string.train_workouts),
-        modifier = Modifier.padding(start = ScreenPadding, top = 20.dp, bottom = 4.dp),
+        modifier = Modifier.padding(start = ScreenPadding, top = 26.dp, bottom = 12.dp),
     )
-    workouts.forEach { workout ->
-        WorkoutRow(workout, onClick = { onOpen(workout.focus.name) })
-        Rule()
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(horizontal = ScreenPadding),
+    ) {
+        workouts.chunked(2).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                pair.forEach { workout ->
+                    WorkoutTile(workout, onClick = { onOpen(workout.focus.name) }, modifier = Modifier.weight(1f))
+                }
+                // An odd one out keeps its half of the row.
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
     }
 }
 
 /** The cardio and mobility heading and a row for each. They come from the catalogue: nothing personal. */
 @Composable
 private fun Intervals(workouts: List<IntervalWorkout>, onOpen: (String) -> Unit) {
-    Caption(
+    SectionTitle(
         stringResource(R.string.train_intervals),
-        modifier = Modifier.padding(start = ScreenPadding, top = 20.dp, bottom = 4.dp),
+        modifier = Modifier.padding(start = ScreenPadding, top = 26.dp, bottom = 6.dp),
     )
     workouts.forEach { workout ->
         PhotoListRow(intervalPhoto(workout.kind), workout.name, intervalRowMeta(workout), onClick = {

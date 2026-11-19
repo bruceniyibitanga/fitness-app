@@ -17,7 +17,7 @@ import app.levitx.core.skills.SkillCatalogue
 import app.levitx.phone.ui.parseKg
 import java.time.DayOfWeek
 
-/** The steps of setup, in order. */
+/** The steps of setup, in order. Each asks one thing. */
 enum class OnboardingStep {
     /** What Levitx is. */
     WELCOME,
@@ -25,11 +25,23 @@ enum class OnboardingStep {
     /** What they are training for. */
     GOAL,
 
-    /** All-round or focused, whether they can do a pull-up, and bodyweight. */
-    HOW,
+    /** All-round or focused. Only asked with a skill goal. */
+    STYLE,
 
-    /** Training days, time per session and kit. */
+    /** What the ladder work is tuned for. */
+    AIM,
+
+    /** Whether they can do a strict pull-up. */
+    PULL_UP,
+
+    /** Bodyweight, in kilograms or pounds. Optional. */
+    BODY,
+
+    /** Training days and time per session. */
     WEEK,
+
+    /** The kit they have. */
+    KIT,
 
     /** The optional quick test, one movement at a time. */
     TEST,
@@ -50,7 +62,7 @@ val SessionLengths: List<Int> = listOf(20, 30, 45, 60)
  * @property style All-round or focused. Only asked with a skill goal.
  * @property pullUp The answer to "Can you do a strict pull-up?", or null before it is given.
  * @property bodyweightText Bodyweight as typed. Optional.
- * @property bodyweightUnit The unit it was typed in.
+ * @property bodyweightUnit The unit it is typed in: the app's unit, which this step can switch.
  * @property days Training days.
  * @property minutes Time per session.
  * @property equipment Kit they have. Empty until they pick some: nothing is assumed.
@@ -94,11 +106,25 @@ data class OnboardingUiState(
     /** True when the step on screen has what it needs to move on. */
     val canContinue: Boolean
         get() = when (step) {
-            OnboardingStep.WELCOME, OnboardingStep.TEST, OnboardingStep.READY -> true
             OnboardingStep.GOAL -> goalChosen
-            OnboardingStep.HOW -> pullUp != null && !bodyweightInvalid
+
+            OnboardingStep.PULL_UP -> pullUp != null
+
+            OnboardingStep.BODY -> !bodyweightInvalid
+
             OnboardingStep.WEEK -> days.isNotEmpty()
+
+            // Welcome asks nothing, style and aim start on a default, and no kit is a fine answer.
+            else -> true
         }
+
+    /** The steps these answers go through. Plan style is only asked with a skill goal. */
+    val steps: List<OnboardingStep>
+        get() = OnboardingStep.entries.filter { it != OnboardingStep.STYLE || goalPathId != null }
+
+    /** How far through setup the step on screen is, from 0 at the welcome to 1 at the plan. */
+    val progress: Float
+        get() = steps.indexOf(step).coerceAtLeast(0).toFloat() / steps.lastIndex
 
     /**
      * Kit the chosen skill's gates need that isn't picked yet. Setup says so,

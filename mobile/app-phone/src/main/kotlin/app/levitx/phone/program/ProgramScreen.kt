@@ -50,6 +50,7 @@ import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.gateStatus
 import app.levitx.phone.ui.pathPhoto
 import app.levitx.phone.ui.programDetail
+import app.levitx.phone.ui.programPhotoKey
 import kotlinx.coroutines.launch
 
 private val GateRowHeight = 54.dp
@@ -93,7 +94,7 @@ fun ProgramScreen(uiState: ProgramUiState, onMakePlan: () -> Unit, onBack: () ->
 
             is ProgramUiState.Ready -> {
                 Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                    PhotoHeader(pathPhoto(uiState.path.id), onBack)
+                    PhotoHeader(pathPhoto(uiState.path.id), onBack, sharedKey = programPhotoKey(uiState.path.id))
                     Title(uiState)
                     Gates(uiState)
                 }

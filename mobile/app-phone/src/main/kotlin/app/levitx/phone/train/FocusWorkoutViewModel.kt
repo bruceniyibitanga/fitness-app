@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.WorkoutFocus
-import app.levitx.core.coach.bodyweightTrend
 import app.levitx.data.DefaultDispatcher
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.time.TrainingClock
@@ -43,15 +42,10 @@ sealed interface FocusWorkoutUiState {
      *
      * @property focus What it works.
      * @property session The workout, or null when none of it is safe today.
-     * @property bodyweightKg Bodyweight for kilograms per rep, or null when none is recorded.
      * @property hasWorkoutInProgress True when another workout is already under way.
      */
-    data class Ready(
-        val focus: WorkoutFocus,
-        val session: PlannedSession?,
-        val bodyweightKg: Double?,
-        val hasWorkoutInProgress: Boolean,
-    ) : FocusWorkoutUiState
+    data class Ready(val focus: WorkoutFocus, val session: PlannedSession?, val hasWorkoutInProgress: Boolean) :
+        FocusWorkoutUiState
 }
 
 /**
@@ -84,7 +78,6 @@ class FocusWorkoutViewModel @AssistedInject constructor(
                     FocusWorkoutUiState.Ready(
                         focus = focus,
                         session = coach.workout(state.model, focus, now),
-                        bodyweightKg = bodyweightTrend(state.model.weighIns, now)?.currentKg,
                         hasWorkoutInProgress = inProgress,
                     )
                 }

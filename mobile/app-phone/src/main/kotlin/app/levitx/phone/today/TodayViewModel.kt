@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.SuggestionChoice
 import app.levitx.core.coach.WeighInPrompt
-import app.levitx.core.coach.bodyweightTrend
 import app.levitx.core.history.WeekReviews
 import app.levitx.core.load.LoadLimits
 import app.levitx.data.DefaultDispatcher
@@ -64,7 +63,6 @@ class TodayViewModel @Inject constructor(
                 TodayUiState.Ready(
                     nowEpochMillis = now,
                     recommendation = coach.recommend(state.model, now),
-                    bodyweightKg = bodyweightTrend(state.model.weighIns, now)?.currentKg,
                     hasWorkoutInProgress = inProgress,
                     sessionsLastWeek = state.model.history.count { it.finishedAtEpochMillis > now - WEEK_MILLIS },
                     sessionsPerWeek = state.model.profile.sessionsPerWeek,
