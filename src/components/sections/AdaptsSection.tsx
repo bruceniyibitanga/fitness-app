@@ -1,20 +1,28 @@
 import { adapts } from "@/content/site";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { PhotoFill } from "@/components/ui/PhotoFill";
+import { Curtain } from "@/components/ui/Curtain";
 
-/** One example of the coach changing a session, shown rather than explained. */
+/**
+ * One example of the coach changing a session, shown rather than explained. The photo runs
+ * off the left edge of the screen and the session card overlaps its right side.
+ */
 export function AdaptsSection() {
   const titleId = `${adapts.id}-title`;
   return (
-    <section id={adapts.id} aria-labelledby={titleId} className="gutter section-pad mx-auto grid max-w-[1200px] items-center gap-[clamp(48px,8vw,120px)] md:grid-cols-2">
-      <div>
-        <SectionTitle id={titleId} eyebrow={adapts.eyebrow} title={adapts.title} />
-        <p className="reveal mt-8 max-w-[420px] text-lg leading-relaxed text-muted">{adapts.body}</p>
-      </div>
-      <div className="reveal relative aspect-[4/5] overflow-hidden">
-        <PhotoFill photo={adapts.photo} sizes="(min-width: 768px) 50vw, 100vw" />
-        <div className="absolute inset-0 bg-bg/35" aria-hidden="true" />
-        <AdjustedCard />
+    <section id={adapts.id} aria-labelledby={titleId} className="section-pad">
+      <div className="grid items-end gap-y-16 md:grid-cols-12">
+        <div className="relative md:col-span-7">
+          <Curtain photo={adapts.photo} sizes="(min-width: 768px) 60vw, 100vw" from="left" className="aspect-[4/5] md:aspect-[6/5]">
+            <div className="absolute inset-0 bg-bg/25" aria-hidden="true" />
+          </Curtain>
+          <div className="lift gutter absolute -bottom-10 right-0 w-full sm:w-auto md:-right-[clamp(40px,8vw,120px)] md:px-0">
+            <AdjustedCard />
+          </div>
+        </div>
+        <div className="gutter md:col-span-4 md:col-start-9 md:pb-6 md:pl-0">
+          <SectionTitle id={titleId} eyebrow={adapts.eyebrow} title={adapts.title} />
+          <p className="reveal mt-8 max-w-[340px] text-lg leading-relaxed text-muted">{adapts.body}</p>
+        </div>
       </div>
     </section>
   );
@@ -23,7 +31,7 @@ export function AdaptsSection() {
 function AdjustedCard() {
   const { card } = adapts;
   return (
-    <figure className="absolute inset-x-6 bottom-6 border border-tick bg-bg/85 p-6 backdrop-blur-md sm:inset-x-auto sm:right-6 sm:w-[300px]">
+    <figure className="ml-auto border border-tick bg-bg/90 p-6 backdrop-blur-md sm:w-[300px]">
       <figcaption className="flex justify-between">
         <span className="mono text-[10px] text-muted">{card.title}</span>
         <span className="mono text-[10px] text-accent">{card.badge}</span>

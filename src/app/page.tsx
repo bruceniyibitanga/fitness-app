@@ -3,11 +3,13 @@ import { JsonLd } from "@/components/JsonLd";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
-import { HowSection } from "@/components/sections/HowSection";
+import { PathSection } from "@/components/sections/PathSection";
 import { AdaptsSection } from "@/components/sections/AdaptsSection";
 import { SkillsSection } from "@/components/sections/SkillsSection";
 import { CalculatorSection } from "@/components/sections/CalculatorSection";
-import { WatchPrivacySection } from "@/components/sections/WatchPrivacySection";
+import { WatchSection } from "@/components/sections/WatchSection";
+import { KeepGoingSection } from "@/components/sections/KeepGoingSection";
+import { PrivacySection } from "@/components/sections/PrivacySection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 
@@ -70,11 +72,13 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <HowSection />
+        <PathSection />
         <AdaptsSection />
         <SkillsSection />
+        <WatchSection />
+        <KeepGoingSection />
         <CalculatorSection />
-        <WatchPrivacySection />
+        <PrivacySection />
         <FaqSection />
         <CtaSection />
       </main>

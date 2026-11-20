@@ -1,17 +1,19 @@
 import { cta } from "@/content/site";
-import { PhotoFill } from "@/components/ui/PhotoFill";
+import { Curtain } from "@/components/ui/Curtain";
 import { WaitlistForm } from "@/components/waitlist/WaitlistForm";
 
+/** The one form on the page. Headline and form on the left, a tall photo running off the right edge. */
 export function CtaSection() {
   return (
-    <section aria-labelledby="cta-title" className="relative overflow-hidden">
-      <PhotoFill photo={cta.photo} sizes="100vw" />
-      <div className="absolute inset-0 bg-bg/65" aria-hidden="true" />
-      <div className="gutter relative mx-auto flex min-h-[720px] max-w-[1200px] flex-col items-center justify-center py-32 text-center">
-        <h2 id="cta-title" className="display reveal text-[clamp(52px,8vw,120px)] leading-[0.9] text-balance">
-          {cta.title}
-        </h2>
-        <WaitlistForm className="reveal mt-12 w-full max-w-[460px] text-left" />
+    <section id={cta.id} aria-labelledby="cta-title" className="section-pad scroll-mt-8">
+      <div className="grid items-center gap-y-16 md:grid-cols-12">
+        <div className="gutter md:col-span-6 md:pr-0 lg:pl-[max(clamp(20px,4vw,48px),calc((100vw-1200px)/2+48px))]">
+          <h2 id="cta-title" className="display slide text-[clamp(56px,7.6vw,120px)] leading-[0.88] text-balance">
+            {cta.title}
+          </h2>
+          <WaitlistForm className="reveal mt-12 max-w-[460px]" />
+        </div>
+        <Curtain photo={cta.photo} sizes="(min-width: 768px) 45vw, 100vw" from="right" className="aspect-[4/5] md:col-span-5 md:col-start-8" />
       </div>
     </section>
   );

@@ -37,10 +37,15 @@ function pexelsCredit(name: string, handle: string) {
 }
 
 export const photos = {
-  hero: {
-    src: unsplash("photo-1758520705400-1edfdcd78cf5"),
-    alt: "Man doing a pull-up on an outdoor bar",
-    credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
+  heroDusk: {
+    src: unsplash("photo-1691533539807-7666752914ff"),
+    alt: "Person holding a handstand on a beach at dusk",
+    credit: unsplashCredit("Tobias Pfeifer", "tobi_sap"),
+  },
+  lightWall: {
+    src: unsplash("photo-1649429479266-ea5f862c3e73"),
+    alt: "Man holding a handstand in front of a wall of lights at night",
+    credit: unsplashCredit("Jerrin James", "jerrinjms"),
   },
   pullUpIndoor: {
     src: unsplash("photo-1772450014504-1914f8afe985"),
@@ -62,20 +67,35 @@ export const photos = {
     alt: "Man holding a planche on a bar",
     credit: unsplashCredit("GMB Fitness", "gmb"),
   },
+  rings: {
+    src: unsplash("photo-1772450014180-39e8de531a57"),
+    alt: "Wooden gymnastic rings hanging from straps",
+    credit: unsplashCredit("Rodrigo Rodrigues", "wolfart32"),
+  },
   handstand: {
     src: unsplash("photo-1662795855010-a595a2ba6265"),
     alt: "Person holding a handstand on a dirt path",
     credit: unsplashCredit("Till Daling", "tilldaling"),
+  },
+  resting: {
+    src: unsplash("photo-1530821875964-91927b611bad"),
+    alt: "Athlete sitting on a ramp, catching his breath between sets",
+    credit: unsplashCredit("John Fornander", "johnfo"),
+  },
+  park: {
+    src: unsplash("photo-1775850576265-865f60386102"),
+    alt: "People training on outdoor gym equipment",
+    credit: unsplashCredit("Nadin Nandin", "nadin_nandin"),
   },
   mountain: {
     src: unsplash("photo-1761539157219-bfc5b02cdb36"),
     alt: "Person holding a handstand on a mountain path",
     credit: unsplashCredit("Speedy Sandy", "fiftymm"),
   },
-  duo: {
-    src: unsplash("photo-1753889177521-2f2e0a9dea3c"),
-    alt: "Two people practising handstands outdoors",
-    credit: unsplashCredit("Mina Rad", "miinrad"),
+  winter: {
+    src: unsplash("photo-1758521959675-5874879f3977"),
+    alt: "Man doing a pull-up in a park in winter",
+    credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
   },
 } satisfies Record<string, Photo>;
 

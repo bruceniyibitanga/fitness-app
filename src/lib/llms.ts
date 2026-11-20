@@ -1,4 +1,4 @@
-import { calculator, faq, how, privacy, site, skills } from "@/content/site";
+import { calculator, faq, path, privacy, site, skills } from "@/content/site";
 
 /**
  * A plain-text summary of Levitx for AI assistants and crawlers that read /llms.txt
@@ -13,7 +13,7 @@ export function llmsText(): string {
     `${site.name} is made by ${site.publisher.name} in ${site.publisher.city}, Australia. It runs on ${site.platforms.join(" and ")}.`,
     "",
     "## How it works",
-    ...how.steps.map((s) => `- ${s.title}: ${s.body}`),
+    ...path.steps.map((s) => `- ${s.title}: ${s.body}`),
     "",
     "## Skills",
     ...skills.items.map((s) => `- ${s.name}: ${s.range.toLowerCase()}`),

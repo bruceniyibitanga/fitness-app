@@ -90,43 +90,90 @@
 }
 
 @keyframes intro { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
-@keyframes reveal { from { opacity: 0; transform: translateY(48px); } to { opacity: 1; transform: none; } }
-@keyframes settle { from { transform: scale(1.18); } to { transform: scale(1); } }
-@keyframes drift { to { transform: translateY(14%) scale(1.06); } }
-@keyframes fade-back { to { opacity: 0.25; } }
+@keyframes line-up { from { transform: translateY(105%); } to { transform: none; } }
+@keyframes reveal { from { opacity: 0; transform: translateY(56px); } to { opacity: 1; transform: none; } }
+@keyframes slide { from { opacity: 0; transform: translateX(var(--slide-x, -72px)); } to { opacity: 1; transform: none; } }
+@keyframes settle { from { transform: scale(1.22); } to { transform: scale(1); } }
+@keyframes drift { to { transform: translateY(12%) scale(1.06); } }
+@keyframes lift { from { transform: translateY(var(--lift, 72px)); } to { transform: translateY(calc(var(--lift, 72px) * -1)); } }
+@keyframes fade-back { to { opacity: 0.2; } }
+/* The curtain: the frame slides in while the photo inside slides the other way, so the photo
+   looks still and gets uncovered in place. Transforms only, so it stays on the compositor. */
+@keyframes curtain-frame { from { transform: translate(var(--from-x, 0), var(--from-y, 100%)); } to { transform: none; } }
+@keyframes curtain-photo { from { transform: translate(calc(var(--from-x, 0) * -1), calc(var(--from-y, 100%) * -1)); } to { transform: none; } }
+
+/* Which way a curtain opens. Up is the default. */
+.from-left { --from-x: -100%; --from-y: 0%; }
+.from-right { --from-x: 100%; --from-y: 0%; }
+.slide-right { --slide-x: 72px; }
 
 /*
- * Motion. Everything sits behind prefers-reduced-motion, and the scroll effects use
- * CSS scroll-driven animations, which run off the main thread. Browsers without
- * support simply show the content in place.
+ * Motion. Everything sits behind prefers-reduced-motion, and the scroll effects use CSS
+ * scroll-driven animations, which run off the main thread. Browsers without support, and
+ * anyone who asks for less motion, see every element in its final place.
  */
 @media (prefers-reduced-motion: no-preference) {
 
   .intro { animation: intro 1s var(--ease-out-soft) both; }
-  .intro-2 { animation-delay: 0.12s; }
-  .intro-3 { animation-delay: 0.24s; }
-  .intro-4 { animation-delay: 0.4s; }
+  .intro-2 { animation-delay: 0.15s; }
+  .intro-3 { animation-delay: 0.45s; }
+  .intro-4 { animation-delay: 0.6s; }
+
+  /* Headline lines rise out of their own line box on load. */
+  .line > span { display: block; animation: line-up 1.1s var(--ease-out-soft) both; }
+  .line:nth-child(2) > span { animation-delay: 0.1s; }
+
+  /* The hero photo uncovers on load rather than on scroll, since it starts in view. */
+  .curtain-load > .curtain-frame { animation: curtain-frame 1.4s var(--ease-out-soft) 0.05s both; }
+  .curtain-load > .curtain-frame > .curtain-photo { animation: curtain-photo 1.4s var(--ease-out-soft) 0.05s both; }
 
   @supports (animation-timeline: view()) {
     .reveal {
       animation: reveal linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 55%;
+      animation-range: entry 0% entry 60%;
+    }
+    .slide {
+      animation: slide linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 30%;
+    }
+    /* Staggers for items in a row: each starts a little later in the same scroll. */
+    .later { animation-range: entry 15% cover 35%; }
+    .latest { animation-range: entry 25% cover 40%; }
+
+    /* The frame names its own timeline so the transforms below never feed back into it. */
+    .curtain { view-timeline: --curtain block; }
+    .curtain > .curtain-frame {
+      animation: curtain-frame linear both;
+      animation-timeline: --curtain;
+      animation-range: entry 0% cover 45%;
+    }
+    .curtain > .curtain-frame > .curtain-photo {
+      animation: curtain-photo linear both;
+      animation-timeline: --curtain;
+      animation-range: entry 0% cover 45%;
     }
     .settle img {
       animation: settle linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 55%;
+      animation-range: entry 0% cover 60%;
+    }
+    /* A card that floats over a photo moves a little faster than the page, for depth. */
+    .lift {
+      animation: lift linear both;
+      animation-timeline: view();
+      animation-range: cover;
     }
     .drift img {
       animation: drift linear both;
       animation-timeline: scroll();
-      animation-range: 0 900px;
+      animation-range: 0 100svh;
     }
     .fade-back {
       animation: fade-back linear both;
       animation-timeline: scroll();
-      animation-range: 200px 800px;
+      animation-range: 30svh 90svh;
     }
   }
 }
