@@ -1,9 +1,13 @@
 import "server-only";
 import { serverEnv, type ServerEnv } from "@/lib/env";
+import type { GuideSlug } from "@/content/guides";
+
+/** Where a signup came from. Only allowlisted values ever get here (see signup.ts). */
+export type SignupContext = { guide?: GuideSlug };
 
 export interface WaitlistRepository {
   /** Saves an email. Adding one that's already there is not an error. */
-  add(email: string): Promise<void>;
+  add(email: string, context?: SignupContext): Promise<void>;
 }
 
 const TIMEOUT_MS = 5_000;
@@ -17,7 +21,8 @@ const TIMEOUT_MS = 5_000;
  * is why this only ever runs on the server.
  *
  * Contacts get `waitlist: true` in their data, so a Plunk segment on that
- * field gives the launch list.
+ * field gives the launch list. People who sign up for a guide's plan also get
+ * `guide: "<slug>"`, so you can see which guides bring people in.
  */
 export class PlunkWaitlistRepository implements WaitlistRepository {
   private static readonly API = "https://next-api.useplunk.com";
@@ -27,7 +32,7 @@ export class PlunkWaitlistRepository implements WaitlistRepository {
     private readonly fetchFn: typeof fetch = fetch,
   ) {}
 
-  async add(email: string): Promise<void> {
+  async add(email: string, context: SignupContext = {}): Promise<void> {
     const response = await this.fetchFn(`${PlunkWaitlistRepository.API}/contacts`, {
       method: "POST",
       headers: {
@@ -40,7 +45,7 @@ export class PlunkWaitlistRepository implements WaitlistRepository {
         // Joining the list is the opt-in. Set it explicitly: Plunk's docs
         // disagree on whether new contacts default to subscribed.
         subscribed: true,
-        data: { waitlist: true },
+        data: { waitlist: true, ...(context.guide ? { guide: context.guide } : {}) },
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -97,9 +102,10 @@ export class SupabaseWaitlistRepository implements WaitlistRepository {
 
 /** Local development with no keys: logs a masked email instead of saving it. */
 export class DevLogWaitlistRepository implements WaitlistRepository {
-  async add(email: string): Promise<void> {
+  async add(email: string, context: SignupContext = {}): Promise<void> {
     const [name, domain] = email.split("@");
-    console.info(`[waitlist:dev] would save ${name?.slice(0, 2)}***@${domain}`);
+    const from = context.guide ? ` (guide: ${context.guide})` : "";
+    console.info(`[waitlist:dev] would save ${name?.slice(0, 2)}***@${domain}${from}`);
   }
 }
 

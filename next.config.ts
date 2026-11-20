@@ -20,11 +20,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   images: {
-    // Photos are hotlinked from Unsplash and Pexels. next/image fetches them server-side
+    // Photos are hotlinked from Unsplash. next/image fetches them server-side
     // and serves them from our own origin, so the browser CSP can stay at img-src 'self'.
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
-      { protocol: "https", hostname: "images.pexels.com", pathname: "/photos/**" },
     ],
     formats: ["image/avif", "image/webp"],
   },

@@ -68,7 +68,7 @@ const website: Section[] = [
   {
     title: "What we collect",
     body: [
-      "If you join the early access list, we keep your email address. That's it. This site doesn't use analytics, ad trackers or third-party cookies. If you switch between light and dark, one small cookie remembers that choice. It holds only the word light or dark, and nothing about you.",
+      "If you join the early access list, or download a free plan from one of our guides, we keep your email address and, for a plan, which guide it was for. That's it. This site doesn't use analytics, ad trackers or third-party cookies. If you switch between light and dark, one small cookie remembers that choice. It holds only the word light or dark, and nothing about you.",
     ],
   },
   {

@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "typecheck": "next typegen && tsc --noEmit",
+    "check": "npm run typecheck && npm run lint && npm test",
+    "plans": "node scripts/build-plans.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

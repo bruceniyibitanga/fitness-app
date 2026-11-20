@@ -200,3 +200,38 @@ html[data-theme="dark"] {
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
+
+/*
+ * The printable plan sheets (/guides/[slug]/plan). Always white paper and dark ink,
+ * whatever theme is set, and laid out as A4 pages for scripts/build-plans.mjs.
+ */
+.sheet {
+  --color-bg: #ffffff;
+  --color-surface: #f6f4ef;
+  --color-line: #dedad2;
+  --color-tick: #b9b3a6;
+  --color-text: #171613;
+  --color-soft: #39362f;
+  --color-muted: #5c574e;
+  --color-faint: #8a857b;
+  --color-accent: #c2410c;
+  background: var(--color-bg);
+  color: var(--color-text);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.sheet-page {
+  display: flex;
+  flex-direction: column;
+  width: 182mm;
+  height: 269mm;
+  margin: 0 auto;
+  overflow: hidden;
+  break-after: page;
+}
+.sheet-page:last-child { break-after: auto; }
+@media screen {
+  .sheet { padding: 14mm 0; }
+  .sheet-page + .sheet-page { margin-top: 28mm; }
+}
+@page { size: A4; margin: 14mm; }

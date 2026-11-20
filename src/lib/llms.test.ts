@@ -1,3 +1,4 @@
+import { guides } from "@/content/guides";
 import { describe, expect, it } from "vitest";
 import { llmsText } from "./llms";
 import { faq, site } from "@/content/site";
@@ -14,6 +15,13 @@ describe("llmsText", () => {
   it("carries every FAQ answer word for word", () => {
     for (const item of faq.items) {
       expect(text).toContain(`### ${item.q}\n${item.a}`);
+    }
+  });
+
+  it("includes every guide's answer and link", () => {
+    for (const guide of guides) {
+      expect(text).toContain(guide.answer);
+      expect(text).toContain(`${site.url}/guides/${guide.slug}`);
     }
   });
 
