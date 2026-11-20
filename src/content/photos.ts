@@ -1,11 +1,11 @@
 /**
  * Every photo on the site, in one place. Swap a URL here and it changes everywhere.
  *
- * Photos come from Unsplash under its free licence. Its guidelines ask for hotlinked URLs
- * and a credit linking to the photographer, which the footer renders. Each photo's download
- * was recorded through the Unsplash API when it was picked, as the guidelines also ask.
+ * Photos come from Unsplash under its free licence, hotlinked as Unsplash asks. Each photo's
+ * download was recorded through the Unsplash API when it was picked. Credit isn't required,
+ * so the site doesn't show it, but each entry keeps its photographer as a record.
  */
-export type PhotoSource = "Unsplash" | "Pexels";
+export type PhotoSource = "Unsplash";
 
 export type Photo = {
   src: string;
@@ -14,11 +14,6 @@ export type Photo = {
 };
 
 const UTM = "?utm_source=levitx&utm_medium=referral";
-
-export const SOURCE_URLS: Record<PhotoSource, string> = {
-  Unsplash: `https://unsplash.com/${UTM}`,
-  Pexels: "https://www.pexels.com/",
-};
 
 function unsplash(path: string): string {
   return `https://images.unsplash.com/${path}?ixlib=rb-4.1.0&fm=jpg&q=80&crop=entropy&cs=srgb`;
@@ -35,9 +30,9 @@ export const photos = {
     credit: unsplashCredit("Vikas Deswal", "deswalvikas29"),
   },
   path: {
-    src: unsplash("photo-1631645789778-b4cf1e791801"),
-    alt: "Athlete flying level through a long concrete car park",
-    credit: unsplashCredit("Fotis Fotopoulos", "ffstop"),
+    src: unsplash("photo-1526314149856-d8cf115d62f1"),
+    alt: "Man holding a handstand on parallel bars at an outdoor gym by the beach",
+    credit: unsplashCredit("Kevin McCutcheon", "kevinmccutcheon"),
   },
   adapts: {
     src: unsplash("photo-1758520705400-1edfdcd78cf5"),
@@ -45,19 +40,19 @@ export const photos = {
     credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
   },
   muscleUp: {
-    src: unsplash("photo-1581792618071-6b7af43985bb"),
-    alt: "Athlete at the top of a bar against a pale sky",
-    credit: unsplashCredit("Cozy Dreams", "blagov"),
+    src: unsplash("photo-1586178486070-57d66f5347fd"),
+    alt: "Man pulling his chest over the bar in a muscle-up",
+    credit: unsplashCredit("Kate Trysh", "katetrysh"),
   },
   frontLever: {
-    src: unsplash("photo-1701826510552-aadcfa841065"),
-    alt: "Man pulling on gymnastic rings in a bright room",
+    src: unsplash("photo-1595554919371-7e38f2558855"),
+    alt: "Man holding a front lever on gymnastic rings in a park",
     credit: unsplashCredit("GMB Fitness", "gmb"),
   },
   planche: {
-    src: unsplash("photo-1546375448-06761090185a"),
-    alt: "Athlete leaning forward over his hands in a support hold",
-    credit: unsplashCredit("Bogdan Pasca", "bogdipasca"),
+    src: unsplash("photo-1516208813382-cbaf53501037"),
+    alt: "Man holding a planche on playground bars",
+    credit: unsplashCredit("GMB Fitness", "gmb"),
   },
   handstand: {
     src: unsplash("photo-1586930713012-7059dc74a72b"),
@@ -92,15 +87,3 @@ export const photos = {
 } satisfies Record<string, Photo>;
 
 export type PhotoKey = keyof typeof photos;
-
-/** Unique photographers, for the footer credit line. */
-export function photoCredits() {
-  const seen = new Map<string, Photo["credit"]>();
-  for (const photo of Object.values(photos)) seen.set(photo.credit.name, photo.credit);
-  return [...seen.values()];
-}
-
-/** The photo sites actually in use, so the footer only names the ones we rely on. */
-export function photoSources(): PhotoSource[] {
-  return [...new Set(Object.values(photos).map((p) => p.credit.source))];
-}

@@ -173,11 +173,28 @@ export const waitlistCopy = {
 };
 
 export const footer = {
-  maker: "Made in Brisbane by",
+  /** The closing line, set large. */
+  sign: ["Train with", "a plan."],
   disclaimer:
     "Levitx is a training app, not a medical device. It doesn't diagnose or treat injuries. If pain isn't settling, see a doctor or physiotherapist.",
-  links: [
-    { href: "/#faq", label: "FAQ" },
-    { href: "/privacy", label: "Privacy" },
+  columns: [
+    {
+      title: "Explore",
+      links: [
+        { href: "/#path", label: "How it works" },
+        { href: "/#skills", label: "Skills" },
+        { href: "/#calculator", label: "Push-up calculator" },
+        { href: "/#faq", label: "FAQ" },
+      ],
+    },
+    {
+      title: "Levitx",
+      links: [
+        { href: "/#join", label: "Early access" },
+        { href: "/privacy", label: "Privacy" },
+        { href: "mailto:support@xenovadigital.com", label: "Contact" },
+      ],
+    },
   ],
+  maker: "Made in Brisbane by",
 };
