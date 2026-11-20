@@ -52,7 +52,7 @@ export function WaitlistForm({ className = "" }: { className?: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="h-14 cursor-pointer bg-accent px-6 text-[15px] font-bold text-bg transition-colors hover:bg-accent-hover disabled:cursor-wait disabled:opacity-70"
+          className="h-14 grow cursor-pointer bg-accent px-6 sm:grow-0 text-[15px] font-bold text-bg transition-colors hover:bg-accent-hover disabled:cursor-wait disabled:opacity-70"
         >
           {pending ? "Adding you…" : waitlistCopy.button}
         </button>

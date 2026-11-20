@@ -1,33 +1,39 @@
 import { adapts } from "@/content/site";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 import { PhotoFill } from "@/components/ui/PhotoFill";
 
+/** One example of the coach changing a session, shown rather than explained. */
 export function AdaptsSection() {
   const titleId = `${adapts.id}-title`;
   return (
-    <section id={adapts.id} aria-labelledby={titleId} className="border-b border-line">
-      <div className="rail grid md:grid-cols-2">
-        <div className="gutter section-pad">
-          <SectionHeading id={titleId} number={adapts.number} label={adapts.label} title={adapts.title} />
-          <ul className="reveal mt-11 border-t border-line">
-            {adapts.rules.map((rule) => (
-              <li key={rule.when} className="grid min-h-[88px] grid-cols-[minmax(0,1fr)_28px_minmax(0,1.2fr)] items-center gap-3 border-b border-line py-3">
-                <span className={`mono text-[11px] leading-normal ${rule.tone === "care" ? "text-ice" : "text-muted"}`}>{rule.when}</span>
-                <span className="text-lg text-tick" aria-hidden="true">→</span>
-                <span className="text-[19px] leading-snug font-semibold">{rule.then}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="relative min-h-[520px] border-line md:min-h-[680px] md:border-l">
-          <PhotoFill photo={adapts.photo} sizes="(min-width: 768px) 50vw, 100vw" />
-          <div className="shade-bottom absolute inset-0" aria-hidden="true" />
-          <div className="absolute inset-x-0 bottom-0 p-7">
-            <p className="mono text-[11px] text-muted">{adapts.caption.label}</p>
-            <p className="mt-2 max-w-[380px] text-[26px] leading-tight font-bold [font-stretch:95%]">{adapts.caption.text}</p>
-          </div>
-        </div>
+    <section id={adapts.id} aria-labelledby={titleId} className="gutter section-pad mx-auto grid max-w-[1200px] items-center gap-[clamp(48px,8vw,120px)] md:grid-cols-2">
+      <div>
+        <SectionTitle id={titleId} eyebrow={adapts.eyebrow} title={adapts.title} />
+        <p className="reveal mt-8 max-w-[420px] text-lg leading-relaxed text-muted">{adapts.body}</p>
+      </div>
+      <div className="reveal relative aspect-[4/5] overflow-hidden">
+        <PhotoFill photo={adapts.photo} sizes="(min-width: 768px) 50vw, 100vw" />
+        <div className="absolute inset-0 bg-bg/35" aria-hidden="true" />
+        <AdjustedCard />
       </div>
     </section>
+  );
+}
+
+function AdjustedCard() {
+  const { card } = adapts;
+  return (
+    <figure className="absolute inset-x-6 bottom-6 border border-tick bg-bg/85 p-6 backdrop-blur-md sm:inset-x-auto sm:right-6 sm:w-[300px]">
+      <figcaption className="flex justify-between">
+        <span className="mono text-[10px] text-muted">{card.title}</span>
+        <span className="mono text-[10px] text-accent">{card.badge}</span>
+      </figcaption>
+      <p className="mt-5 flex items-baseline gap-3">
+        <s className="text-[26px] font-bold text-faint">{card.from}</s>
+        <span className="display text-[64px] leading-[0.9]">{card.to}</span>
+      </p>
+      <p className="mt-5 text-sm text-soft">{card.reason}</p>
+      <p className="mono mt-2 text-[10px] text-ice">{card.note}</p>
+    </figure>
   );
 }

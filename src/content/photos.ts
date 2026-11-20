@@ -13,7 +13,7 @@ export type Photo = {
   credit: { name: string; profile: string; source: PhotoSource };
 };
 
-const UTM = "?utm_source=lever&utm_medium=referral";
+const UTM = "?utm_source=levitx&utm_medium=referral";
 
 export const SOURCE_URLS: Record<PhotoSource, string> = {
   Unsplash: `https://unsplash.com/${UTM}`,
@@ -62,30 +62,15 @@ export const photos = {
     alt: "Man holding a planche on a bar",
     credit: unsplashCredit("GMB Fitness", "gmb"),
   },
-  rings: {
-    src: unsplash("photo-1772450014180-39e8de531a57"),
-    alt: "Wooden gymnastic rings hanging from straps",
-    credit: unsplashCredit("Rodrigo Rodrigues", "wolfart32"),
-  },
   handstand: {
     src: unsplash("photo-1662795855010-a595a2ba6265"),
     alt: "Person holding a handstand on a dirt path",
     credit: unsplashCredit("Till Daling", "tilldaling"),
   },
-  park: {
-    src: unsplash("photo-1775850576265-865f60386102"),
-    alt: "People training on outdoor gym equipment",
-    credit: unsplashCredit("Nadin Nandin", "nadin_nandin"),
-  },
   mountain: {
     src: unsplash("photo-1761539157219-bfc5b02cdb36"),
     alt: "Person holding a handstand on a mountain path",
     credit: unsplashCredit("Speedy Sandy", "fiftymm"),
-  },
-  winter: {
-    src: unsplash("photo-1758521959675-5874879f3977"),
-    alt: "Man doing a pull-up in a park in winter",
-    credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
   },
   duo: {
     src: unsplash("photo-1753889177521-2f2e0a9dea3c"),
