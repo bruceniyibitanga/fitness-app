@@ -3,30 +3,57 @@ import { JsonLd } from "@/components/JsonLd";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
-import { Ticker } from "@/components/sections/Ticker";
-import { PathSection } from "@/components/sections/PathSection";
+import { HowSection } from "@/components/sections/HowSection";
 import { AdaptsSection } from "@/components/sections/AdaptsSection";
 import { SkillsSection } from "@/components/sections/SkillsSection";
 import { CalculatorSection } from "@/components/sections/CalculatorSection";
-import { WatchSection } from "@/components/sections/WatchSection";
-import { KeepGoingSection } from "@/components/sections/KeepGoingSection";
-import { ParksSection } from "@/components/sections/ParksSection";
+import { WatchPrivacySection } from "@/components/sections/WatchPrivacySection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { CtaSection } from "@/components/sections/CtaSection";
 
+/**
+ * What the page says about itself to search engines and AI assistants: who makes Levitx,
+ * what it is and runs on, and the FAQ word for word. Each node has an @id so they link up.
+ * No ratings or prices are claimed, because there are none yet.
+ */
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "SoftwareApplication",
-      name: site.name,
-      applicationCategory: "HealthApplication",
-      operatingSystem: "iOS, watchOS",
-      description: site.description,
+      "@type": "Organization",
+      "@id": `${site.url}/#publisher`,
+      name: site.publisher.name,
+      url: site.publisher.url,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: site.publisher.city,
+        addressRegion: site.publisher.region,
+        addressCountry: site.publisher.country,
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site.url}/#website`,
       url: site.url,
+      name: site.name,
+      inLanguage: "en-AU",
+      publisher: { "@id": `${site.url}/#publisher` },
+    },
+    {
+      "@type": "MobileApplication",
+      "@id": `${site.url}/#app`,
+      name: site.name,
+      url: site.url,
+      description: site.description,
+      applicationCategory: "HealthApplication",
+      operatingSystem: site.platforms.join(", "),
+      image: `${site.url}/opengraph-image.png`,
+      publisher: { "@id": `${site.url}/#publisher` },
+      author: { "@id": `${site.url}/#publisher` },
     },
     {
       "@type": "FAQPage",
+      "@id": `${site.url}/#faq`,
       mainEntity: faq.items.map((item) => ({
         "@type": "Question",
         name: item.q,
@@ -43,14 +70,11 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Ticker />
-        <PathSection />
+        <HowSection />
         <AdaptsSection />
         <SkillsSection />
         <CalculatorSection />
-        <WatchSection />
-        <KeepGoingSection />
-        <ParksSection />
+        <WatchPrivacySection />
         <FaqSection />
         <CtaSection />
       </main>

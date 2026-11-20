@@ -49,22 +49,18 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
-  .rail {
-    max-width: 1320px;
-    margin-inline: auto;
-    border-inline: 1px solid var(--color-line);
-  }
   .gutter {
     padding-inline: clamp(20px, 4vw, 48px);
   }
+  /* Sections breathe: generous space above and below, so each one reads on its own. */
   .section-pad {
-    padding-block: clamp(48px, 6vw, 88px);
+    padding-block: clamp(96px, 13vw, 184px);
   }
   .h2 {
-    font-size: clamp(40px, 5.4vw, 76px);
-    font-weight: 750;
-    font-stretch: 108%;
-    line-height: 0.94;
+    font-size: clamp(40px, 5.2vw, 72px);
+    font-weight: 650;
+    font-stretch: 100%;
+    line-height: 0.98;
     letter-spacing: -0.035em;
   }
   .display {
@@ -93,37 +89,11 @@
   }
 }
 
-/* Rotating goal word in the hero. */
-.rotator {
-  display: inline-block;
-  height: 1em;
-  overflow: hidden;
-  vertical-align: top;
-  color: var(--color-accent);
-}
-.rotator > span {
-  display: block;
-}
-.rotator > span > span {
-  display: block;
-  height: 1em;
-  line-height: 1em;
-}
-
-@keyframes rotate-goal {
-  0%, 18% { transform: translateY(0); }
-  25%, 43% { transform: translateY(-1em); }
-  50%, 68% { transform: translateY(-2em); }
-  75%, 93% { transform: translateY(-3em); }
-  100% { transform: translateY(-4em); }
-}
-@keyframes ticker { to { transform: translateX(-50%); } }
 @keyframes intro { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
 @keyframes reveal { from { opacity: 0; transform: translateY(48px); } to { opacity: 1; transform: none; } }
 @keyframes settle { from { transform: scale(1.18); } to { transform: scale(1); } }
 @keyframes drift { to { transform: translateY(14%) scale(1.06); } }
 @keyframes fade-back { to { opacity: 0.25; } }
-@keyframes focus-step { 0% { opacity: 0.28; } 40%, 60% { opacity: 1; } 100% { opacity: 0.28; } }
 
 /*
  * Motion. Everything sits behind prefers-reduced-motion, and the scroll effects use
@@ -131,9 +101,6 @@
  * support simply show the content in place.
  */
 @media (prefers-reduced-motion: no-preference) {
-  .rotator > span { animation: rotate-goal 11s cubic-bezier(0.7, 0, 0.2, 1) infinite; }
-  .ticker-track { animation: ticker 48s linear infinite; }
-  .ticker:hover .ticker-track { animation-play-state: paused; }
 
   .intro { animation: intro 1s var(--ease-out-soft) both; }
   .intro-2 { animation-delay: 0.12s; }
@@ -160,11 +127,6 @@
       animation: fade-back linear both;
       animation-timeline: scroll();
       animation-range: 200px 800px;
-    }
-    .focus-step {
-      animation: focus-step linear both;
-      animation-timeline: view();
-      animation-range: cover 10% cover 90%;
     }
   }
 }

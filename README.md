@@ -1,6 +1,6 @@
-# LEVER website
+# Levitx website
 
-Landing page for LEVER, an adaptive calisthenics app for iPhone and Apple Watch.
+Landing page for Levitx, a calisthenics coach app for Android and Wear OS, at https://www.levitx.app.
 
 Next.js 16 (App Router), TypeScript, Tailwind CSS 4.
 
@@ -26,8 +26,10 @@ npm run build
 | `src/content/site.ts` | All page copy. Change wording here, not in components. |
 | `src/content/photos.ts` | Every photo and its credit. |
 | `src/components/sections/` | One file per page section. |
-| `src/components/ui/` | Small shared pieces (section heading, photo). |
+| `src/components/ui/` | Small shared pieces (section title, photo). |
 | `src/lib/pushup-load.ts` | Push-up load maths, from force-plate studies. |
+| `src/lib/llms.ts` | The plain-text summary served at `/llms.txt` for AI assistants, built from the page copy. |
+| `src/app/opengraph-image.png` | The picture shown when someone shares a link. Its alt text sits beside it. |
 | `src/lib/waitlist/` | Validation, rate limiting and storage (Plunk, or Supabase later) for the waitlist. |
 | `src/app/actions/waitlist.ts` | The server action the form posts to. |
 | `src/proxy.ts`, `src/lib/csp.ts` | Content Security Policy with a fresh nonce per request. |
@@ -51,7 +53,7 @@ Signups go to [Plunk](https://www.useplunk.com). It's open source, the free tier
 2. In **Settings > API Keys**, copy the **secret** key (starts with `sk_`). The public `pk_` key won't work: the contacts endpoint only accepts the secret one, and the site checks the prefix at startup.
 3. In Vercel, add it as `PLUNK_SECRET_KEY`, marked **Sensitive**, then redeploy.
 4. In Plunk, make a segment where `waitlist` is `true`. That's your launch list.
-5. Set `NEXT_PUBLIC_SITE_URL` to the real domain so canonical links and the sitemap are right.
+5. `NEXT_PUBLIC_SITE_URL` must be `https://www.levitx.app` in Vercel. Canonical links, the sitemap, robots.txt, the share image and the structured data are all built from it. If it's unset, the code falls back to the same address.
 
 Before sending the launch email, verify levitx.app in Plunk (**Guides > Verifying domains** in their docs) so mail comes from your domain and doesn't land in spam.
 
@@ -60,3 +62,12 @@ Moving to a database later is a config change. A Supabase version and its migrat
 ## Photos
 
 Photos are hotlinked from Unsplash, as their guidelines ask, with credits in the footer. To swap one, change its URL in `src/content/photos.ts`.
+
+## Search and AI answers
+
+The page is written to be found and quoted, so keep these in mind when changing copy:
+
+- **One idea per section.** A heading and at most one line. Longer explanations go in the FAQ, where search engines and AI assistants look for answers.
+- **FAQ answers stay under 60 words** and answer the question in the first sentence. A test checks the length. The same text goes into the FAQ structured data and `/llms.txt`, so it can't drift.
+- **Name the product the same way everywhere:** Levitx, Android and Wear OS. A test fails if the old name or Apple platforms creep back in.
+- **No invented ratings or prices** in the structured data. Add them only when they're real.

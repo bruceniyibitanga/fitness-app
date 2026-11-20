@@ -8,13 +8,18 @@ export function Footer() {
   const sources = photoSources();
   return (
     <footer className="border-t border-line">
-      <div className="gutter mx-auto flex max-w-[1320px] flex-wrap justify-between gap-x-8 gap-y-4 pt-10 pb-12">
-        <div className="flex items-center gap-3">
+      <div className="gutter mx-auto flex max-w-[1200px] flex-wrap justify-between gap-x-8 gap-y-6 pt-14 pb-16">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-accent">
             <LogoMark size={18} />
           </span>
           <span className="mono text-[11px] tracking-[0.22em]">{site.name}</span>
-          <span className="mono text-[11px] text-faint">· Built in {site.city}</span>
+          <span className="text-[13px] text-faint">
+            · {footer.maker}{" "}
+            <a href={site.publisher.url} rel="noopener" className="underline-offset-4 hover:text-text hover:underline">
+              {site.publisher.name}
+            </a>
+          </span>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1">
           {footer.links.map((link) => (
@@ -23,7 +28,7 @@ export function Footer() {
             </Link>
           ))}
         </nav>
-        <p className="basis-full text-[13px] leading-relaxed text-faint">{footer.disclaimer}</p>
+        <p className="max-w-[640px] basis-full text-[13px] leading-relaxed text-faint">{footer.disclaimer}</p>
         <p className="mono basis-full text-[10px] leading-loose text-faint">
           Photos by{" "}
           {credits.map((c, i) => (
