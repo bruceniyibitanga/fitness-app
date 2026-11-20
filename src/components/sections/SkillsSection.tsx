@@ -1,10 +1,12 @@
 import { skills } from "@/content/site";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { Curtain } from "@/components/ui/Curtain";
+import { MaskedPhoto } from "@/components/ui/MaskedPhoto";
 
-/** Every other card is set lower, so the row reads as a rhythm rather than a grid. */
-const offset = ["", "lg:mt-24", "lg:mt-8", "lg:mt-32"];
-const stagger = ["", "later", "", "later"];
+/** Every other card sits a little lower, so the row has a rhythm rather than a ruler edge. */
+const offset = ["", "lg:mt-20", "", "lg:mt-20"];
+
+/** Where to centre each photo so the athlete stays in frame at a tall crop. */
+const position = ["50% 30%", "50% 40%", "45% 50%", "86% 50%"];
 
 /** The four big skills as tall photos, a name and a range each. */
 export function SkillsSection() {
@@ -12,20 +14,12 @@ export function SkillsSection() {
   return (
     <section id={skills.id} aria-labelledby={titleId} className="gutter section-pad mx-auto max-w-[1200px] scroll-mt-8">
       <SectionTitle id={titleId} eyebrow={skills.eyebrow} title={skills.title} className="max-w-[640px]" />
-      <ul className="mt-[clamp(56px,8vw,112px)] grid grid-cols-2 gap-x-3 gap-y-10 lg:grid-cols-4 lg:gap-x-5">
+      <ul className="mt-[clamp(56px,8vw,104px)] grid grid-cols-2 gap-x-4 gap-y-12 lg:grid-cols-4 lg:gap-x-6">
         {skills.items.map((skill, i) => (
-          <li key={skill.name} className={`group ${offset[i]} ${i % 2 === 1 ? "mt-12" : ""}`}>
-            <div className="overflow-hidden">
-              <Curtain
-                photo={skill.photo}
-                sizes="(min-width: 1024px) 280px, 50vw"
-                className="aspect-[3/4.3] transition-transform duration-[1200ms] ease-(--ease-out-soft) group-hover:scale-[1.03]"
-              />
-            </div>
-            <div className={`reveal ${stagger[i]} mt-5`}>
-              <h3 className="text-[clamp(20px,2vw,26px)] leading-none font-semibold tracking-[-0.02em]">{skill.name}</h3>
-              <p className="mono mt-2.5 text-[10px] text-muted">{skill.range}</p>
-            </div>
+          <li key={skill.name} className={offset[i]}>
+            <MaskedPhoto photo={skill.photo} sizes="(min-width: 1024px) 280px, 50vw" frame="aspect-[3/4]" position={position[i]} />
+            <h3 className="reveal display mt-5 text-[clamp(26px,2.6vw,34px)] leading-none">{skill.name}</h3>
+            <p className="reveal mono mt-2.5 text-[10px] text-muted">{skill.range}</p>
           </li>
         ))}
       </ul>

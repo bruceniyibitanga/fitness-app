@@ -1,9 +1,9 @@
 /**
  * Every photo on the site, in one place. Swap a URL here and it changes everywhere.
  *
- * Photos come from Unsplash and Pexels, both free licences. Unsplash's guidelines ask
- * for hotlinked URLs and a credit linking to the photographer, which the footer renders.
- * Pexels doesn't require credit, but we give it anyway.
+ * Photos come from Unsplash under its free licence. Its guidelines ask for hotlinked URLs
+ * and a credit linking to the photographer, which the footer renders. Each photo's download
+ * was recorded through the Unsplash API when it was picked, as the guidelines also ask.
  */
 export type PhotoSource = "Unsplash" | "Pexels";
 
@@ -24,78 +24,70 @@ function unsplash(path: string): string {
   return `https://images.unsplash.com/${path}?ixlib=rb-4.1.0&fm=jpg&q=80&crop=entropy&cs=srgb`;
 }
 
-function pexels(id: number): string {
-  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?cs=srgb&fm=jpg`;
-}
-
 function unsplashCredit(name: string, handle: string) {
   return { name, profile: `https://unsplash.com/@${handle}${UTM}`, source: "Unsplash" as const };
 }
 
-function pexelsCredit(name: string, handle: string) {
-  return { name, profile: `https://www.pexels.com/@${handle}/`, source: "Pexels" as const };
-}
-
 export const photos = {
-  heroDusk: {
-    src: unsplash("photo-1691533539807-7666752914ff"),
-    alt: "Person holding a handstand on a beach at dusk",
-    credit: unsplashCredit("Tobias Pfeifer", "tobi_sap"),
+  hero: {
+    src: unsplash("photo-1656744175229-d39a3a61e75d"),
+    alt: "Man holding a one-arm handstand in a bright white room",
+    credit: unsplashCredit("Vikas Deswal", "deswalvikas29"),
   },
-  lightWall: {
-    src: unsplash("photo-1649429479266-ea5f862c3e73"),
-    alt: "Man holding a handstand in front of a wall of lights at night",
-    credit: unsplashCredit("Jerrin James", "jerrinjms"),
+  path: {
+    src: unsplash("photo-1631645789778-b4cf1e791801"),
+    alt: "Athlete flying level through a long concrete car park",
+    credit: unsplashCredit("Fotis Fotopoulos", "ffstop"),
   },
-  pullUpIndoor: {
-    src: unsplash("photo-1772450014504-1914f8afe985"),
-    alt: "Woman doing pull-ups in a gym",
-    credit: unsplashCredit("Rodrigo Rodrigues", "wolfart32"),
+  adapts: {
+    src: unsplash("photo-1758520705400-1edfdcd78cf5"),
+    alt: "Man resting between sets at an outdoor pull-up bar",
+    credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
   },
   muscleUp: {
-    src: pexels(4803687),
-    alt: "Man doing a muscle-up on a bar",
-    credit: pexelsCredit("Ketut Subiyanto", "ketut-subiyanto"),
+    src: unsplash("photo-1581792618071-6b7af43985bb"),
+    alt: "Athlete at the top of a bar against a pale sky",
+    credit: unsplashCredit("Cozy Dreams", "blagov"),
   },
   frontLever: {
-    src: unsplash("photo-1647871071971-6688017ee28a"),
-    alt: "Man training on a pull-up bar",
-    credit: unsplashCredit("Salah Regouane", "salaheregouane"),
-  },
-  planche: {
-    src: unsplash("photo-1516208813382-cbaf53501037"),
-    alt: "Man holding a planche on a bar",
+    src: unsplash("photo-1701826510552-aadcfa841065"),
+    alt: "Man pulling on gymnastic rings in a bright room",
     credit: unsplashCredit("GMB Fitness", "gmb"),
   },
-  rings: {
-    src: unsplash("photo-1772450014180-39e8de531a57"),
-    alt: "Wooden gymnastic rings hanging from straps",
-    credit: unsplashCredit("Rodrigo Rodrigues", "wolfart32"),
+  planche: {
+    src: unsplash("photo-1546375448-06761090185a"),
+    alt: "Athlete leaning forward over his hands in a support hold",
+    credit: unsplashCredit("Bogdan Pasca", "bogdipasca"),
   },
   handstand: {
-    src: unsplash("photo-1662795855010-a595a2ba6265"),
-    alt: "Person holding a handstand on a dirt path",
-    credit: unsplashCredit("Till Daling", "tilldaling"),
+    src: unsplash("photo-1586930713012-7059dc74a72b"),
+    alt: "Woman holding a handstand against a white wall",
+    credit: unsplashCredit("Nathaniel Vala", "spydernaz"),
   },
-  resting: {
-    src: unsplash("photo-1530821875964-91927b611bad"),
-    alt: "Athlete sitting on a ramp, catching his breath between sets",
-    credit: unsplashCredit("John Fornander", "johnfo"),
+  watch: {
+    src: unsplash("photo-1561212942-0d77ee345b35"),
+    alt: "Fitness band on a wrist, mountains in the distance",
+    credit: unsplashCredit("FitNish Media", "fitnish"),
   },
-  park: {
-    src: unsplash("photo-1775850576265-865f60386102"),
-    alt: "People training on outdoor gym equipment",
+  comeback: {
+    src: unsplash("photo-1515614726597-e686ac6dbfde"),
+    alt: "Man hanging from a bar at sunset",
+    credit: unsplashCredit("Alexei Scutari", "scutal"),
+  },
+  lighter: {
+    src: unsplash("photo-1733077151425-67af89045a9f"),
+    alt: "Woman stretching on the floor in soft daylight",
+    credit: unsplashCredit("Logan Weaver", "lgnwvr"),
+  },
+  rest: {
+    src: unsplash("photo-1775850576183-a7671ba5dc46"),
+    alt: "People taking it easy at an outdoor fitness park",
     credit: unsplashCredit("Nadin Nandin", "nadin_nandin"),
   },
-  mountain: {
-    src: unsplash("photo-1761539157219-bfc5b02cdb36"),
-    alt: "Person holding a handstand on a mountain path",
-    credit: unsplashCredit("Speedy Sandy", "fiftymm"),
-  },
-  winter: {
-    src: unsplash("photo-1758521959675-5874879f3977"),
-    alt: "Man doing a pull-up in a park in winter",
-    credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
+  join: {
+    src: unsplash("photo-1573858129585-6ca05f716932"),
+    alt: "Man kicking up to a handstand beside a concrete wall",
+    credit: unsplashCredit("Eduardo Cano Photo Co.", "eduardocanophotoco"),
   },
 } satisfies Record<string, Photo>;
 

@@ -1,7 +1,33 @@
 @import "tailwindcss";
 
-/* Design tokens. Tailwind turns these into classes like bg-surface, text-muted, border-line. */
+/*
+ * Design tokens. Tailwind turns these into classes like bg-surface, text-muted, border-line.
+ * The values here are the light theme, which is the default. The dark theme overrides the
+ * same variables further down, so every component follows the theme without knowing about it.
+ */
 @theme {
+  --color-bg: #f3f0ea;
+  --color-surface: #e9e5dd;
+  --color-line: #d9d3c8;
+  --color-track: #e4dfd6;
+  --color-tick: #c2bbad;
+  --color-text: #171613;
+  --color-soft: #39362f;
+  --color-muted: #5c574e;
+  --color-faint: #6a655b;
+  --color-accent: #c2410c;
+  --color-accent-hover: #9a330a;
+  --color-ice: #2c5a85;
+
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-display: var(--font-instrument), "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+/* Dark theme: the palette the site launched with. */
+html[data-theme="dark"] {
   --color-bg: #0b0b0a;
   --color-surface: #151513;
   --color-line: #24231f;
@@ -10,15 +36,10 @@
   --color-text: #f2efe8;
   --color-soft: #c9c5bb;
   --color-muted: #a29e94;
-  --color-faint: #7e7a71;
+  --color-faint: #8a867c;
   --color-accent: #ff6a2b;
   --color-accent-hover: #ff8a57;
   --color-ice: #8db4d9;
-
-  --font-sans: var(--font-archivo), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
-
-  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.1, 1);
 }
 
 @layer base {
@@ -31,9 +52,11 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: clip;
+    background: var(--color-bg);
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
   ::selection {
-    background: var(--color-accent);
+    background: var(--color-text);
     color: var(--color-bg);
   }
   :focus-visible {
@@ -52,128 +75,123 @@
   .gutter {
     padding-inline: clamp(20px, 4vw, 48px);
   }
+  /* Left padding that lines text up with the 1200px column even when the row is full width. */
+  .inset-left {
+    padding-left: max(clamp(20px, 4vw, 48px), calc((100vw - 1200px) / 2 + clamp(20px, 4vw, 48px)));
+  }
+  .inset-right {
+    padding-right: max(clamp(20px, 4vw, 48px), calc((100vw - 1200px) / 2 + clamp(20px, 4vw, 48px)));
+  }
   /* Sections breathe: generous space above and below, so each one reads on its own. */
   .section-pad {
     padding-block: clamp(96px, 13vw, 184px);
   }
-  .h2 {
-    font-size: clamp(40px, 5.2vw, 72px);
-    font-weight: 650;
-    font-stretch: 100%;
-    line-height: 0.98;
-    letter-spacing: -0.035em;
-  }
+  /* Headlines are set in a quiet serif, like a magazine feature. */
   .display {
-    font-weight: 800;
-    font-stretch: 80%;
-    letter-spacing: -0.035em;
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
   }
-  .eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-muted);
+  .h2 {
+    font-family: var(--font-display);
+    font-size: clamp(42px, 5.4vw, 80px);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.015em;
   }
-  .eyebrow::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--color-line);
+  /* The primary button is ink on paper (paper on ink in dark mode). */
+  .button-ink {
+    background: var(--color-text);
+    color: var(--color-bg);
+    transition: opacity 0.3s ease;
   }
-  .shade-bottom {
-    background: linear-gradient(0deg, rgb(11 11 10 / 0.92) 0%, rgb(11 11 10 / 0.35) 45%, rgb(11 11 10 / 0) 75%);
+  .button-ink:hover {
+    opacity: 0.86;
+  }
+
+  /* Theme switch: both icons are rendered, CSS shows the one for the current theme. */
+  .theme-icon-dark,
+  .theme-label-dark {
+    display: none;
+  }
+  html[data-theme="dark"] .theme-icon-light,
+  html[data-theme="dark"] .theme-label-light {
+    display: none;
+  }
+  html[data-theme="dark"] .theme-icon-dark {
+    display: block;
+  }
+  html[data-theme="dark"] .theme-label-dark {
+    display: inline;
   }
 }
 
-@keyframes intro { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
-@keyframes line-up { from { transform: translateY(105%); } to { transform: none; } }
-@keyframes reveal { from { opacity: 0; transform: translateY(56px); } to { opacity: 1; transform: none; } }
-@keyframes slide { from { opacity: 0; transform: translateX(var(--slide-x, -72px)); } to { opacity: 1; transform: none; } }
-@keyframes settle { from { transform: scale(1.22); } to { transform: scale(1); } }
-@keyframes drift { to { transform: translateY(12%) scale(1.06); } }
-@keyframes lift { from { transform: translateY(var(--lift, 72px)); } to { transform: translateY(calc(var(--lift, 72px) * -1)); } }
-@keyframes fade-back { to { opacity: 0.2; } }
-/* The curtain: the frame slides in while the photo inside slides the other way, so the photo
-   looks still and gets uncovered in place. Transforms only, so it stays on the compositor. */
-@keyframes curtain-frame { from { transform: translate(var(--from-x, 0), var(--from-y, 100%)); } to { transform: none; } }
-@keyframes curtain-photo { from { transform: translate(calc(var(--from-x, 0) * -1), calc(var(--from-y, 100%) * -1)); } to { transform: none; } }
-
-/* Which way a curtain opens. Up is the default. */
-.from-left { --from-x: -100%; --from-y: 0%; }
-.from-right { --from-x: 100%; --from-y: 0%; }
-.slide-right { --slide-x: 72px; }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes unmask { from { clip-path: inset(var(--mask-y, 7%) var(--mask-x, 7%)); } to { clip-path: inset(0); } }
+@keyframes zoom-out { from { transform: scale(1.12); } to { transform: scale(1); } }
+@keyframes drift { to { transform: translateY(7%); } }
 
 /*
- * Motion. Everything sits behind prefers-reduced-motion, and the scroll effects use CSS
- * scroll-driven animations, which run off the main thread. Browsers without support, and
- * anyone who asks for less motion, see every element in its final place.
+ * Motion. Kept deliberately quiet: photos open out of a slightly smaller frame while they
+ * ease back from a small zoom, and text fades up a few pixels. Everything sits behind
+ * prefers-reduced-motion, and the scroll effects use CSS scroll-driven animations, which
+ * the browser runs off the main thread. Browsers without support, and anyone who asks for
+ * less motion, simply see every element in its final place.
  */
 @media (prefers-reduced-motion: no-preference) {
 
-  .intro { animation: intro 1s var(--ease-out-soft) both; }
+  /* On load: the hero only. */
+  .intro { animation: rise 1.2s var(--ease-out-soft) both; }
   .intro-2 { animation-delay: 0.15s; }
-  .intro-3 { animation-delay: 0.45s; }
-  .intro-4 { animation-delay: 0.6s; }
-
-  /* Headline lines rise out of their own line box on load. */
-  .line > span { display: block; animation: line-up 1.1s var(--ease-out-soft) both; }
-  .line:nth-child(2) > span { animation-delay: 0.1s; }
-
-  /* The hero photo uncovers on load rather than on scroll, since it starts in view. */
-  .curtain-load > .curtain-frame { animation: curtain-frame 1.4s var(--ease-out-soft) 0.05s both; }
-  .curtain-load > .curtain-frame > .curtain-photo { animation: curtain-photo 1.4s var(--ease-out-soft) 0.05s both; }
+  .intro-3 { animation-delay: 0.3s; }
+  .mask-load { animation: unmask 1.6s var(--ease-out-soft) both; }
+  .mask-load img { animation: zoom-out 2.2s var(--ease-out-soft) both; }
 
   @supports (animation-timeline: view()) {
     .reveal {
-      animation: reveal linear both;
+      animation: rise linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 60%;
+      animation-range: entry 0% entry 80%;
     }
-    .slide {
-      animation: slide linear both;
-      animation-timeline: view();
-      animation-range: entry 5% cover 30%;
-    }
-    /* Staggers for items in a row: each starts a little later in the same scroll. */
-    .later { animation-range: entry 15% cover 35%; }
-    .latest { animation-range: entry 25% cover 40%; }
 
-    /* The frame names its own timeline so the transforms below never feed back into it. */
-    .curtain { view-timeline: --curtain block; }
-    .curtain > .curtain-frame {
-      animation: curtain-frame linear both;
-      animation-timeline: --curtain;
-      animation-range: entry 0% cover 45%;
-    }
-    .curtain > .curtain-frame > .curtain-photo {
-      animation: curtain-photo linear both;
-      animation-timeline: --curtain;
-      animation-range: entry 0% cover 45%;
-    }
-    .settle img {
-      animation: settle linear both;
+    /* A photo opens out of its frame as it scrolls in. */
+    .mask {
+      animation: unmask linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 60%;
+      animation-range: entry 0% cover 40%;
     }
-    /* A card that floats over a photo moves a little faster than the page, for depth. */
-    .lift {
-      animation: lift linear both;
+    .mask img {
+      animation: zoom-out linear both;
       animation-timeline: view();
-      animation-range: cover;
+      animation-range: entry 0% cover 65%;
     }
-    .drift img {
+
+    /* The hero photo moves a touch slower than the page. */
+    .drift {
+      top: -8%;
       animation: drift linear both;
       animation-timeline: scroll();
       animation-range: 0 100svh;
     }
-    .fade-back {
-      animation: fade-back linear both;
-      animation-timeline: scroll();
-      animation-range: 30svh 90svh;
+
+    /*
+     * One full-screen moment: a framed photo grows to fill the screen as you scroll
+     * through a taller section. The section names its own timeline so the clip on the
+     * child never feeds back into it.
+     */
+    .expand { height: 190svh; view-timeline: --expand block; }
+    .expand-stage { position: sticky; top: 0; }
+    .expand-frame {
+      --mask-y: 14%;
+      --mask-x: 18%;
+      animation: unmask linear both;
+      animation-timeline: --expand;
+      animation-range: contain 0% contain 75%;
+    }
+    .expand-frame img {
+      animation: zoom-out linear both;
+      animation-timeline: --expand;
+      animation-range: contain 0% contain 100%;
     }
   }
 }

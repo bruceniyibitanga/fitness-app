@@ -31,14 +31,14 @@ export const hero = {
   title: ["Calisthenics,", "coached."],
   body: "Every session planned around what you can do today.",
   cta: "Get early access",
-  photo: "heroDusk" as PhotoKey,
+  photo: "hero" as PhotoKey,
 };
 
 export const path = {
   id: "path",
   eyebrow: "How it works",
   title: "Pick a goal. Start where you are.",
-  photo: "rings" as PhotoKey,
+  photo: "path" as PhotoKey,
   gates: {
     goal: "Muscle-up",
     remaining: "3 to go",
@@ -70,7 +70,7 @@ export const adapts = {
     reason: "Last session: nothing left in the tank",
     note: "Back to 3×8 once you recover",
   },
-  photo: "pullUpIndoor" as PhotoKey,
+  photo: "adapts" as PhotoKey,
 };
 
 type SkillItem = { name: string; range: string; photo: PhotoKey };
@@ -103,16 +103,16 @@ export const watch = {
   eyebrow: "Wear OS",
   title: "Phone stays in the bag.",
   body: "Sets, holds and rest run on your watch.",
-  photo: "mountain" as PhotoKey,
+  photo: "watch" as PhotoKey,
 };
 
 export const keepGoing = {
   eyebrow: "Keeping at it",
   title: "For the weeks you don't feel like it.",
   tiles: [
-    { tag: "Missed a week", title: "Come back. Don't restart.", photo: "winter" },
-    { tag: "Running on empty", title: "Take the lighter session.", photo: "resting" },
-    { tag: "Need a day off", title: "Rest counts too.", photo: "park" },
+    { tag: "Missed a week", title: "Come back. Don't restart.", photo: "comeback" },
+    { tag: "Running on empty", title: "Take the lighter session.", photo: "lighter" },
+    { tag: "Need a day off", title: "Rest counts too.", photo: "rest" },
   ] satisfies { tag: string; title: string; photo: PhotoKey }[],
 };
 
@@ -162,7 +162,7 @@ export const faq = {
 export const cta = {
   id: "join",
   title: "Start where you are.",
-  photo: "lightWall" as PhotoKey,
+  photo: "join" as PhotoKey,
 };
 
 export const waitlistCopy = {

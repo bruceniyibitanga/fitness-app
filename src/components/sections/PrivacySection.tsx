@@ -7,7 +7,7 @@ export function PrivacySection() {
     <section aria-labelledby="privacy-title" className="gutter section-pad mx-auto max-w-[1200px]">
       <div className="md:ml-[25%]">
         <p className="mono reveal text-[11px] text-accent">{privacy.eyebrow}</p>
-        <h2 id="privacy-title" className="display reveal mt-6 max-w-[860px] text-[clamp(44px,6.4vw,96px)] leading-[0.94] text-balance">
+        <h2 id="privacy-title" className="display reveal mt-6 max-w-[860px] text-[clamp(48px,6.6vw,100px)] leading-[0.95] text-balance">
           {privacy.title}
         </h2>
         <div className="reveal mt-10 flex flex-wrap items-center gap-x-10 gap-y-4">

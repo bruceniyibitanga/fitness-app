@@ -1,28 +1,24 @@
 import { adapts } from "@/content/site";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { Curtain } from "@/components/ui/Curtain";
+import { MaskedPhoto } from "@/components/ui/MaskedPhoto";
 
 /**
- * One example of the coach changing a session, shown rather than explained. The photo runs
- * off the left edge of the screen and the session card overlaps its right side.
+ * One example of the coach changing a session, shown rather than explained. Words and the
+ * session card on the left; a wide photo running off the right edge of the screen.
  */
 export function AdaptsSection() {
   const titleId = `${adapts.id}-title`;
   return (
     <section id={adapts.id} aria-labelledby={titleId} className="section-pad">
-      <div className="grid items-end gap-y-16 md:grid-cols-12">
-        <div className="relative md:col-span-7">
-          <Curtain photo={adapts.photo} sizes="(min-width: 768px) 60vw, 100vw" from="left" className="aspect-[4/5] md:aspect-[6/5]">
-            <div className="absolute inset-0 bg-bg/25" aria-hidden="true" />
-          </Curtain>
-          <div className="lift gutter absolute -bottom-10 right-0 w-full sm:w-auto md:-right-[clamp(40px,8vw,120px)] md:px-0">
+      <div className="grid items-center gap-y-14 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-x-[clamp(40px,6vw,96px)]">
+        <div className="inset-left pr-[clamp(20px,4vw,48px)] md:pr-0">
+          <SectionTitle id={titleId} eyebrow={adapts.eyebrow} title={adapts.title} />
+          <p className="reveal mt-7 max-w-[360px] text-lg leading-relaxed text-muted">{adapts.body}</p>
+          <div className="reveal mt-12 max-w-[320px]">
             <AdjustedCard />
           </div>
         </div>
-        <div className="gutter md:col-span-4 md:col-start-9 md:pb-6 md:pl-0">
-          <SectionTitle id={titleId} eyebrow={adapts.eyebrow} title={adapts.title} />
-          <p className="reveal mt-8 max-w-[340px] text-lg leading-relaxed text-muted">{adapts.body}</p>
-        </div>
+        <MaskedPhoto photo={adapts.photo} sizes="(min-width: 768px) 58vw, 100vw" frame="aspect-[4/3] md:aspect-[6/5]" position="40% center" />
       </div>
     </section>
   );
@@ -31,13 +27,13 @@ export function AdaptsSection() {
 function AdjustedCard() {
   const { card } = adapts;
   return (
-    <figure className="ml-auto border border-tick bg-bg/90 p-6 backdrop-blur-md sm:w-[300px]">
+    <figure className="border border-line bg-surface p-6">
       <figcaption className="flex justify-between">
         <span className="mono text-[10px] text-muted">{card.title}</span>
         <span className="mono text-[10px] text-accent">{card.badge}</span>
       </figcaption>
       <p className="mt-5 flex items-baseline gap-3">
-        <s className="text-[26px] font-bold text-faint">{card.from}</s>
+        <s className="text-[24px] text-faint">{card.from}</s>
         <span className="display text-[64px] leading-[0.9]">{card.to}</span>
       </p>
       <p className="mt-5 text-sm text-soft">{card.reason}</p>

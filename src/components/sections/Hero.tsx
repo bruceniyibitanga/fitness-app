@@ -1,40 +1,36 @@
 import { hero } from "@/content/site";
-import { Curtain } from "@/components/ui/Curtain";
+import { MaskedPhoto } from "@/components/ui/MaskedPhoto";
 
 /**
- * A tall photo pinned to the right edge and a two-line headline that overlaps it.
- * One short line and one button; the form itself waits at the end of the page.
+ * A magazine-style opener: the headline on the left, set in a quiet serif, and one tall
+ * photo running to the right edge of the screen. One line, one button, lots of paper.
  */
 export function Hero() {
   return (
-    <section aria-labelledby="hero-title" className="relative isolate min-h-[100svh] overflow-hidden">
-      <Curtain
-        photo={hero.photo}
-        sizes="(min-width: 768px) 56vw, 100vw"
-        onLoad
-        priority
-        position="50% 40%"
-        className="h-[76svh] md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-[56vw]"
-      >
-        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(0deg,#0b0b0a_0%,rgb(11_11_10/0)_40%)] md:bg-[linear-gradient(90deg,rgb(11_11_10/0.55)_0%,rgb(11_11_10/0)_35%)]" />
-      </Curtain>
-
-      <div className="gutter fade-back relative z-10 mx-auto -mt-[22svh] flex max-w-[1200px] flex-col pb-20 md:mt-0 md:min-h-[100svh] md:justify-end md:pb-[clamp(72px,10vh,128px)]">
-        <p className="mono intro text-[11px] text-soft">{hero.eyebrow}</p>
-        <h1 id="hero-title" className="display mt-6 text-[clamp(64px,10.5vw,176px)] leading-[0.86]">
-          {hero.title.map((line) => (
-            <span key={line} className="line block overflow-hidden pb-[0.04em]">
-              <span>{line}</span>
-            </span>
-          ))}
+    <section aria-labelledby="hero-title" className="grid min-h-[100svh] md:grid-cols-[minmax(0,1fr)_minmax(0,48vw)]">
+      <div className="inset-left flex flex-col justify-end pt-36 pr-[clamp(20px,4vw,48px)] pb-14 md:pb-[clamp(56px,9vh,112px)]">
+        <p className="mono intro text-[11px] text-muted">{hero.eyebrow}</p>
+        <h1 id="hero-title" className="display intro intro-2 mt-8 text-[clamp(64px,9vw,148px)] leading-[0.9]">
+          {hero.title[0]}
+          <br />
+          <em className="italic">{hero.title[1]}</em>
         </h1>
-        <div className="intro intro-3 mt-10 flex flex-wrap items-center gap-x-10 gap-y-6">
-          <a href="#join" className="inline-flex min-h-12 items-center bg-accent px-7 text-[15px] font-semibold text-bg transition-colors hover:bg-accent-hover">
+        <div className="intro intro-3 mt-12 flex flex-wrap items-center gap-x-10 gap-y-6">
+          <a href="#join" className="button-ink inline-flex min-h-12 items-center px-7 text-[15px] font-medium">
             {hero.cta}
           </a>
-          <p className="max-w-[300px] text-base leading-snug text-soft">{hero.body}</p>
+          <p className="max-w-[280px] text-[15px] leading-snug text-muted">{hero.body}</p>
         </div>
       </div>
+      <MaskedPhoto
+        photo={hero.photo}
+        sizes="(min-width: 768px) 48vw, 100vw"
+        onLoad
+        priority
+        position="55% 45%"
+        frame="aspect-[4/5] md:aspect-auto md:h-[calc(100svh-104px)]"
+        className="md:pt-[104px]"
+      />
     </section>
   );
 }
