@@ -19,22 +19,37 @@ export const site = {
 };
 
 export const nav = [
-  { href: "/#how", label: "How it works" },
+  { href: "/#path", label: "How it works" },
   { href: "/#skills", label: "Skills" },
   { href: "/#calculator", label: "Calculator" },
   { href: "/#faq", label: "FAQ" },
 ];
 
 export const hero = {
-  eyebrow: "Calisthenics coach · Android and Wear OS",
-  title: "A calisthenics coach that plans every session.",
-  body: "Levitx tests what you can do today, then builds each workout around it. From your first pull-up to a planche.",
+  eyebrow: "Android · Wear OS",
+  /** Two short lines. The first word carries the search term; the rest carries the promise. */
+  title: ["Calisthenics,", "coached."],
+  body: "Every session planned around what you can do today.",
+  cta: "Get early access",
+  photo: "hero" as PhotoKey,
 };
 
-export const how = {
-  id: "how",
+export const path = {
+  id: "path",
   eyebrow: "How it works",
-  title: "Test. Train. Progress.",
+  title: "Pick a goal. Start where you are.",
+  photo: "path" as PhotoKey,
+  gates: {
+    goal: "Muscle-up",
+    remaining: "3 to go",
+    items: [
+      { name: "30 s dead hang", state: "done" },
+      { name: "10 straight-bar dips", state: "done" },
+      { name: "10 pull-ups", state: "current", progress: "8 / 10" },
+      { name: "5 chest-to-bar pull-ups", state: "next" },
+      { name: "Muscle-up", state: "goal" },
+    ] as const,
+  },
   steps: [
     { title: "Take a short test", body: "A few sets show where you really are." },
     { title: "Train today's session", body: "Planned around your last one, your kit and your time." },
@@ -46,7 +61,7 @@ export const adapts = {
   id: "adapts",
   eyebrow: "It adapts",
   title: "It changes when you do.",
-  body: "Nothing left in the tank last time? Today is lighter. Missed a week? You come back, not start again.",
+  body: "Nothing left in the tank last time? Today is lighter.",
   card: {
     title: "Today · pull-ups",
     badge: "Adjusted",
@@ -55,7 +70,7 @@ export const adapts = {
     reason: "Last session: nothing left in the tank",
     note: "Back to 3×8 once you recover",
   },
-  photo: "pullUpIndoor" as PhotoKey,
+  photo: "adapts" as PhotoKey,
 };
 
 type SkillItem = { name: string; range: string; photo: PhotoKey };
@@ -86,9 +101,19 @@ export const calculator = {
 export const watch = {
   id: "watch",
   eyebrow: "Wear OS",
-  title: "Leave your phone in your bag.",
+  title: "Phone stays in the bag.",
   body: "Sets, holds and rest run on your watch.",
-  photo: "mountain" as PhotoKey,
+  photo: "watch" as PhotoKey,
+};
+
+export const keepGoing = {
+  eyebrow: "Keeping at it",
+  title: "For the weeks you don't feel like it.",
+  tiles: [
+    { tag: "Missed a week", title: "Come back. Don't restart.", photo: "comeback" },
+    { tag: "Running on empty", title: "Take the lighter session.", photo: "lighter" },
+    { tag: "Need a day off", title: "Rest counts too.", photo: "rest" },
+  ] satisfies { tag: string; title: string; photo: PhotoKey }[],
 };
 
 export const privacy = {
@@ -135,8 +160,9 @@ export const faq = {
 };
 
 export const cta = {
+  id: "join",
   title: "Start where you are.",
-  photo: "duo" as PhotoKey,
+  photo: "join" as PhotoKey,
 };
 
 export const waitlistCopy = {
@@ -147,11 +173,28 @@ export const waitlistCopy = {
 };
 
 export const footer = {
-  maker: "Made in Brisbane by",
+  /** The closing line, set large. */
+  sign: ["Train with", "a plan."],
   disclaimer:
     "Levitx is a training app, not a medical device. It doesn't diagnose or treat injuries. If pain isn't settling, see a doctor or physiotherapist.",
-  links: [
-    { href: "/#faq", label: "FAQ" },
-    { href: "/privacy", label: "Privacy" },
+  columns: [
+    {
+      title: "Explore",
+      links: [
+        { href: "/#path", label: "How it works" },
+        { href: "/#skills", label: "Skills" },
+        { href: "/#calculator", label: "Push-up calculator" },
+        { href: "/#faq", label: "FAQ" },
+      ],
+    },
+    {
+      title: "Levitx",
+      links: [
+        { href: "/#join", label: "Early access" },
+        { href: "/privacy", label: "Privacy" },
+        { href: "mailto:support@xenovadigital.com", label: "Contact" },
+      ],
+    },
   ],
+  maker: "Made in Brisbane by",
 };

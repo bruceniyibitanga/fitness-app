@@ -28,7 +28,7 @@ export function WaitlistForm({ className = "" }: { className?: string }) {
       <label htmlFor={inputId} className="mono mb-2.5 block text-[11px] text-muted">
         {waitlistCopy.label}
       </label>
-      <div className="flex flex-wrap border border-tick bg-bg/70 backdrop-blur-sm">
+      <div className="flex flex-wrap border border-tick bg-bg">
         <input
           id={inputId}
           name="email"
@@ -52,7 +52,7 @@ export function WaitlistForm({ className = "" }: { className?: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="h-14 grow cursor-pointer bg-accent px-6 sm:grow-0 text-[15px] font-bold text-bg transition-colors hover:bg-accent-hover disabled:cursor-wait disabled:opacity-70"
+          className="button-ink h-14 grow cursor-pointer px-6 text-[15px] font-medium disabled:cursor-wait disabled:opacity-70 sm:grow-0"
         >
           {pending ? "Adding you…" : waitlistCopy.button}
         </button>

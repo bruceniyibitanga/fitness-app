@@ -1,25 +1,26 @@
 import { skills } from "@/content/site";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-import { PhotoFill } from "@/components/ui/PhotoFill";
+import { MaskedPhoto } from "@/components/ui/MaskedPhoto";
 
-/** The four big skills as tall photos, a name and a range each. */
+/**
+ * Where to centre each photo so the athlete stays in frame. Levers and planches are long,
+ * flat shapes, so the cards are landscape and every athlete fits whole.
+ */
+const position = ["50% 22%", "62% 45%", "55% 40%", "86% 50%"];
+
+/** The four big skills, two by two, with the right-hand column set lower for rhythm. */
 export function SkillsSection() {
   const titleId = `${skills.id}-title`;
   return (
-    <section id={skills.id} aria-labelledby={titleId} className="section-pad scroll-mt-8">
-      <div className="gutter mx-auto max-w-[1200px]">
-        <SectionTitle id={titleId} eyebrow={skills.eyebrow} title={skills.title} />
-      </div>
-      <ul className="gutter mx-auto mt-[clamp(48px,7vw,96px)] grid max-w-[1200px] grid-cols-2 gap-3 lg:grid-cols-4">
-        {skills.items.map((skill) => (
-          <li key={skill.name} className="reveal group relative aspect-[3/4.2] overflow-hidden">
-            <div className="absolute inset-0 transition-transform duration-[1200ms] ease-(--ease-out-soft) group-hover:scale-105">
-              <PhotoFill photo={skill.photo} sizes="(min-width: 1024px) 300px, 50vw" />
-            </div>
-            <div className="shade-bottom absolute inset-0" aria-hidden="true" />
-            <div className="absolute inset-x-0 bottom-0 p-[clamp(16px,2vw,24px)]">
-              <h3 className="text-[clamp(22px,2.4vw,30px)] leading-none font-semibold tracking-[-0.02em]">{skill.name}</h3>
-              <p className="mono mt-3 text-[10px] text-soft">{skill.range}</p>
+    <section id={skills.id} aria-labelledby={titleId} className="gutter section-pad mx-auto max-w-[1200px] scroll-mt-8">
+      <SectionTitle id={titleId} eyebrow={skills.eyebrow} title={skills.title} className="max-w-[640px]" />
+      <ul className="mt-[clamp(56px,8vw,104px)] grid gap-x-[clamp(16px,3vw,40px)] gap-y-14 sm:grid-cols-2 sm:pb-[clamp(48px,8vw,120px)]">
+        {skills.items.map((skill, i) => (
+          <li key={skill.name} className={i % 2 === 1 ? "sm:translate-y-[clamp(48px,8vw,120px)]" : ""}>
+            <MaskedPhoto photo={skill.photo} sizes="(min-width: 640px) 50vw, 100vw" frame="aspect-[5/4]" position={position[i]} />
+            <div className="mt-5 flex items-baseline justify-between gap-6">
+              <h3 className="reveal display text-[clamp(28px,3vw,40px)] leading-none">{skill.name}</h3>
+              <p className="reveal mono text-[10px] text-muted">{skill.range}</p>
             </div>
           </li>
         ))}
