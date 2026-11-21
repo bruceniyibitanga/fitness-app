@@ -20,7 +20,7 @@ export const site = {
 };
 
 export const nav = [
-  { href: "/#path", label: "How it works" },
+  { href: "/#coach", label: "Meet Levi" },
   { href: "/guides", label: "Guides" },
   { href: "/#calculator", label: "Calculator" },
   { href: "/#faq", label: "FAQ" },
@@ -30,7 +30,7 @@ export const hero = {
   eyebrow: "Android · Wear OS",
   /** Two short lines. The first word carries the search term; the rest carries the promise. */
   title: ["Calisthenics,", "coached."],
-  body: "Every session planned around what you can do today.",
+  body: "Levi, your coach, plans every session around how you're really doing.",
   cta: "Get early access",
   photo: "hero" as PhotoKey,
 };
@@ -58,20 +58,155 @@ export const path = {
   ],
 };
 
-export const adapts = {
-  id: "adapts",
-  eyebrow: "It adapts",
-  title: "It changes when you do.",
-  body: "Nothing left in the tank last time? Today is lighter.",
-  card: {
-    title: "Today · pull-ups",
-    badge: "Adjusted",
-    from: "3×8",
-    to: "3×6",
-    reason: "Last session: nothing left in the tank",
-    note: "Back to 3×8 once you recover",
-  },
+/**
+ * Meet Levi: the coach, shown at work over a few months. The cards copy the app's own screens
+ * and wording (CoachPhrases in mobile/core and the phone's strings.xml), and every behaviour is
+ * one the coach engine really has (see the coach-engine design doc). Keep them in step: if the
+ * app's wording or the engine changes, this changes in the same pull request.
+ */
+
+/** A line of a session as the Today screen lists it. */
+export type CoachRow = { name: string; dose: string; tag?: string };
+
+/** A small copy of an app screen. Every field is optional because each moment shows a different screen. */
+export type CoachCard = {
+  /** The small capitals label at the top of the screen. */
+  kicker: string;
+  /** The screen's headline, when it has one. */
+  title?: string;
+  /** Levi's one-line reason for the session. */
+  reason?: string;
+  /** A target change: before and after. */
+  change?: { exercise: string; from: string; to: string };
+  /** What Levi noticed, on a suggestion card. */
+  noticed?: string[];
+  /** The session, on screens that list it. */
+  rows?: CoachRow[];
+  /** The choices offered, first one highlighted as the app does. */
+  choices?: string[];
+  /** Small print under the card. */
+  note?: string;
+};
+
+export type CoachMoment = {
+  /** When in the timeline, such as "Week 3". */
+  when: string;
+  /** What happened, in a few words. */
+  what: string;
+  title: string;
+  body: string;
+  card: CoachCard;
+};
+
+export const coach = {
+  id: "coach",
+  eyebrow: "Meet Levi",
+  title: ["You show up.", "Levi does the rest."],
+  body: "Levi is the coach inside Levitx. Like a good personal trainer, it watches every session and changes the next one before you think to ask, then tells you why in one line.",
   photo: "adapts" as PhotoKey,
+  timelineLabel: "A few months with Levi",
+  moments: [
+    {
+      when: "Week 1",
+      what: "Your first sessions",
+      title: "No fitness quiz. It watches.",
+      body: "Your first two sessions end each exercise with one best-effort set. Levi sets your level from what you actually do, not from what you guess.",
+      card: {
+        kicker: "Today · Training",
+        reason: "Still learning your numbers. Targets are on the easy side for now.",
+        rows: [
+          { name: "Dead hang", dose: "3 × 20 s" },
+          { name: "Knee push-up", dose: "3 × 8" },
+          { name: "Bodyweight squat", dose: "3 × 12" },
+        ],
+      },
+    },
+    {
+      when: "Week 3",
+      what: "After a strong session",
+      title: "A rep more, when you've earned it.",
+      body: "Hit every set and the target goes up. Top out the range and you move to a harder version. That's progressive overload, done for you every session.",
+      card: {
+        kicker: "Today · Training",
+        change: { exercise: "Knee push-up", from: "3 × 8", to: "3 × 9" },
+        reason: "Knee push-up: target up. You hit every set last time.",
+      },
+    },
+    {
+      when: "Week 4",
+      what: "Recovery running slow",
+      title: "It notices before you do.",
+      body: "Reps dropping two sessions running, sets that keep feeling hard. When the signs add up, Levi offers an easier day. Nothing changes unless you say so.",
+      card: {
+        kicker: "Before you start",
+        title: "You might want an easier day",
+        noticed: ["Australian row: 10 → 8 → 8 over your last sessions.", "Australian row felt hard two sessions running."],
+        choices: ["Keep it", "Go lighter", "Rest today"],
+        note: "Whatever you pick is fine. The coach learns what works for you.",
+      },
+    },
+    {
+      when: "Week 5",
+      what: "Your elbow's sore",
+      title: "Works around pain. Knows when to stop.",
+      body: "Report a sore elbow and Levi trains around it: legs as normal, pushing kept light. If the warning signs point to more than soreness, it stops loading that area and tells you to get it looked at.",
+      card: {
+        kicker: "Today · Training",
+        reason: "Working around your elbow today.",
+        rows: [
+          { name: "Split squat", dose: "3 × 10" },
+          { name: "Glute bridge", dose: "3 × 15" },
+          { name: "Knee push-up", dose: "2 × 7", tag: "Light" },
+        ],
+      },
+    },
+    {
+      when: "Week 7",
+      what: "A new block",
+      title: "Fresh, never random.",
+      body: "After every lighter week, the extra exercises change to something just as hard that trains the same muscles. Your goal work stays put, because skills need repetition.",
+      card: {
+        kicker: "Today · Training",
+        change: { exercise: "Split squat", from: "Split squat", to: "Reverse lunge" },
+        reason: "Reverse lunge: new this block. Same muscles, a fresh challenge.",
+      },
+    },
+    {
+      when: "Week 10",
+      what: "Back after a break",
+      title: "Come back. Don't restart.",
+      body: "Missed days don't turn red and the plan doesn't fall apart. The next session simply starts where you are.",
+      card: {
+        kicker: "Comeback day · 16 days away",
+        title: "Welcome back.",
+        reason: "You're not starting over: every exercise picks up where you left it. Today is lighter, and the next session is back to normal.",
+        choices: ["Lighter", "Full session"],
+      },
+    },
+  ] satisfies CoachMoment[],
+  /** Photos set between the moments, to keep the story breathing. Index is the moment they follow. */
+  breaks: [
+    { after: 1, photo: "lighter" as PhotoKey },
+    { after: 4, photo: "comeback" as PhotoKey },
+  ],
+  builtIn: {
+    title: "Built in, so you never have to plan it.",
+    items: [
+      {
+        title: "Progressive overload",
+        body: "A rep at a time, then slower lowering, then a harder move. You never have to work out when to step up.",
+      },
+      {
+        title: "Recovery",
+        body: "A rest day between hard sessions for each movement, and a lighter week at the end of every block.",
+      },
+      {
+        title: "Your joints",
+        body: "Weekly limits keep your strength from outrunning your tendons, and pain changes the plan straight away.",
+      },
+    ],
+  },
+  note: "Levi is software, not a person, a doctor or a physio. Its rules come from published training research and are being reviewed by a qualified coach before launch.",
 };
 
 type SkillItem = { name: string; range: string; photo: PhotoKey; guide: GuideSlug };
@@ -107,15 +242,6 @@ export const watch = {
   photo: "watch" as PhotoKey,
 };
 
-export const keepGoing = {
-  eyebrow: "Keeping at it",
-  title: "For the weeks you don't feel like it.",
-  tiles: [
-    { tag: "Missed a week", title: "Come back. Don't restart.", photo: "comeback" },
-    { tag: "Running on empty", title: "Take the lighter session.", photo: "lighter" },
-    { tag: "Need a day off", title: "Rest counts too.", photo: "rest" },
-  ] satisfies { tag: string; title: string; photo: PhotoKey }[],
-};
 
 export const privacy = {
   eyebrow: "Private by design",
@@ -129,6 +255,10 @@ export const faq = {
   eyebrow: "FAQ",
   title: "Questions, answered.",
   items: [
+    {
+      q: "Who is Levi?",
+      a: "Levi is the coach built into Levitx. It plans each session from how your last ones went, how you're recovering and any pain you report, and tells you why in one line. It's software, not a person, and it doesn't replace a doctor or physio.",
+    },
     {
       q: "What is Levitx?",
       a: "Levitx is a calisthenics coach app for Android and Wear OS. It starts with a short test of what you can do, then plans every session around today: which exercises, how many sets and reps, and when to move to a harder version.",
@@ -182,7 +312,7 @@ export const footer = {
     {
       title: "Explore",
       links: [
-        { href: "/#path", label: "How it works" },
+        { href: "/#coach", label: "Meet Levi" },
         { href: "/guides", label: "Skill guides" },
         { href: "/#calculator", label: "Push-up calculator" },
         { href: "/#faq", label: "FAQ" },

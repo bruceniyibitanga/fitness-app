@@ -4,11 +4,10 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { PathSection } from "@/components/sections/PathSection";
-import { AdaptsSection } from "@/components/sections/AdaptsSection";
+import { CoachSection } from "@/components/sections/CoachSection";
 import { SkillsSection } from "@/components/sections/SkillsSection";
 import { CalculatorSection } from "@/components/sections/CalculatorSection";
 import { WatchSection } from "@/components/sections/WatchSection";
-import { KeepGoingSection } from "@/components/sections/KeepGoingSection";
 import { PrivacySection } from "@/components/sections/PrivacySection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { CtaSection } from "@/components/sections/CtaSection";
@@ -72,11 +71,10 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
+        <CoachSection />
         <PathSection />
-        <AdaptsSection />
         <SkillsSection />
         <WatchSection />
-        <KeepGoingSection />
         <CalculatorSection />
         <PrivacySection />
         <FaqSection />

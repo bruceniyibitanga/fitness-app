@@ -1,7 +1,8 @@
 type Props = {
   id: string;
   eyebrow: string;
-  title: string;
+  /** One string, or a few lines when where the break falls matters. */
+  title: string | readonly string[];
   className?: string;
 };
 
@@ -11,7 +12,13 @@ export function SectionTitle({ id, eyebrow, title, className = "" }: Props) {
     <div className={className}>
       <p className="mono reveal text-[11px] text-accent">{eyebrow}</p>
       <h2 id={id} className="h2 reveal mt-6 text-balance">
-        {title}
+        {typeof title === "string"
+          ? title
+          : title.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
       </h2>
     </div>
   );

@@ -74,11 +74,6 @@ export const photos = {
     alt: "Woman stretching on the floor in soft daylight",
     credit: unsplashCredit("Logan Weaver", "lgnwvr"),
   },
-  rest: {
-    src: unsplash("photo-1775850576183-a7671ba5dc46"),
-    alt: "People taking it easy at an outdoor fitness park",
-    credit: unsplashCredit("Nadin Nandin", "nadin_nandin"),
-  },
   join: {
     src: unsplash("photo-1573858129585-6ca05f716932"),
     alt: "Man kicking up to a handstand beside a concrete wall",

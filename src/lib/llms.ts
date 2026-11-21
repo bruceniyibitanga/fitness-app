@@ -1,4 +1,4 @@
-import { calculator, faq, path, privacy, site, skills } from "@/content/site";
+import { calculator, coach, faq, path, privacy, site, skills } from "@/content/site";
 import { guides } from "@/content/guides";
 
 /**
@@ -12,6 +12,12 @@ export function llmsText(): string {
     `> ${site.description}`,
     "",
     `${site.name} is made by ${site.publisher.name} in ${site.publisher.city}, Australia. It runs on ${site.platforms.join(" and ")}.`,
+    "",
+    `## ${coach.eyebrow}`,
+    `${coach.title.join(" ")} ${coach.body}`,
+    ...coach.moments.map((m) => `- ${m.what}: ${m.body}`),
+    ...coach.builtIn.items.map((i) => `- ${i.title}: ${i.body}`),
+    coach.note,
     "",
     "## How it works",
     ...path.steps.map((s) => `- ${s.title}: ${s.body}`),
