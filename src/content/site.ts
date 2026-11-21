@@ -1,4 +1,5 @@
 import type { PhotoKey } from "./photos";
+import type { GuideSlug } from "./guides";
 
 /**
  * All page copy lives here so wording changes don't mean digging through components.
@@ -20,7 +21,7 @@ export const site = {
 
 export const nav = [
   { href: "/#path", label: "How it works" },
-  { href: "/#skills", label: "Skills" },
+  { href: "/guides", label: "Guides" },
   { href: "/#calculator", label: "Calculator" },
   { href: "/#faq", label: "FAQ" },
 ];
@@ -73,17 +74,17 @@ export const adapts = {
   photo: "adapts" as PhotoKey,
 };
 
-type SkillItem = { name: string; range: string; photo: PhotoKey };
+type SkillItem = { name: string; range: string; photo: PhotoKey; guide: GuideSlug };
 
 export const skills = {
   id: "skills",
   eyebrow: "Skills",
   title: "Train for the skill you want.",
   items: [
-    { name: "Muscle-up", range: "Dead hang to bar", photo: "muscleUp" },
-    { name: "Front lever", range: "Tuck to full", photo: "frontLever" },
-    { name: "Planche", range: "Lean to straddle", photo: "planche" },
-    { name: "Handstand", range: "Wall to freestanding", photo: "handstand" },
+    { name: "Muscle-up", range: "Dead hang to bar", photo: "muscleUp", guide: "muscle-up" },
+    { name: "Front lever", range: "Tuck to full", photo: "frontLever", guide: "front-lever" },
+    { name: "Planche", range: "Lean to straddle", photo: "planche", guide: "planche" },
+    { name: "Handstand", range: "Wall to freestanding", photo: "handstand", guide: "handstand" },
   ] satisfies SkillItem[] as SkillItem[],
 };
 
@@ -182,7 +183,7 @@ export const footer = {
       title: "Explore",
       links: [
         { href: "/#path", label: "How it works" },
-        { href: "/#skills", label: "Skills" },
+        { href: "/guides", label: "Skill guides" },
         { href: "/#calculator", label: "Push-up calculator" },
         { href: "/#faq", label: "FAQ" },
       ],

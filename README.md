@@ -63,6 +63,19 @@ Moving to a database later is a config change. A Supabase version and its migrat
 
 Photos are hotlinked from Unsplash, as their guidelines ask, with credits in the footer. To swap one, change its URL in `src/content/photos.ts`.
 
+## Skill guides and free plans
+
+The guides live at `/guides` (muscle-up, front lever, planche, handstand). All of the guide text is in `src/content/guides.ts`, and the pages, the JSON-LD, `/llms.txt` and the PDFs are all built from it. Each guide has its own layout in `src/components/guides/layouts/`, and they share the parts in `src/components/guides/parts.tsx`.
+
+Each guide offers a free printable plan. The email form adds the person to the early access list in Plunk with `guide: "<slug>"` on the contact, then shows the download link. The PDFs are in `public/plans/`, printed from the hidden `/guides/<slug>/plan` pages. If you change a guide, rebuild them:
+
+```bash
+npm run dev            # in one terminal
+npm run plans          # in another; pass a URL if it isn't localhost:3000
+```
+
+The PDFs are public files, so the email form is a polite ask rather than a lock. That's deliberate.
+
 ## Search and AI answers
 
 The page is written to be found and quoted, so keep these in mind when changing copy:

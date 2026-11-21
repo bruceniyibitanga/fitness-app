@@ -33,6 +33,13 @@ describe("PlunkWaitlistRepository", () => {
     });
   });
 
+  it("tags guide signups with the guide they came from", async () => {
+    const fetchFn = okFetch();
+    await new PlunkWaitlistRepository(KEY, fetchFn).add("a@example.com", { guide: "planche" });
+    const [, init] = fetchFn.mock.calls[0];
+    expect(JSON.parse(init?.body as string).data).toEqual({ waitlist: true, guide: "planche" });
+  });
+
   it("treats an existing contact (200) as success", async () => {
     await expect(new PlunkWaitlistRepository(KEY, okFetch(200)).add("a@example.com")).resolves.toBeUndefined();
   });

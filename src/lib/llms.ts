@@ -1,4 +1,5 @@
 import { calculator, faq, path, privacy, site, skills } from "@/content/site";
+import { guides } from "@/content/guides";
 
 /**
  * A plain-text summary of Levitx for AI assistants and crawlers that read /llms.txt
@@ -18,6 +19,13 @@ export function llmsText(): string {
     "## Skills",
     ...skills.items.map((s) => `- ${s.name}: ${s.range.toLowerCase()}`),
     "",
+    "## Skill guides",
+    ...guides.flatMap((g) => [
+      `### [${g.h1}](${site.url}/guides/${g.slug})`,
+      g.answer,
+      ...g.stages.map((s, i) => `${i + 1}. ${s.name}: pass with ${s.pass}.`),
+      "",
+    ]),
     "## Privacy",
     `${privacy.title} ${privacy.body}`,
     "",
@@ -30,6 +38,7 @@ export function llmsText(): string {
     "## Links",
     `- [Home](${site.url}/)`,
     `- [Push-up weight calculator](${site.url}/#calculator)`,
+    `- [Skill guides](${site.url}/guides)`,
     `- [Privacy policy](${site.url}/privacy)`,
     `- [${site.publisher.name}](${site.publisher.url})`,
     "",
