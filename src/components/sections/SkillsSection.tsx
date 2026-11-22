@@ -1,42 +1,60 @@
 import Link from "next/link";
 import { skills } from "@/content/site";
-import { SectionTitle } from "@/components/ui/SectionTitle";
-import { MaskedPhoto } from "@/components/ui/MaskedPhoto";
+import { NumberedTitle } from "@/components/ui/NumberedTitle";
+import { PhotoFill } from "@/components/ui/PhotoFill";
 
 /**
- * Where to centre each photo so the athlete stays in frame. Levers and planches are long,
- * flat shapes, so the cards are landscape and every athlete fits whole.
+ * Where each card sits on the grid and where its photo is centred. The two long, flat skills
+ * (front lever, planche) get the wide cells so the athlete stays whole; the upright ones get
+ * the narrow cells. Rows alternate wide-narrow, narrow-wide.
  */
-const position = ["50% 22%", "62% 45%", "55% 40%", "86% 50%"];
+const LAYOUT: Record<string, { cell: string; position: string }> = {
+  "front-lever": { cell: "md:col-span-7", position: "62% 45%" },
+  "muscle-up": { cell: "md:col-span-5", position: "50% 22%" },
+  handstand: { cell: "md:col-span-5", position: "86% 50%" },
+  planche: { cell: "md:col-span-7", position: "55% 40%" },
+};
+const ORDER = ["front-lever", "muscle-up", "handstand", "planche"];
 
-/** The four big skills, two by two, each opening its guide. The right-hand column sits lower. */
-export function SkillsSection() {
+/** The four skills as photo cards on a ruled grid, each opening its guide. */
+export function SkillsSection({ n }: { n: string }) {
   const titleId = `${skills.id}-title`;
+  const items = ORDER.map((slug) => skills.items.find((s) => s.guide === slug)).filter((s) => s !== undefined);
   return (
-    <section id={skills.id} aria-labelledby={titleId} className="gutter section-pad mx-auto max-w-[1200px] scroll-mt-8">
-      <div className="flex flex-wrap items-end justify-between gap-8">
-        <SectionTitle id={titleId} eyebrow={skills.eyebrow} title={skills.title} className="max-w-[640px]" />
-        <Link href="/guides" className="mono reveal inline-flex min-h-11 items-center gap-3 text-[11px] underline-offset-4 hover:underline">
-          All guides <span aria-hidden="true">→</span>
-        </Link>
+    <section id={skills.id} aria-labelledby={titleId} className="scroll-mt-8 border-b border-line">
+      <div className="rail">
+        <div className="cell flex flex-wrap items-end justify-between gap-x-12 gap-y-4 pb-10 md:pb-10">
+          <NumberedTitle id={titleId} n={n} label={skills.eyebrow} title={skills.title} className="flex-[1_1_520px]" />
+          <Link href="/guides" className="mono reveal inline-flex min-h-11 items-center gap-3 text-[11px] text-accent hover:text-accent-hover">
+            All guides <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+        <ul className="grid gap-px border-t border-line bg-line md:grid-cols-12">
+          {items.map((skill) => {
+            const layout = LAYOUT[skill.guide];
+            return (
+              <li key={skill.guide} className={layout.cell}>
+                <Link href={`/guides/${skill.guide}`} className="group on-photo zoom relative block h-[420px] overflow-hidden bg-surface md:h-[520px]">
+                  <div className="absolute inset-0 transition-transform duration-[900ms] ease-[cubic-bezier(.2,.7,.1,1)] group-hover:scale-[1.04]">
+                    <PhotoFill photo={skill.photo} sizes="(min-width: 768px) 58vw, 100vw" position={layout.position} />
+                  </div>
+                  <div aria-hidden="true" className="shade-up absolute inset-0" />
+                  <div className="absolute inset-x-0 bottom-0 p-6">
+                    <p className="mono text-[10px] text-muted">{skill.range}</p>
+                    <h3 className="mt-2 text-[32px] leading-none font-[750] tracking-[-0.02em] [font-stretch:90%]">{skill.name}</h3>
+                    <p className="mono mt-3.5 text-[11px] text-accent">
+                      Progression guide{" "}
+                      <span aria-hidden="true" className="inline-block transition-transform duration-300 group-hover:translate-x-1.5">
+                        →
+                      </span>
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-      <ul className="mt-[clamp(56px,8vw,104px)] grid gap-x-[clamp(16px,3vw,40px)] gap-y-14 sm:grid-cols-2 sm:pb-[clamp(48px,8vw,120px)]">
-        {skills.items.map((skill, i) => (
-          <li key={skill.name} className={i % 2 === 1 ? "sm:translate-y-[clamp(48px,8vw,120px)]" : ""}>
-            <Link href={`/guides/${skill.guide}`} className="group block">
-              <MaskedPhoto photo={skill.photo} sizes="(min-width: 640px) 50vw, 100vw" frame="aspect-[5/4]" position={position[i]} />
-              <div className="mt-5 flex items-baseline justify-between gap-6">
-                <h3 className="reveal display text-[clamp(28px,3vw,40px)] leading-none">{skill.name}</h3>
-                <p className="reveal mono text-[10px] text-muted">{skill.range}</p>
-              </div>
-              <p className="mono reveal mt-3 inline-flex items-center gap-2 text-[10px] text-accent">
-                Read the guide
-                <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </p>
-            </Link>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }

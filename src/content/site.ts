@@ -20,7 +20,7 @@ export const site = {
 };
 
 export const nav = [
-  { href: "/#path", label: "How it works" },
+  { href: "/#coach", label: "Meet Levi" },
   { href: "/guides", label: "Guides" },
   { href: "/#calculator", label: "Calculator" },
   { href: "/#faq", label: "FAQ" },
@@ -30,7 +30,7 @@ export const hero = {
   eyebrow: "Android · Wear OS",
   /** Two short lines. The first word carries the search term; the rest carries the promise. */
   title: ["Calisthenics,", "coached."],
-  body: "Every session planned around what you can do today.",
+  body: "Levi, your coach, plans every session around how you're really doing.",
   cta: "Get early access",
   photo: "hero" as PhotoKey,
 };
@@ -39,7 +39,6 @@ export const path = {
   id: "path",
   eyebrow: "How it works",
   title: "Pick a goal. Start where you are.",
-  photo: "path" as PhotoKey,
   gates: {
     goal: "Muscle-up",
     remaining: "3 to go",
@@ -52,26 +51,94 @@ export const path = {
     ] as const,
   },
   steps: [
+    { title: "Choose the goal", body: "Your first pull-up or a muscle-up. More skills are on the way." },
     { title: "Take a short test", body: "A few sets show where you really are." },
     { title: "Train today's session", body: "Planned around your last one, your kit and your time." },
     { title: "Clear one gate at a time", body: "Small tests, weeks apart, on the way to the skill." },
   ],
 };
 
-export const adapts = {
-  id: "adapts",
-  eyebrow: "It adapts",
-  title: "It changes when you do.",
-  body: "Nothing left in the tank last time? Today is lighter.",
-  card: {
-    title: "Today · pull-ups",
-    badge: "Adjusted",
-    from: "3×8",
-    to: "3×6",
-    reason: "Last session: nothing left in the tank",
-    note: "Back to 3×8 once you recover",
-  },
+/** Moves that scroll past under the hero. All are in the app's exercise catalogue or guides. */
+export const ticker = [
+  "Muscle-up",
+  "Front lever",
+  "Planche",
+  "Handstand",
+  "Pull-up",
+  "Dip",
+  "Pistol squat",
+  "Nordic curl",
+  "Hollow hold",
+  "L-sit",
+];
+
+/**
+ * Meet Levi. Each row pairs a thought people really have a few weeks into training (from
+ * forum threads and app reviews) with what Levi shows in the app at that moment.
+ *
+ * Every reply uses the app's own wording (CoachPhrases in mobile/core, the phone's
+ * strings.xml) and site.test.ts checks it. Every behaviour is one the coach engine has.
+ */
+export type CoachReply = {
+  /** A screen headline, when the app shows one. */
+  title?: string;
+  /** Levi's line, word for word from the app. */
+  line?: string;
+  /** Choices the app offers. */
+  choices?: string[];
+};
+
+export type CoachStory = {
+  /** What the person is thinking. Short, in their voice. */
+  thought: string;
+  reply: CoachReply;
+};
+
+export type CoachTile = { tag: string; title: string; body: string; photo: PhotoKey };
+
+export const coach = {
+  id: "coach",
+  eyebrow: "Meet Levi",
+  title: "You show up. Levi does the rest.",
+  body: "Levi is the coach inside Levitx. It reads every set you log and plans the next session around it, then tells you why in one line.",
   photo: "adapts" as PhotoKey,
+  caption: { label: "What Levi reads", text: "Every set you log, how hard it felt and anything that hurts." },
+  stories: [
+    { thought: "I don't even know my level.", reply: { line: "Still learning your numbers. Targets are on the easy side for now." } },
+    { thought: "When do I make it harder?", reply: { line: "Knee push-up: target up. You hit every set last time." } },
+    {
+      thought: "Everything feels heavy this week.",
+      reply: { title: "You might want an easier day", choices: ["Keep it", "Go lighter", "Rest today"] },
+    },
+    { thought: "My elbow's started complaining.", reply: { line: "Working around your elbow today." } },
+    { thought: "Same workout. Again.", reply: { line: "Reverse lunge: new this block. Same muscles, a fresh challenge." } },
+    { thought: "Two weeks off. Back to day one?", reply: { line: "You're not starting over: every exercise picks up where you left it." } },
+  ] satisfies CoachStory[],
+  builtIn: {
+    eyebrow: "Built in",
+    title: "The parts you'd otherwise have to plan.",
+    tiles: [
+      {
+        tag: "Progressive overload",
+        title: "A step up when you've earned it.",
+        body: "A rep at a time, then a harder version.",
+        photo: "pushStart",
+      },
+      {
+        tag: "Recovery",
+        title: "Rest is part of the plan.",
+        body: "A day between hard sessions. A lighter week every block.",
+        photo: "lighter",
+      },
+      {
+        tag: "Your joints",
+        title: "Tendons set the pace.",
+        body: "Weekly limits, and pain changes the plan straight away.",
+        photo: "elbow",
+      },
+    ] satisfies CoachTile[],
+  },
+  note: "Levi is software, not a physio. Its rules come from published training research and are being reviewed by a qualified coach.",
 };
 
 type SkillItem = { name: string; range: string; photo: PhotoKey; guide: GuideSlug };
@@ -107,20 +174,12 @@ export const watch = {
   photo: "watch" as PhotoKey,
 };
 
-export const keepGoing = {
-  eyebrow: "Keeping at it",
-  title: "For the weeks you don't feel like it.",
-  tiles: [
-    { tag: "Missed a week", title: "Come back. Don't restart.", photo: "comeback" },
-    { tag: "Running on empty", title: "Take the lighter session.", photo: "lighter" },
-    { tag: "Need a day off", title: "Rest counts too.", photo: "rest" },
-  ] satisfies { tag: string; title: string; photo: PhotoKey }[],
-};
 
 export const privacy = {
   eyebrow: "Private by design",
   title: "Your training stays on your phone.",
-  body: "No account, no server, no ads, no tracking.",
+  body: "Pain reports and bodyweight are health data, so they're encrypted on the device and never leave it.",
+  facts: ["No account", "No server", "No ads", "No tracking"],
   link: { href: "/privacy", label: "Read the privacy policy" },
 };
 
@@ -129,6 +188,10 @@ export const faq = {
   eyebrow: "FAQ",
   title: "Questions, answered.",
   items: [
+    {
+      q: "Who is Levi?",
+      a: "Levi is the coach built into Levitx. It plans each session from how your last ones went, how you're recovering and any pain you report, and tells you why in one line. It's software, not a person, and it doesn't replace a doctor or physio.",
+    },
     {
       q: "What is Levitx?",
       a: "Levitx is a calisthenics coach app for Android and Wear OS. It starts with a short test of what you can do, then plans every session around today: which exercises, how many sets and reps, and when to move to a harder version.",
@@ -182,7 +245,7 @@ export const footer = {
     {
       title: "Explore",
       links: [
-        { href: "/#path", label: "How it works" },
+        { href: "/#coach", label: "Meet Levi" },
         { href: "/guides", label: "Skill guides" },
         { href: "/#calculator", label: "Push-up calculator" },
         { href: "/#faq", label: "FAQ" },

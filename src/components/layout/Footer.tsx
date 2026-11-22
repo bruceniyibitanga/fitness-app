@@ -11,13 +11,13 @@ export function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-line">
-      <div className="gutter mx-auto max-w-[1200px] pt-[clamp(72px,10vw,128px)]">
+      <div className="wrap pt-[clamp(72px,10vw,128px)]">
         <div className="grid grid-cols-2 gap-x-6 gap-y-14 md:grid-cols-12">
           <div className="col-span-2 md:col-span-6">
-            <p className="display text-[clamp(40px,4.6vw,64px)] leading-[0.98]">
+            <p className="headline">
               {footer.sign[0]}
               <br />
-              <em className="italic">{footer.sign[1]}</em>
+              <span className="text-accent">{footer.sign[1]}</span>
             </p>
             <p className="mono mt-8 text-[10px] text-muted">{site.platforms.join(" · ")} · Early access soon</p>
           </div>
@@ -43,7 +43,7 @@ export function Footer() {
         </div>
 
         {/* The name, set large as a sign-off. Decorative: the brand is named elsewhere. */}
-        <p aria-hidden="true" className="display mt-[clamp(64px,9vw,120px)] select-none text-[clamp(112px,31vw,460px)] leading-[0.78] tracking-[-0.04em]">
+        <p aria-hidden="true" className="figure mt-[clamp(64px,9vw,120px)] select-none text-[clamp(112px,30vw,440px)] leading-[0.78]">
           {site.name}
         </p>
 

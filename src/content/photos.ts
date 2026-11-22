@@ -29,11 +29,6 @@ export const photos = {
     alt: "Man holding a one-arm handstand in a bright white room",
     credit: unsplashCredit("Vikas Deswal", "deswalvikas29"),
   },
-  path: {
-    src: unsplash("photo-1526314149856-d8cf115d62f1"),
-    alt: "Man holding a handstand on parallel bars at an outdoor gym by the beach",
-    credit: unsplashCredit("Kevin McCutcheon", "kevinmccutcheon"),
-  },
   adapts: {
     src: unsplash("photo-1758520705400-1edfdcd78cf5"),
     alt: "Man resting between sets at an outdoor pull-up bar",
@@ -64,20 +59,20 @@ export const photos = {
     alt: "Fitness band on a wrist, mountains in the distance",
     credit: unsplashCredit("FitNish Media", "fitnish"),
   },
-  comeback: {
-    src: unsplash("photo-1515614726597-e686ac6dbfde"),
-    alt: "Man hanging from a bar at sunset",
-    credit: unsplashCredit("Alexei Scutari", "scutal"),
-  },
   lighter: {
     src: unsplash("photo-1733077151425-67af89045a9f"),
     alt: "Woman stretching on the floor in soft daylight",
     credit: unsplashCredit("Logan Weaver", "lgnwvr"),
   },
-  rest: {
-    src: unsplash("photo-1775850576183-a7671ba5dc46"),
-    alt: "People taking it easy at an outdoor fitness park",
-    credit: unsplashCredit("Nadin Nandin", "nadin_nandin"),
+  pushStart: {
+    src: unsplash("photo-1597347409198-f190c008a3bd"),
+    alt: "Man setting up for a push-up on a park path",
+    credit: unsplashCredit("Lawrence Crayton", "lawrencecrayton"),
+  },
+  elbow: {
+    src: unsplash("photo-1785926262461-8a7cb6a3678a"),
+    alt: "Man stretching his arm across his chest on an outdoor court",
+    credit: unsplashCredit("Alekon pictures", "alekonpictures"),
   },
   join: {
     src: unsplash("photo-1573858129585-6ca05f716932"),

@@ -6,7 +6,7 @@ import { ThemeToggle } from "./ThemeToggle";
 export function Header() {
   return (
     <header className="absolute inset-x-0 top-0 z-10">
-      <nav aria-label="Main" className="gutter mx-auto flex min-h-[88px] max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-3">
+      <nav aria-label="Main" className="wrap flex min-h-[88px] flex-wrap items-center justify-between gap-x-8 gap-y-3">
         <Link href="/" className="flex min-h-11 items-center gap-3">
           <span className="text-accent">
             <LogoMark />
@@ -20,7 +20,7 @@ export function Header() {
             </Link>
           ))}
           <ThemeToggle />
-          <Link href="/#join" className="inline-flex min-h-11 items-center border border-text/25 px-5 text-sm font-medium transition-colors hover:border-text hover:bg-text hover:text-bg">
+          <Link href="/#join" className="button-accent inline-flex min-h-11 items-center px-5 text-sm">
             Get early access
           </Link>
         </div>

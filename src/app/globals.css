@@ -18,6 +18,8 @@
   --color-accent: #c2410c;
   --color-accent-hover: #9a330a;
   --color-ice: #2c5a85;
+  /* Text on an accent background. White on the light theme's deeper orange, ink on the dark's. */
+  --color-on-accent: #ffffff;
 
   --font-sans: var(--font-archivo), system-ui, sans-serif;
   --font-display: var(--font-instrument), "Iowan Old Style", Georgia, serif;
@@ -40,6 +42,28 @@ html[data-theme="dark"] {
   --color-accent: #ff6a2b;
   --color-accent-hover: #ff8a57;
   --color-ice: #8db4d9;
+  --color-on-accent: #0b0b0a;
+}
+
+/*
+ * Words set over a photo. The photo sits under a dark fade in both themes, so anything on it
+ * uses the dark palette whatever the page's theme is. Custom properties cascade, so every
+ * token class inside picks these up.
+ */
+.on-photo {
+  --color-bg: #0b0b0a;
+  --color-surface: #151513;
+  --color-line: #3a3833;
+  --color-tick: #3a3833;
+  --color-text: #f2efe8;
+  --color-soft: #c9c5bb;
+  --color-muted: #a29e94;
+  --color-faint: #8a867c;
+  --color-accent: #ff6a2b;
+  --color-accent-hover: #ff8a57;
+  --color-ice: #8db4d9;
+  --color-on-accent: #0b0b0a;
+  color: var(--color-text);
 }
 
 @layer base {
@@ -75,12 +99,12 @@ html[data-theme="dark"] {
   .gutter {
     padding-inline: clamp(20px, 4vw, 48px);
   }
-  /* Left padding that lines text up with the 1200px column even when the row is full width. */
+  /* Left padding that lines text up with the 1320px grid even when the row is full width. */
   .inset-left {
-    padding-left: max(clamp(20px, 4vw, 48px), calc((100vw - 1200px) / 2 + clamp(20px, 4vw, 48px)));
+    padding-left: max(clamp(20px, 4vw, 48px), calc((100vw - 1320px) / 2 + clamp(20px, 4vw, 48px)));
   }
   .inset-right {
-    padding-right: max(clamp(20px, 4vw, 48px), calc((100vw - 1200px) / 2 + clamp(20px, 4vw, 48px)));
+    padding-right: max(clamp(20px, 4vw, 48px), calc((100vw - 1320px) / 2 + clamp(20px, 4vw, 48px)));
   }
   /* Sections breathe: generous space above and below, so each one reads on its own. */
   .section-pad {
@@ -99,6 +123,79 @@ html[data-theme="dark"] {
     line-height: 1;
     letter-spacing: -0.015em;
   }
+  /*
+   * The grid the home page is built on: a 1320px column with hairline rules down both
+   * sides, sections divided by rules across. Cells inside share the rules, so the page
+   * reads as one ruled sheet.
+   */
+  .rail {
+    max-width: 1320px;
+    margin-inline: auto;
+    border-inline: 1px solid var(--color-line);
+  }
+  .wrap {
+    max-width: 1320px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 4vw, 48px);
+  }
+  .cell {
+    padding: clamp(48px, 6vw, 88px) clamp(20px, 4vw, 48px);
+  }
+  /* "01 / Path": the section number in accent, the name, then a rule to the edge. */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .eyebrow b {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-line);
+  }
+  /* Home page headlines: heavy, slightly wide Archivo set tight. */
+  .headline {
+    font-family: var(--font-sans);
+    font-size: clamp(40px, 5.4vw, 76px);
+    font-weight: 750;
+    font-stretch: 108%;
+    line-height: 0.94;
+    letter-spacing: -0.035em;
+  }
+  /* Big numbers and short titles: condensed and heavy. */
+  .figure {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-stretch: 78%;
+    letter-spacing: -0.03em;
+  }
+  /* The main call to action: accent fill. */
+  .button-accent {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
+    transition: background-color 0.3s ease;
+  }
+  .button-accent:hover {
+    background: var(--color-accent-hover);
+  }
+  /* Fades for words over photos: from the bottom, or from the right. */
+  .shade-up {
+    background: linear-gradient(0deg, rgb(11 11 10 / 0.92) 0%, rgb(11 11 10 / 0.5) 45%, rgb(11 11 10 / 0) 80%);
+  }
+  .shade-left {
+    background: linear-gradient(90deg, rgb(11 11 10 / 0.15) 0%, rgb(11 11 10 / 0.55) 55%, rgb(11 11 10 / 0.92) 100%);
+  }
+
   /* The primary button is ink on paper (paper on ink in dark mode). */
   .button-ink {
     background: var(--color-text);
@@ -130,6 +227,9 @@ html[data-theme="dark"] {
 @keyframes unmask { from { clip-path: inset(var(--mask-y, 7%) var(--mask-x, 7%)); } to { clip-path: inset(0); } }
 @keyframes zoom-out { from { transform: scale(1.12); } to { transform: scale(1); } }
 @keyframes drift { to { transform: translateY(7%); } }
+@keyframes zoom-in-place { from { transform: scale(1.18); } to { transform: scale(1); } }
+@keyframes ticker { to { transform: translateX(-50%); } }
+@keyframes step-on { 0% { opacity: 0.28; } 40%, 60% { opacity: 1; } 100% { opacity: 0.28; } }
 
 /*
  * Motion. Kept deliberately quiet: photos open out of a slightly smaller frame while they
@@ -139,6 +239,10 @@ html[data-theme="dark"] {
  * less motion, simply see every element in its final place.
  */
 @media (prefers-reduced-motion: no-preference) {
+
+  /* The skills strip under the hero drifts sideways. Hovering stops it. */
+  .ticker-track { animation: ticker 48s linear infinite; }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
 
   /* On load: the hero only. */
   .intro { animation: rise 1.2s var(--ease-out-soft) both; }
@@ -174,24 +278,18 @@ html[data-theme="dark"] {
       animation-range: 0 100svh;
     }
 
-    /*
-     * One full-screen moment: a framed photo grows to fill the screen as you scroll
-     * through a taller section. The section names its own timeline so the clip on the
-     * child never feeds back into it.
-     */
-    .expand { height: 190svh; view-timeline: --expand block; }
-    .expand-stage { position: sticky; top: 0; }
-    .expand-frame {
-      --mask-y: 14%;
-      --mask-x: 18%;
-      animation: unmask linear both;
-      animation-timeline: --expand;
-      animation-range: contain 0% contain 75%;
+    /* A photo eases back from a zoom as it scrolls in, without a frame. */
+    .zoom img {
+      animation: zoom-in-place linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 55%;
     }
-    .expand-frame img {
-      animation: zoom-out linear both;
-      animation-timeline: --expand;
-      animation-range: contain 0% contain 100%;
+
+    /* Steps in a list light up one at a time as they pass the middle of the screen. */
+    .step-on {
+      animation: step-on linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 90%;
     }
   }
 }

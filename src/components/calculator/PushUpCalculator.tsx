@@ -58,7 +58,7 @@ export function PushUpCalculator() {
       <div className="flex flex-col justify-between gap-8 border-t border-line bg-surface p-6 md:border-t-0 md:border-l md:p-8">
         <div aria-live="polite">
           <p className="mono text-[11px] text-muted">You push about</p>
-          <p className="display mt-4 text-[clamp(88px,11vw,150px)] leading-[0.85] text-accent">
+          <p className="figure mt-4 text-[clamp(88px,11vw,150px)] leading-[0.85] text-accent">
             {kg.toFixed(1)}
             <span className="text-[32px] tracking-normal text-text"> kg</span>
           </p>
