@@ -704,7 +704,7 @@ private val noActivityResults = object : ActivityResultRegistryOwner {
 }
 
 @PreviewTest
-@Preview(name = "27 Settings", widthDp = 390, heightDp = 1200)
+@Preview(name = "27 Settings", widthDp = 390, heightDp = 1050)
 @Composable
 fun SettingsScreenshot() {
     LevitxTheme {

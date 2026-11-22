@@ -325,7 +325,6 @@
     <string name="workout_timer_to_top">TO THE TOP · REP %1$d</string>
     <string name="workout_timer_lowering">LOWERING · SLOWER THAN YOU THINK</string>
     <string name="workout_timer_all_paced">ALL REPS PACED</string>
-    <string name="workout_timer_negative_cue">Tap anywhere to stop early.</string>
     <string name="workout_timer_tempo">Each rep: %1$s to get to the top, then %2$s lowering.</string>
     <string name="workout_timer_tempo_top">TO THE TOP %1$d S</string>
     <string name="workout_timer_tempo_lower">LOWER %1$d S</string>
