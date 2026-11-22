@@ -1,7 +1,9 @@
 package app.levitx.core.history
 
 import app.levitx.core.coach.AthleteModel
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.CoachTuning
+import app.levitx.core.coach.Effort
 import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.VolumeTargets
 import app.levitx.core.session.LoggedSet
@@ -21,6 +23,7 @@ import kotlin.math.roundToInt
  * @property gatesPassed Skill gates first reached this week.
  * @property hardSets Hard sets per movement against its weekly target.
  * @property notes What's worth saying about the week and the block, most useful first.
+ * @property noticed The one thing the coach noticed and acted on, or null when nothing stood out.
  */
 public data class WeekReview(
     val sessionsDone: Int,
@@ -29,6 +32,7 @@ public data class WeekReview(
     val gatesPassed: Int,
     val hardSets: List<PatternSets>,
     val notes: List<WeekNote>,
+    val noticed: Noticed? = null,
 ) {
     /** Every hard set in the week. */
     public val totalHardSets: Int
@@ -69,10 +73,46 @@ public sealed interface WeekNote {
     public data class LighterWeekNow(val sessionsLeft: Int) : WeekNote
 }
 
+/**
+ * The one thing the coach noticed in a week and what it did about it, so the
+ * adapting shows over a week and not only session by session. Every kind is
+ * a fact from the model, never a guess about how the person feels.
+ */
+public sealed interface Noticed {
+    /**
+     * An area is on light work or paused, and the plan works around it.
+     *
+     * @property area The first such area, in [BodyArea] order.
+     */
+    public data class WorkingAround(val area: BodyArea) : Noticed
+
+    /** They took the easier day the coach offered during the week. */
+    public data object TookEasierDay : Noticed
+
+    /**
+     * An exercise's last two sessions this week both hit the target at Easy,
+     * so its target went up twice as fast (see the coach's progression).
+     *
+     * @property exerciseId The exercise.
+     */
+    public data class FeltEasy(val exerciseId: String) : Noticed
+
+    /**
+     * How many of the exercises trained hard this week hit every target.
+     *
+     * @property hit Exercises where every session this week hit the target.
+     * @property trained Exercises trained hard this week.
+     */
+    public data class HitTargets(val hit: Int, val trained: Int) : Noticed
+}
+
 /** Builds week reviews and says when one is due. */
 public object WeekReviews {
     /** The most "short of target" notes, so the review stays short. */
     private const val MAX_SHORT_NOTES = 2
+
+    /** Sessions in a row at Easy that make a target climb faster. */
+    private const val EASY_TWICE = 2
 
     /**
      * The review of the week from [fromEpochMillis] up to [toEpochMillis].
@@ -97,7 +137,32 @@ public object WeekReviews {
             gatesPassed = gatesPassed(model, workouts, fromEpochMillis, toEpochMillis),
             hardSets = hardSets,
             notes = shortNotes(hardSets) + listOfNotNull(blockNote(model)),
+            noticed = noticed(model, fromEpochMillis, toEpochMillis),
         )
+    }
+
+    /**
+     * What stood out in the week from [fromEpochMillis] up to [toEpochMillis],
+     * most important first: an area being worked around, an easier day taken,
+     * an exercise that felt easy twice running, then how many hit their
+     * targets. Null when nothing was trained hard and nothing else applies.
+     */
+    public fun noticed(model: AthleteModel, fromEpochMillis: Long, toEpochMillis: Long): Noticed? {
+        val sore = BodyArea.entries.firstOrNull { it in model.pain }
+        val eased = model.lastEasedAtEpochMillis?.let { it in fromEpochMillis until toEpochMillis } == true
+        val weekMarks = model.exercises
+            .mapValues { (_, state) -> state.marks.filter { it.atEpochMillis in fromEpochMillis until toEpochMillis } }
+            .filterValues { it.isNotEmpty() }
+        val easy = weekMarks.entries.firstOrNull { (_, marks) ->
+            marks.size >= EASY_TWICE && marks.takeLast(EASY_TWICE).all { it.hitTarget && it.effort == Effort.EASY }
+        }
+        return when {
+            sore != null -> Noticed.WorkingAround(sore)
+            eased -> Noticed.TookEasierDay
+            easy != null -> Noticed.FeltEasy(easy.key)
+            weekMarks.isEmpty() -> null
+            else -> Noticed.HitTargets(weekMarks.count { (_, marks) -> marks.all { it.hitTarget } }, weekMarks.size)
+        }
     }
 
     /**

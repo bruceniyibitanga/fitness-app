@@ -210,6 +210,14 @@
         <item quantity="other">%1$d of %2$d sessions done</item>
     </plurals>
     <string name="review_all_done">Every planned session.</string>
+    <string name="review_noticed_label">THE COACH NOTICED</string>
+    <string name="review_noticed_area">%1$s: your plan works around it.</string>
+    <string name="review_noticed_easier">You took the easier day. Your targets held.</string>
+    <string name="review_noticed_easy">%1$s felt easy twice. Its target went up faster.</string>
+    <plurals name="review_noticed_targets">
+        <item quantity="one">Targets hit on %1$d of %2$d exercise.</item>
+        <item quantity="other">Targets hit on %1$d of %2$d exercises.</item>
+    </plurals>
     <string name="review_more_done">More than you planned.</string>
     <plurals name="review_short">
         <item quantity="one">%1$d session short of your plan. One week doesn\'t undo anything.</item>
