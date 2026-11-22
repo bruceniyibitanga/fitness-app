@@ -105,6 +105,14 @@ sealed interface Destination : NavKey {
     @Serializable
     data class PastWorkout(val workoutId: String) : Destination
 
+    /**
+     * The pain check: where it hurts, warning signs, and how bad it is. The
+     * key carries nothing, and the answers in progress aren't saved with the
+     * back stack either: they are health data, and saved state goes to disk.
+     */
+    @Serializable
+    data object PainCheck : Destination
+
     /** Settings, the person's data and about, from the Body tab. */
     @Serializable
     data object Settings : Destination

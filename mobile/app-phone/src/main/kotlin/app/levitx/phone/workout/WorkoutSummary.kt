@@ -47,7 +47,7 @@ import kotlin.math.roundToInt
  * the coach changed for next time, so the person sees their work count.
  */
 @Composable
-internal fun ColumnScope.Summary(report: SessionReport, onDone: () -> Unit) {
+internal fun ColumnScope.Summary(report: SessionReport, actions: WorkoutActions) {
     TabHeader(stringResource(R.string.workout_saved_label))
     Column(
         modifier = Modifier
@@ -58,8 +58,9 @@ internal fun ColumnScope.Summary(report: SessionReport, onDone: () -> Unit) {
         if (report.bests.isNotEmpty()) Bests(report.bests)
         if (report.exercises.isNotEmpty()) EverySet(report.exercises)
         if (report.changes.isNotEmpty()) Changes(report.changes)
+        PainQuestions(report.eased, actions.onAreaSettled, actions.onOpenPainCheck)
     }
-    AccentBar(text = stringResource(R.string.workout_done), onClick = onDone, height = BottomBarHeight)
+    AccentBar(text = stringResource(R.string.workout_done), onClick = actions.onDone, height = BottomBarHeight)
 }
 
 /** The sets done, huge, and the figures under them. */

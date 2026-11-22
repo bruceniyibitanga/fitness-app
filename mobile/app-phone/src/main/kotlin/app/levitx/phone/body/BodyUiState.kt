@@ -1,6 +1,7 @@
 package app.levitx.phone.body
 
 import app.levitx.core.coach.AthleteModel
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.BodyweightTrend
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.ExerciseCatalogue
@@ -11,6 +12,7 @@ import app.levitx.core.coach.currentExercise
 import app.levitx.core.load.LoadEvidence
 import app.levitx.core.load.LoadKit
 import app.levitx.core.load.calculateEffectiveLoad
+import app.levitx.core.pain.PainAdvice
 import app.levitx.data.equipment.Band
 
 /** What the Body tab shows. */
@@ -32,6 +34,7 @@ sealed interface BodyUiState {
      * @property bands Calibrated bands, oldest first.
      * @property loadKit The vest, belt and plates the coach can add weight with.
      * @property aim What the ladder work is tuned for.
+     * @property sore Areas the coach is working around, with the advice for each.
      */
     data class Ready(
         val nowEpochMillis: Long,
@@ -42,6 +45,7 @@ sealed interface BodyUiState {
         val bands: List<Band>,
         val loadKit: LoadKit = LoadKit(),
         val aim: TrainingAim = TrainingAim.BALANCED,
+        val sore: Map<BodyArea, PainAdvice> = emptyMap(),
     ) : BodyUiState
 }
 
@@ -80,6 +84,7 @@ internal fun bodyState(model: AthleteModel, bands: List<Band>, nowEpochMillis: L
         bands = bands,
         loadKit = model.profile.loadKit,
         aim = model.profile.aim,
+        sore = model.pain,
     )
 }
 

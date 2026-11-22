@@ -118,7 +118,10 @@ private fun TabContent(tab: MainTab, navigation: MainNavigation, onSelect: (Main
 
         MainTab.SKILLS -> SkillsRoute(onOpenExercise = navigation.onOpenExercise)
 
-        MainTab.BODY -> BodyRoute(onOpenSettings = navigation.onOpenSettings)
+        MainTab.BODY -> BodyRoute(
+            onOpenSettings = navigation.onOpenSettings,
+            onOpenPainCheck = navigation.onOpenPainCheck,
+        )
     }
 }
 
@@ -135,6 +138,7 @@ private fun TabContent(tab: MainTab, navigation: MainNavigation, onSelect: (Main
  * @property onOpenSearch Opens search, from the Train tab.
  * @property onOpenWeekReview Opens last week's review, from Today.
  * @property onOpenAllPrograms Opens every program, from the Train tab.
+ * @property onOpenPainCheck Opens the pain check, from the Body tab.
  */
 data class MainNavigation(
     val onOpenWorkout: () -> Unit,
@@ -147,6 +151,7 @@ data class MainNavigation(
     val onOpenSearch: () -> Unit,
     val onOpenWeekReview: () -> Unit,
     val onOpenAllPrograms: () -> Unit,
+    val onOpenPainCheck: () -> Unit,
 )
 
 /** The tab bar around [content]. Stateless, so it previews and tests without the tabs' data. */

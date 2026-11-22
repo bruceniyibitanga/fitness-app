@@ -1,7 +1,11 @@
 package app.levitx.phone.workout
 
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.WorkoutRun
+import app.levitx.core.pain.PainAdvice
+import app.levitx.core.pain.PainAssessment
+import app.levitx.core.pain.PainReason
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.testing.newcomer
 import app.levitx.testing.skillSession
@@ -56,5 +60,20 @@ class SessionReportTest {
         val passing = report(value = gate.target)
         assertTrue(passing.bests.single { it.name == gate.title }.passedGate)
         assertTrue(report(value = 4).bests.none { it.passedGate })
+    }
+
+    @Test
+    fun aSoreAreaOnLightWorkThatTheSessionLoadedIsAskedAbout() {
+        var run = WorkoutRun("w", skillSession(gate, target = 4), startedAtEpochMillis = 0)
+        while (!run.isComplete) {
+            run = run.logSet(4, repsInReserve = 3, nowElapsedMillis = 0).endRest()
+        }
+        val result = checkNotNull(run.result(finishedAtEpochMillis = 60_000L))
+        val easeOff = PainAssessment(PainAdvice.EASE_OFF, PainReason.TOO_HIGH_DURING_EXERCISE)
+        // Hanging loads the elbow and squats the knee. Neither loads the wrist.
+        val before = newcomer().withPain(BodyArea.ELBOW, easeOff).withPain(BodyArea.WRIST, easeOff)
+        val report = sessionReport(before, coach.record(before, result), result, bodyweightKg = null)
+        assertEquals(listOf(BodyArea.ELBOW), report.eased)
+        assertTrue(report(value = 4).eased.isEmpty())
     }
 }
