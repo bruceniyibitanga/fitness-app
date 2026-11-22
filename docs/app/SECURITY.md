@@ -64,6 +64,13 @@ The database key is 256 random bits made on the device the first time the app ru
 - We only extract the fields we need (exercises, sets, reps, limits). The user confirms each one.
 - The photo is deleted as soon as the user confirms, and names and other identifiers are not kept.
 
+## Feedback
+
+- Settings has a "Send feedback" row. It opens a draft in the person's own email app, addressed to support. Levitx sends nothing itself: the phone app has no internet permission to send with.
+- The draft carries three things: the app version, the Android version and the phone's model. They sit in plain sight at the bottom of the draft, and the person can delete them before sending.
+- Nothing about training, bodyweight, pain or settings goes in. The model and Android version are stripped of line breaks and control characters and cut to 40 characters, so a phone can't add lines to the draft.
+- If the phone has no email app, Settings shows the address to write to instead.
+
 ## Code and build
 
 - **Logs.** No personal data in logs. Log codes and counts, never values.

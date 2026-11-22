@@ -66,6 +66,7 @@ private const val EXPORT_FILE_NAME = "levitx-export.zip"
  * @property onOpenNotifications Opens Android's notification settings for Levitx.
  * @property onExport Writes the export to the chosen file's uri.
  * @property onDeleteEverything Deletes everything, once confirmed.
+ * @property onSendFeedback Opens an email draft to support. False when the phone has no email app.
  */
 data class SettingsActions(
     val onLeadIn: (Int) -> Unit,
@@ -75,6 +76,7 @@ data class SettingsActions(
     val onOpenNotifications: () -> Unit,
     val onExport: (String) -> Unit,
     val onDeleteEverything: () -> Unit,
+    val onSendFeedback: () -> Boolean,
 )
 
 /**
@@ -108,6 +110,7 @@ fun SettingsRoute(
             onOpenNotifications = { openNotificationSettings(context) },
             onExport = viewModel::export,
             onDeleteEverything = viewModel::deleteEverything,
+            onSendFeedback = { sendFeedback(context) },
         ),
         onBack = onBack,
         onOpenCredits = onOpenCredits,
@@ -151,7 +154,7 @@ fun SettingsScreen(
                     onExport = { saveExport.launch(EXPORT_FILE_NAME) },
                     onDelete = { confirming = true },
                 )
-                About(onOpenCredits)
+                About(onOpenCredits, actions.onSendFeedback)
             }
         }
         if (confirming) {
@@ -278,10 +281,30 @@ private fun YourData(task: DataTask, onExport: () -> Unit, onDelete: () -> Unit)
     Rule(Modifier.padding(top = 18.dp))
 }
 
-/** Photo credits and the version. */
+/** Sending feedback, photo credits and the version. */
 @Composable
-private fun About(onOpenCredits: () -> Unit) {
+private fun About(onOpenCredits: () -> Unit, onSendFeedback: () -> Boolean) {
+    // Set when the phone had no email app to open, so the address is shown to write to by hand.
+    var noEmailApp by rememberSaveable { mutableStateOf(false) }
     Group(stringResource(R.string.settings_about))
+    LinkRow(
+        title = stringResource(R.string.settings_feedback),
+        note = stringResource(R.string.settings_feedback_note),
+        status = stringResource(R.string.settings_feedback_kind),
+        onClick = { noEmailApp = !onSendFeedback() },
+    )
+    if (noEmailApp) {
+        Text(
+            text = stringResource(R.string.settings_feedback_no_app, FEEDBACK_ADDRESS),
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            color = LevitxColors.Accent,
+            modifier = Modifier
+                .padding(horizontal = ScreenPadding, vertical = 10.dp)
+                .semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        Rule(Modifier.padding(horizontal = ScreenPadding))
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
