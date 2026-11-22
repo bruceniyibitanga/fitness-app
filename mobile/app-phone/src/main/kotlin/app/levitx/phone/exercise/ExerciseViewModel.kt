@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.levitx.data.coach.CoachRepository
 import app.levitx.data.time.TrainingClock
+import app.levitx.phone.handlingDataFailures
 import app.levitx.phone.isExpectedDataFailure
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -14,15 +15,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** Keep collecting for this long after the screen stops listening, so a rotation doesn't restart the flow. */
 private const val STOP_TIMEOUT_MILLIS = 5_000L
 
-/** One exercise: how to do it, the person's numbers on it, and its ladder. Read-only. */
+/**
+ * One exercise: how to do it, the person's numbers on it, its ladder, and
+ * swapping it in for its movement.
+ */
 @HiltViewModel(assistedFactory = ExerciseViewModel.Factory::class)
 class ExerciseViewModel @AssistedInject constructor(
-    @Assisted exerciseId: String,
-    coachRepository: CoachRepository,
+    @Assisted private val exerciseId: String,
+    private val coachRepository: CoachRepository,
     clock: TrainingClock,
 ) : ViewModel() {
     /** The current screen state. */
@@ -32,6 +37,18 @@ class ExerciseViewModel @AssistedInject constructor(
         }
         .catch { error -> if (error.isExpectedDataFailure()) emit(ExerciseUiState.Unavailable) else throw error }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), ExerciseUiState.Loading)
+
+    /**
+     * Trains this exercise for its movement from the next session on. The
+     * repository checks it is still an option, so a stale screen can't
+     * choose something the person's level no longer offers. A failure to
+     * save leaves the screen as it was, which shows it didn't happen.
+     */
+    fun trainInstead() {
+        viewModelScope.launch {
+            handlingDataFailures(onFailure = {}) { coachRepository.prefer(exerciseId) }
+        }
+    }
 
     /** Makes an [ExerciseViewModel] for one exercise. */
     @AssistedFactory

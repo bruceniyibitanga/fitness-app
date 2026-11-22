@@ -133,6 +133,8 @@ public data class SuggestionOutcome(val choice: SuggestionChoice, val wentWell: 
  * @property block Where they are in the current block.
  * @property suggestionOutcomes How the last few suggestions turned out, oldest first.
  * @property skips Times each exercise was skipped or swapped out, by [Exercise.id].
+ * @property preferred The exercise the person chose for a movement, by [Exercise.id], used
+ *   while it is an option on the rung they train at. See [withPreferred].
  * @property weightNoticeShown True once the fast weight loss notice has been shown for the current spell.
  * @property weighInAskedAtEpochMillis When the quick weigh-in last showed, saved or skipped,
  *   or null if never. See [WeighInPrompt].
@@ -151,6 +153,7 @@ public data class AthleteModel(
     val block: TrainingBlock = TrainingBlock(),
     val suggestionOutcomes: List<SuggestionOutcome> = emptyList(),
     val skips: Map<String, Int> = emptyMap(),
+    val preferred: Map<MovementPattern, String> = emptyMap(),
     val weightNoticeShown: Boolean = false,
     val lastEasedAtEpochMillis: Long? = null,
     val weighInAskedAtEpochMillis: Long? = null,

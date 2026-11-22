@@ -7,6 +7,8 @@ import app.levitx.core.coach.ExerciseGuide
 import app.levitx.core.coach.ExerciseGuides
 import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.bodyweightTrend
+import app.levitx.core.coach.currentExercise
+import app.levitx.core.coach.swapOptions
 import app.levitx.core.skills.SkillCatalogue
 
 /** What an exercise's screen shows. */
@@ -29,6 +31,8 @@ sealed interface ExerciseUiState {
      * @property best Their best set, or null before they have one.
      * @property bodyweightKg Bodyweight for kilograms per rep, or null when none is recorded.
      * @property ladder Its ladder, easiest first, or null for a skill gate's exercise or a cardio or mobility move.
+     * @property swap Whether it can be swapped in or out at the person's level.
+     * @property alternatives With [SwapState.CURRENT], the other exercises at the same level they could train.
      */
     data class Ready(
         val exercise: Exercise,
@@ -37,7 +41,21 @@ sealed interface ExerciseUiState {
         val best: Int?,
         val bodyweightKg: Double?,
         val ladder: List<LadderRung>?,
+        val swap: SwapState = SwapState.NONE,
+        val alternatives: List<Exercise> = emptyList(),
     ) : ExerciseUiState
+}
+
+/** Where an exercise stands for swapping, as on the "Exercise detail: swap" artboard. */
+enum class SwapState {
+    /** Not at the person's level, a skill gate, or the only option there: nothing to swap. */
+    NONE,
+
+    /** The one they train for its movement, with others at the same level to swap to. */
+    CURRENT,
+
+    /** At their level and within their kit, but not the one they train: it can be swapped in. */
+    AVAILABLE,
 }
 
 /** Where a rung sits for the person. */
@@ -75,6 +93,26 @@ fun exerciseState(model: AthleteModel, exerciseId: String, nowEpochMillis: Long)
         bodyweightKg = bodyweightTrend(model.weighIns, nowEpochMillis)?.currentKg,
         // Gates and cardio or mobility moves sit on no ladder.
         ladder = if (isGate || !exercise.pattern.isStrength) null else ladderFor(model, exercise),
+    ).withSwap(model, isGate)
+}
+
+/** Adds whether [ExerciseUiState.Ready.exercise] can be swapped, and what to. Gates never can. */
+private fun ExerciseUiState.Ready.withSwap(model: AthleteModel, isGate: Boolean): ExerciseUiState.Ready {
+    val options = if (isGate) emptyList() else model.swapOptions(exercise.pattern)
+    val swap = when {
+        options.size < 2 || options.none { it.id == exercise.id } -> SwapState.NONE
+        model.currentExercise(exercise.pattern)?.id == exercise.id -> SwapState.CURRENT
+        else -> SwapState.AVAILABLE
+    }
+    return copy(
+        swap = swap,
+        alternatives = if (swap ==
+            SwapState.CURRENT
+        ) {
+            options.filter { it.id != exercise.id }
+        } else {
+            emptyList()
+        },
     )
 }
 

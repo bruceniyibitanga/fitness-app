@@ -4,9 +4,11 @@ import app.levitx.core.coach.AthleteModel
 import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
+import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
+import app.levitx.core.coach.withPreferred
 import app.levitx.core.pain.PainAssessment
 import app.levitx.data.coach.CoachPrompt
 import app.levitx.data.coach.CoachRepository
@@ -84,6 +86,10 @@ class FakeCoachRepository(
 
     override suspend fun recordPain(area: BodyArea, assessment: PainAssessment) = state.changeModel {
         it.withPain(area, assessment)
+    }
+
+    override suspend fun prefer(exerciseId: String) = state.changeModel { model ->
+        ExerciseLookup.byId(exerciseId)?.let(model::withPreferred) ?: model
     }
 
     override suspend fun markShown(prompt: CoachPrompt, atEpochMillis: Long) =

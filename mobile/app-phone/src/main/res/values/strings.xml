@@ -738,6 +738,10 @@
     <string name="exercise_rung_later">LATER</string>
     <string name="exercise_or">%1$s or %2$s</string>
     <string name="exercise_skill">Part of a skill path.</string>
+    <string name="exercise_swap_label">SWAP · SAME LEVEL</string>
+    <string name="exercise_swap_remembered">REMEMBERED</string>
+    <string name="exercise_train_instead">Train this instead</string>
+    <string name="exercise_in_plan">IN YOUR PLAN</string>
     <string name="exercise_not_found">No longer in the app.</string>
 
     <!-- Program -->

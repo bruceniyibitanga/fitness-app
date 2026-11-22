@@ -151,7 +151,11 @@ private fun EntryProviderScope<NavKey>.detailEntries(backStack: MutableList<NavK
         )
     }
     entry<Destination.ExerciseDetail> { key ->
-        ExerciseRoute(exerciseId = key.exerciseId, onBack = { backStack.removeLastOrNull() })
+        ExerciseRoute(
+            exerciseId = key.exerciseId,
+            onBack = { backStack.removeLastOrNull() },
+            onOpenExercise = { backStack.add(Destination.ExerciseDetail(it)) },
+        )
     }
     entry<Destination.Program> { key ->
         ProgramRoute(pathId = key.pathId, onBack = { backStack.removeLastOrNull() })
