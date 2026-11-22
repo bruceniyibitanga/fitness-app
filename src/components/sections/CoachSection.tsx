@@ -1,120 +1,68 @@
-import { coach, type CoachReply, type CoachStory } from "@/content/site";
+import { coach, type CoachReply, type CoachTile } from "@/content/site";
+import { NumberedTitle } from "@/components/ui/NumberedTitle";
 import { PhotoFill } from "@/components/ui/PhotoFill";
 
-/**
- * Meet Levi. Pictures first, very few words. A full-width photo carries the promise; then a
- * staggered grid of photo tiles, each with a thought a person really has a few weeks into
- * training and, a beat later as you scroll, Levi's answer from the app.
- *
- * Text on photos sits on a dark fade and stays light in both themes, so it always reads.
- * Server component with no state: everything comes from `coach` in site.ts.
- */
-export function CoachSection() {
-  const titleId = `${coach.id}-title`;
-  const storiesId = `${coach.id}-stories`;
-  return (
-    <section id={coach.id} aria-labelledby={titleId} className="section-pad">
-      <Opener titleId={titleId} />
+type Props = { n: string; builtInN: string };
 
-      <div className="gutter mx-auto mt-[clamp(96px,13vw,184px)] max-w-[1200px]">
-        <h3 id={storiesId} className="h2 reveal max-w-[640px] text-balance">
-          {coach.storiesTitle}
-        </h3>
-        <ul aria-labelledby={storiesId} className="mt-[clamp(48px,7vw,96px)] grid gap-6 md:grid-cols-12 md:gap-y-[clamp(48px,6vw,88px)]">
-          {coach.stories.map((story, index) => (
-            <StoryTile key={story.when} story={story} layout={LAYOUT[index % LAYOUT.length]} />
-          ))}
-        </ul>
-        <BuiltIn />
+/**
+ * Meet Levi, in two ruled sections. First a split: the thoughts people have a few weeks into
+ * training, each answered by what Levi shows in the app, beside a tall photo. Then a mosaic
+ * of three photos for what's built into every plan.
+ */
+export function CoachSection({ n, builtInN }: Props) {
+  return (
+    <>
+      <Stories n={n} />
+      <BuiltIn n={builtInN} />
+    </>
+  );
+}
+
+function Stories({ n }: { n: string }) {
+  const titleId = `${coach.id}-title`;
+  return (
+    <section id={coach.id} aria-labelledby={titleId} className="scroll-mt-8 border-b border-line">
+      <div className="rail grid md:grid-cols-2">
+        <div className="cell">
+          <NumberedTitle id={titleId} n={n} label={coach.eyebrow} title={coach.title} />
+          <p className="reveal mt-5 max-w-[460px] text-[17px] leading-normal text-muted">{coach.body}</p>
+          <ul className="reveal mt-11 border-t border-line">
+            {coach.stories.map((story) => (
+              <li
+                key={story.thought}
+                className="grid min-h-[88px] grid-cols-[minmax(0,1fr)_20px_minmax(0,1.25fr)] items-center gap-3 border-b border-line py-3"
+              >
+                <p className="text-[15px] leading-snug text-muted">“{story.thought}”</p>
+                <span aria-hidden="true" className="text-tick">
+                  →
+                </span>
+                <Reply reply={story.reply} />
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="zoom on-photo relative min-h-[560px] overflow-hidden border-t border-line md:min-h-[680px] md:border-t-0 md:border-l">
+          <PhotoFill photo={coach.photo} sizes="(min-width: 768px) 50vw, 100vw" position="45% 35%" />
+          <div aria-hidden="true" className="shade-up absolute inset-0" />
+          <div className="absolute inset-x-0 bottom-0 p-7">
+            <p className="mono text-[11px] text-muted">{coach.caption.label}</p>
+            <p className="mt-2 max-w-[380px] text-[26px] leading-[1.15] font-bold [font-stretch:95%]">{coach.caption.text}</p>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
-/**
- * How the tiles sit on the 12-column grid: big and small, alternating sides, with the small
- * one dropped lower so the grid reads as a magazine spread, not a table. Six entries for six
- * stories; extra stories reuse the pattern.
- */
-const LAYOUT = [
-  { span: "md:col-span-7", frame: "aspect-[4/5] md:aspect-[5/4]" },
-  { span: "md:col-span-5 md:mt-[22%]", frame: "aspect-[4/5]" },
-  { span: "md:col-span-5", frame: "aspect-[4/5]" },
-  { span: "md:col-span-7 md:mt-[16%]", frame: "aspect-[4/5] md:aspect-[5/4]" },
-  { span: "md:col-span-7", frame: "aspect-[4/5] md:aspect-[5/4]" },
-  { span: "md:col-span-5 md:mt-[22%]", frame: "aspect-[4/5]" },
-] as const;
-
-type Layout = (typeof LAYOUT)[number];
-
-/** The full-width photo with the promise set over its lower left corner. */
-function Opener({ titleId }: { titleId: string }) {
-  return (
-    <div className="mask relative h-[82svh] min-h-[520px] overflow-hidden">
-      <PhotoFill photo={coach.photo} sizes="100vw" position="45% 35%" />
-      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-      <div className="inset-left absolute inset-x-0 bottom-0 pb-[clamp(40px,6vw,88px)] pr-[clamp(20px,4vw,48px)] text-white">
-        <p className="mono reveal text-[11px] text-white/75">{coach.eyebrow}</p>
-        <h2 id={titleId} className="h2 reveal mt-5">
-          {coach.title.map((line) => (
-            <span key={line} className="block">
-              {line}
-            </span>
-          ))}
-        </h2>
-        <p className="reveal mt-6 max-w-[380px] text-lg leading-snug text-white/85">{coach.body}</p>
-      </div>
-    </div>
-  );
-}
-
-type TileProps = { story: CoachStory; layout: Layout };
-
-/**
- * One story: the photo, the thought over it, and Levi's reply landing a beat later. The words
- * sit at the bottom on a fade, or at the top when the person in the photo is low in the frame.
- */
-function StoryTile({ story, layout }: TileProps) {
-  const top = story.textAt === "top";
-  return (
-    <li className={layout.span}>
-      <figure className={`mask relative overflow-hidden ${layout.frame}`}>
-        <PhotoFill photo={story.photo} sizes="(min-width: 768px) 58vw, 100vw" position={story.position} />
-        <div
-          aria-hidden="true"
-          className={`absolute inset-0 ${top ? "bg-gradient-to-b from-black/80 via-black/25 to-transparent" : "bg-gradient-to-t from-black/80 via-black/25 to-black/10"}`}
-        />
-        <figcaption className={`absolute inset-x-0 flex flex-col p-5 text-white md:p-7 ${top ? "top-0" : "bottom-0"}`}>
-          <p className="mono text-[10px] text-white/75">{story.when}</p>
-          <p className={`display reveal text-balance text-[clamp(28px,3vw,42px)] leading-[1.05] ${top ? "mt-4" : "mt-3"}`}>
-            <span aria-hidden="true">“</span>
-            {story.thought}
-            <span aria-hidden="true">”</span>
-          </p>
-          <Reply reply={story.reply} />
-        </figcaption>
-      </figure>
-    </li>
-  );
-}
-
-/**
- * Levi's answer, styled like a message on frosted glass. It's a picture of the app, so the
- * choices are plain text, not buttons.
- */
+/** Levi's answer: the app's line, or a screen title with the choices it offers. */
 function Reply({ reply }: { reply: CoachReply }) {
   return (
-    <div className="reveal-late mt-5 max-w-[380px] border border-white/15 bg-black/40 p-4 backdrop-blur-md">
-      <p className="mono text-[9px] text-white/60">Levi</p>
-      {reply.title ? <p className="mt-2 text-[15px] text-white">{reply.title}</p> : null}
-      {reply.line ? <p className="mt-2 text-[15px] leading-snug text-white">{reply.line}</p> : null}
+    <div>
+      <p className="text-[17px] leading-snug font-semibold">{reply.title ?? reply.line}</p>
       {reply.choices ? (
-        <ul className="mt-3 flex flex-wrap gap-1.5">
-          {reply.choices.map((choice, index) => (
-            <li
-              key={choice}
-              className={`mono px-2.5 py-1.5 text-[9px] ${index === 0 ? "bg-white text-black" : "border border-white/30 text-white/85"}`}
-            >
+        <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Choices">
+          {reply.choices.map((choice, i) => (
+            <li key={choice} className={`mono px-2 py-1 text-[9px] ${i === 0 ? "bg-text text-bg" : "border border-tick text-muted"}`}>
               {choice}
             </li>
           ))}
@@ -124,25 +72,38 @@ function Reply({ reply }: { reply: CoachReply }) {
   );
 }
 
-/** The three things built into every plan: one line each, under a hairline. */
-function BuiltIn() {
-  const titleId = `${coach.id}-built-in`;
+/** Three photos with a line each: one tall on the left, two stacked on the right. */
+function BuiltIn({ n }: { n: string }) {
+  const titleId = `${coach.id}-built-in-title`;
+  const [first, ...rest] = coach.builtIn.tiles;
   return (
-    <div role="group" aria-labelledby={titleId} className="mt-[clamp(96px,12vw,168px)] border-t border-text pt-10">
-      <div className="grid gap-12 md:grid-cols-12 md:gap-6">
-        <h3 id={titleId} className="display reveal text-balance text-[clamp(30px,3.4vw,46px)] leading-[1.05] md:col-span-5">
-          {coach.builtIn.title}
-        </h3>
-        <ul className="grid gap-8 sm:grid-cols-3 md:col-span-7 md:gap-6">
-          {coach.builtIn.items.map((item) => (
-            <li key={item.title} className="reveal">
-              <p className="text-text">{item.title}</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
-            </li>
+    <section aria-labelledby={titleId} className="border-b border-line">
+      <div className="rail">
+        <div className="cell pb-10 md:pb-10">
+          <NumberedTitle id={titleId} n={n} label={coach.builtIn.eyebrow} title={coach.builtIn.title} className="max-w-[880px]" />
+        </div>
+        <div className="grid gap-px bg-line md:grid-cols-[1.1fr_0.9fr] md:grid-rows-[340px_340px]">
+          <Tile tile={first} className="min-h-[420px] md:row-span-2" sizes="(min-width: 768px) 55vw, 100vw" />
+          {rest.map((tile) => (
+            <Tile key={tile.tag} tile={tile} className="min-h-[300px]" sizes="(min-width: 768px) 45vw, 100vw" />
           ))}
-        </ul>
+        </div>
+        <p className="wrap py-6 text-[13px] leading-relaxed text-faint">{coach.note}</p>
       </div>
-      <p className="mt-14 max-w-[520px] text-xs leading-relaxed text-faint">{coach.note}</p>
+    </section>
+  );
+}
+
+function Tile({ tile, className, sizes }: { tile: CoachTile; className: string; sizes: string }) {
+  return (
+    <div className={`zoom on-photo relative overflow-hidden bg-surface ${className}`}>
+      <PhotoFill photo={tile.photo} sizes={sizes} position="50% 35%" />
+      <div aria-hidden="true" className="shade-up absolute inset-0" />
+      <div className="absolute inset-x-0 bottom-0 p-7">
+        <p className="mono text-[11px] text-accent">{tile.tag}</p>
+        <h3 className="mt-2 text-[28px] leading-[1.05] font-[750] tracking-[-0.015em] [font-stretch:92%]">{tile.title}</h3>
+        <p className="mt-1.5 text-base text-soft">{tile.body}</p>
+      </div>
     </div>
   );
 }

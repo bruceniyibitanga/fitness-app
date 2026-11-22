@@ -1,6 +1,5 @@
 import { path } from "@/content/site";
-import { SectionTitle } from "@/components/ui/SectionTitle";
-import { MaskedPhoto } from "@/components/ui/MaskedPhoto";
+import { NumberedTitle } from "@/components/ui/NumberedTitle";
 
 type GateState = (typeof path.gates.items)[number]["state"];
 
@@ -12,37 +11,37 @@ const dotClass: Record<GateState, string> = {
 };
 
 /**
- * How it works, laid out like a feature spread: the title, a wide photo with the plan
- * set beside it, then the three steps in a row underneath.
+ * How it works. The title and an example plan stay pinned on the left while the steps scroll
+ * past on the right, each one lighting up as it crosses the middle of the screen.
  */
-export function PathSection() {
+export function PathSection({ n }: { n: string }) {
   const titleId = `${path.id}-title`;
   return (
-    <section id={path.id} aria-labelledby={titleId} className="gutter section-pad mx-auto max-w-[1200px] scroll-mt-8">
-      <SectionTitle id={titleId} eyebrow={path.eyebrow} title={path.title} className="max-w-[720px]" />
-
-      <div className="mt-[clamp(56px,8vw,104px)] grid items-end gap-x-6 gap-y-10 md:grid-cols-12">
-        <MaskedPhoto
-          photo={path.photo}
-          sizes="(min-width: 768px) 66vw, 100vw"
-          frame="aspect-[4/3]"
-          position="50% 60%"
-          className="md:col-span-8"
-        />
-        <div className="reveal md:col-span-4">
-          <GateList />
+    <section id={path.id} aria-labelledby={titleId} className="scroll-mt-8 border-b border-line">
+      <div className="rail grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="cell border-b border-line md:border-r md:border-b-0">
+          <div className="md:sticky md:top-10">
+            <NumberedTitle id={titleId} n={n} label={path.eyebrow} title={path.title} />
+            <div className="reveal mt-10 w-[300px] max-w-full">
+              <GateList />
+            </div>
+          </div>
         </div>
+        <ol className="cell">
+          {path.steps.map((step, i) => (
+            <li
+              key={step.title}
+              className="step-on grid grid-cols-[56px_1fr] gap-4 border-t border-line py-10 first:border-t-0 first:pt-0 md:min-h-[300px] md:grid-cols-[72px_1fr] md:first:border-t md:first:pt-10"
+            >
+              <span className="mono pt-2.5 text-[12px] text-accent">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <h3 className="text-[clamp(30px,3.4vw,46px)] leading-none font-bold tracking-[-0.025em]">{step.title}</h3>
+                <p className="mt-3.5 max-w-[420px] text-[17px] leading-normal text-muted">{step.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
-
-      <ol className="mt-[clamp(56px,7vw,96px)] grid gap-x-6 gap-y-10 border-t border-line pt-10 md:grid-cols-3">
-        {path.steps.map((step, i) => (
-          <li key={step.title} className="reveal">
-            <span className="display text-[40px] leading-none text-accent">{i + 1}</span>
-            <h3 className="mt-5 text-xl font-medium tracking-[-0.01em]">{step.title}</h3>
-            <p className="mt-2 max-w-[300px] text-[15px] leading-relaxed text-muted">{step.body}</p>
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }
@@ -51,7 +50,7 @@ export function PathSection() {
 function GateList() {
   const { gates } = path;
   return (
-    <figure className="border border-line bg-surface" aria-label={`Example plan for a ${gates.goal}`}>
+    <figure className="border border-tick bg-bg" aria-label={`Example plan for a ${gates.goal}`}>
       <figcaption className="flex justify-between border-b border-line px-4 py-3.5">
         <span className="mono text-[10px] text-muted">Goal · {gates.goal}</span>
         <span className="mono text-[10px] text-accent">{gates.remaining}</span>

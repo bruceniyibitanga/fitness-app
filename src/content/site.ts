@@ -39,7 +39,6 @@ export const path = {
   id: "path",
   eyebrow: "How it works",
   title: "Pick a goal. Start where you are.",
-  photo: "path" as PhotoKey,
   gates: {
     goal: "Muscle-up",
     remaining: "3 to go",
@@ -52,17 +51,30 @@ export const path = {
     ] as const,
   },
   steps: [
+    { title: "Choose the goal", body: "Your first pull-up or a muscle-up. More skills are on the way." },
     { title: "Take a short test", body: "A few sets show where you really are." },
     { title: "Train today's session", body: "Planned around your last one, your kit and your time." },
     { title: "Clear one gate at a time", body: "Small tests, weeks apart, on the way to the skill." },
   ],
 };
 
+/** Moves that scroll past under the hero. All are in the app's exercise catalogue or guides. */
+export const ticker = [
+  "Muscle-up",
+  "Front lever",
+  "Planche",
+  "Handstand",
+  "Pull-up",
+  "Dip",
+  "Pistol squat",
+  "Nordic curl",
+  "Hollow hold",
+  "L-sit",
+];
+
 /**
- * Meet Levi. Written from the visitor's side: each story is a thought people really have a
- * few weeks into training (drawn from forum threads and app reviews: not knowing your level,
- * when to make it harder, flat weeks, sore elbows, stale routines, starting over after time
- * off), answered by what Levi shows in the app at that moment.
+ * Meet Levi. Each row pairs a thought people really have a few weeks into training (from
+ * forum threads and app reviews) with what Levi shows in the app at that moment.
  *
  * Every reply uses the app's own wording (CoachPhrases in mobile/core, the phone's
  * strings.xml) and site.test.ts checks it. Every behaviour is one the coach engine has.
@@ -72,80 +84,59 @@ export type CoachReply = {
   title?: string;
   /** Levi's line, word for word from the app. */
   line?: string;
-  /** Choices the app offers. The first is the one it highlights. */
+  /** Choices the app offers. */
   choices?: string[];
 };
 
 export type CoachStory = {
-  /** Roughly when this comes up, as a small tag. */
-  when: string;
   /** What the person is thinking. Short, in their voice. */
   thought: string;
   reply: CoachReply;
-  photo: PhotoKey;
-  /** Where the subject sits in the photo, so the crop keeps them in frame. */
-  position?: string;
-  /** Put the words at the top when the subject sits low in the photo. Bottom by default. */
-  textAt?: "top" | "bottom";
 };
+
+export type CoachTile = { tag: string; title: string; body: string; photo: PhotoKey };
 
 export const coach = {
   id: "coach",
   eyebrow: "Meet Levi",
-  title: ["You show up.", "Levi does the rest."],
-  body: "Levi reads every set you log and plans your next session around it.",
+  title: "You show up. Levi does the rest.",
+  body: "Levi is the coach inside Levitx. It reads every set you log and plans the next session around it, then tells you why in one line.",
   photo: "adapts" as PhotoKey,
-  storiesTitle: "Where most training plans fall apart.",
+  caption: { label: "What Levi reads", text: "Every set you log, how hard it felt and anything that hurts." },
   stories: [
+    { thought: "I don't even know my level.", reply: { line: "Still learning your numbers. Targets are on the easy side for now." } },
+    { thought: "When do I make it harder?", reply: { line: "Knee push-up: target up. You hit every set last time." } },
     {
-      when: "Week 1",
-      thought: "I don't even know my level.",
-      reply: { line: "Still learning your numbers. Targets are on the easy side for now." },
-      photo: "levelCheck",
-      textAt: "top",
-    },
-    {
-      when: "Week 3",
-      thought: "When do I make it harder?",
-      reply: { line: "Knee push-up: target up. You hit every set last time." },
-      photo: "pushStart",
-      position: "55% 40%",
-    },
-    {
-      when: "Week 4",
       thought: "Everything feels heavy this week.",
       reply: { title: "You might want an easier day", choices: ["Keep it", "Go lighter", "Rest today"] },
-      photo: "lighter",
     },
-    {
-      when: "Week 5",
-      thought: "My elbow's started complaining.",
-      reply: { line: "Working around your elbow today." },
-      photo: "elbow",
-      position: "50% 30%",
-    },
-    {
-      when: "Week 7",
-      thought: "Same workout. Again.",
-      reply: { line: "Reverse lunge: new this block. Same muscles, a fresh challenge." },
-      photo: "freshBlock",
-      position: "45% 60%",
-    },
-    {
-      when: "Week 10",
-      thought: "Two weeks off. Back to day one?",
-      reply: { line: "You're not starting over: every exercise picks up where you left it." },
-      photo: "comeback",
-      position: "50% 35%",
-    },
+    { thought: "My elbow's started complaining.", reply: { line: "Working around your elbow today." } },
+    { thought: "Same workout. Again.", reply: { line: "Reverse lunge: new this block. Same muscles, a fresh challenge." } },
+    { thought: "Two weeks off. Back to day one?", reply: { line: "You're not starting over: every exercise picks up where you left it." } },
   ] satisfies CoachStory[],
   builtIn: {
-    title: "Built in, so you never have to plan it.",
-    items: [
-      { title: "Progressive overload", body: "A small step up every time you've earned one." },
-      { title: "Recovery", body: "A day between hard sessions. A lighter week every block." },
-      { title: "Your joints", body: "Weekly limits, and pain changes the plan straight away." },
-    ],
+    eyebrow: "Built in",
+    title: "The parts you'd otherwise have to plan.",
+    tiles: [
+      {
+        tag: "Progressive overload",
+        title: "A step up when you've earned it.",
+        body: "A rep at a time, then a harder version.",
+        photo: "pushStart",
+      },
+      {
+        tag: "Recovery",
+        title: "Rest is part of the plan.",
+        body: "A day between hard sessions. A lighter week every block.",
+        photo: "lighter",
+      },
+      {
+        tag: "Your joints",
+        title: "Tendons set the pace.",
+        body: "Weekly limits, and pain changes the plan straight away.",
+        photo: "elbow",
+      },
+    ] satisfies CoachTile[],
   },
   note: "Levi is software, not a physio. Its rules come from published training research and are being reviewed by a qualified coach.",
 };
@@ -187,7 +178,8 @@ export const watch = {
 export const privacy = {
   eyebrow: "Private by design",
   title: "Your training stays on your phone.",
-  body: "No account, no server, no ads, no tracking.",
+  body: "Pain reports and bodyweight are health data, so they're encrypted on the device and never leave it.",
+  facts: ["No account", "No server", "No ads", "No tracking"],
   link: { href: "/privacy", label: "Read the privacy policy" },
 };
 

@@ -82,7 +82,7 @@ describe("Meet Levi", () => {
   });
 
   it("gives every story a reply, a unique key and a short thought", () => {
-    const keys = coach.stories.map((s) => s.when);
+    const keys = coach.stories.map((s) => s.thought);
     expect(new Set(keys).size).toBe(keys.length);
     for (const { thought, reply } of coach.stories) {
       expect(thought.split(/\s+/).length).toBeLessThanOrEqual(8);

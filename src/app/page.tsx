@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { PathSection } from "@/components/sections/PathSection";
 import { CoachSection } from "@/components/sections/CoachSection";
+import { Ticker } from "@/components/sections/Ticker";
 import { SkillsSection } from "@/components/sections/SkillsSection";
 import { CalculatorSection } from "@/components/sections/CalculatorSection";
 import { WatchSection } from "@/components/sections/WatchSection";
@@ -71,13 +72,14 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <CoachSection />
-        <PathSection />
-        <SkillsSection />
-        <WatchSection />
-        <CalculatorSection />
-        <PrivacySection />
-        <FaqSection />
+        <Ticker />
+        <CoachSection n="01" builtInN="02" />
+        <PathSection n="03" />
+        <SkillsSection n="04" />
+        <CalculatorSection n="05" />
+        <WatchSection n="06" />
+        <PrivacySection n="07" />
+        <FaqSection n="08" />
         <CtaSection />
       </main>
       <Footer />
