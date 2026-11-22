@@ -882,7 +882,7 @@
     <string name="pain_rating_none">–</string>
     <string name="pain_rating_scale">/10 · %1$s</string>
     <string name="pain_rating_unset">No number picked yet</string>
-    <string name="pain_rating_description">Pain %1$d out of 10</string>
+    <string name="pain_rating_description">Pain out of 10: %1$d</string>
     <string name="pain_zone_unset">TAP A NUMBER</string>
     <string name="pain_zone_low">LOW</string>
     <string name="pain_zone_guide">WITHIN GUIDE</string>

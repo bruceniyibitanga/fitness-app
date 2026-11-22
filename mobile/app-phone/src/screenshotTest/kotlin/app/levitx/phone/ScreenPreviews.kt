@@ -341,7 +341,7 @@ fun RestScreenshot() {
 }
 
 @PreviewTest
-@Preview(name = "11 Body", widthDp = 390, heightDp = 2100)
+@Preview(name = "11 Body", widthDp = 390, heightDp = 2400)
 @Composable
 fun BodyScreenshot() {
     val day = 24L * 60 * 60 * 1_000
