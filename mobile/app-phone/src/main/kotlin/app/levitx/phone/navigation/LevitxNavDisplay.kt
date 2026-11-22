@@ -15,6 +15,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import app.levitx.phone.backup.BackupRoute
+import app.levitx.phone.backup.RestoreRoute
 import app.levitx.phone.exercise.ExerciseRoute
 import app.levitx.phone.intervals.IntervalDetailNavigation
 import app.levitx.phone.intervals.IntervalDetailRoute
@@ -107,7 +109,10 @@ private fun MutableList<NavKey>.replaceAllWith(destination: Destination) {
 /** Setup, and the tabs it leads to. */
 private fun EntryProviderScope<NavKey>.mainEntries(backStack: MutableList<NavKey>) {
     entry<Destination.Onboarding> {
-        OnboardingRoute(onFinished = { backStack.replaceAllWith(Destination.Main) })
+        OnboardingRoute(
+            onFinished = { backStack.replaceAllWith(Destination.Main) },
+            onRestore = { backStack.add(Destination.Restore) },
+        )
     }
     entry<Destination.Main> {
         MainRoute(
@@ -243,6 +248,16 @@ private fun EntryProviderScope<NavKey>.settingsEntries(backStack: MutableList<Na
             onBack = { backStack.removeLastOrNull() },
             onOpenCredits = { backStack.add(Destination.PhotoCredits) },
             onDeleted = { backStack.replaceAllWith(Destination.Onboarding) },
+            onOpenBackup = { backStack.add(Destination.Backup) },
+            onOpenRestore = { backStack.add(Destination.Restore) },
+        )
+    }
+    entry<Destination.Backup> { BackupRoute(onClose = { backStack.removeLastOrNull() }) }
+    entry<Destination.Restore> {
+        RestoreRoute(
+            onClose = { backStack.removeLastOrNull() },
+            // The restored plan is a different person's history as far as every open screen knows: start from it.
+            onRestored = { backStack.replaceAllWith(Destination.Main) },
         )
     }
     entry<Destination.PhotoCredits> {

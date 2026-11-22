@@ -34,6 +34,10 @@ internal interface EquipmentDao {
     @Query("SELECT * FROM band ORDER BY createdAtEpochMillis")
     fun observeBands(): Flow<List<BandEntity>>
 
+    /** Every band, oldest first, read once. */
+    @Query("SELECT * FROM band ORDER BY createdAtEpochMillis")
+    suspend fun bands(): List<BandEntity>
+
     /** Adds a band. */
     @Insert
     suspend fun insertBand(band: BandEntity)

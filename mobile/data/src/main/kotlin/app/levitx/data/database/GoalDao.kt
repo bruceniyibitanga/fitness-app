@@ -13,6 +13,10 @@ internal interface GoalDao {
     @Query("SELECT * FROM active_goal WHERE id = $ACTIVE_GOAL_ROW_ID")
     fun observe(): Flow<ActiveGoalEntity?>
 
+    /** The active goal, or null before one is chosen. */
+    @Query("SELECT * FROM active_goal LIMIT 1")
+    suspend fun current(): ActiveGoalEntity?
+
     /** Saves [goal], replacing the previous one. Not @Upsert; see [GateBestDao]. */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun replace(goal: ActiveGoalEntity)

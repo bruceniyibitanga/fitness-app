@@ -48,7 +48,7 @@ private val PlainTitleGap = 14.dp
 
 /** Setup destination: connects [OnboardingViewModel] to [OnboardingScreen]. */
 @Composable
-fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
+fun OnboardingRoute(onFinished: () -> Unit, onRestore: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     // Back steps through setup before it leaves the app.
@@ -57,6 +57,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
         uiState = uiState,
         actions = OnboardingActions(
             onNext = { viewModel.next() },
+            onRestore = onRestore,
             onBack = { viewModel.back() },
             onSkip = { viewModel.next(skip = true) },
             onChooseGoal = { viewModel.answer(SetupAnswer.Goal(it)) },
@@ -79,6 +80,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
  * Everything the person can do during setup, grouped so the screen takes one parameter for them.
  *
  * @property onNext Moves to the next step.
+ * @property onRestore Opens restore, for someone with a backup from another phone.
  * @property onBack Goes back a step, or a movement in the quick test.
  * @property onSkip Leaves the step on screen unanswered: bodyweight, or the rest of the quick test.
  * @property onChooseGoal Picks a skill path by id, or general fitness with null.
@@ -96,6 +98,7 @@ fun OnboardingRoute(onFinished: () -> Unit, viewModel: OnboardingViewModel = hil
  */
 data class OnboardingActions(
     val onNext: () -> Unit = {},
+    val onRestore: () -> Unit = {},
     val onBack: () -> Unit = {},
     val onSkip: () -> Unit = {},
     val onChooseGoal: (String?) -> Unit = {},
@@ -131,7 +134,14 @@ fun OnboardingScreen(uiState: OnboardingUiState, actions: OnboardingActions, mod
             transitionSpec = { if (targetState) LevitxMotion.back() else LevitxMotion.forward() },
             label = "welcome",
         ) { welcome ->
-            if (welcome) WelcomeScreen(onStart = actions.onNext) else Steps(uiState, actions)
+            if (welcome) {
+                WelcomeScreen(
+                    onStart = actions.onNext,
+                    onRestore = actions.onRestore,
+                )
+            } else {
+                Steps(uiState, actions)
+            }
         }
     }
 }

@@ -12,5 +12,6 @@ One short file per decision that would be expensive to change later. Each says w
 | [0006](0006-watch-workout-service.md) | The watch workout runs in a foreground service, and the rest alert uses a short wake lock | Accepted |
 | [0007](0007-adaptive-coach.md) | An adaptive coach plans every session, with explicit safety rules underneath | Accepted |
 | [0008](0008-phone-workout-off-screen.md) | A phone workout keeps going off screen, in a health foreground service with a Live Update | Accepted |
+| [0009](0009-encrypted-backup-and-restore.md) | A backup file the person encrypts with words only they hold | Accepted |
 
 To add one, copy an existing file, give it the next number, and keep it under a page. When a decision changes, write a new ADR and mark the old one superseded rather than deleting it.

@@ -28,6 +28,7 @@ import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Photo
+import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.Wordmark
 
@@ -37,9 +38,12 @@ private const val WELCOME_FADE_START = 0.35f
 /** How dark the top of the welcome photo is, so the wordmark reads over a bright sky. */
 private const val WELCOME_TOP_SHADE = 0.35f
 
-/** The first screen: one photo, the promise, one line about it, and "Build my plan". */
+/**
+ * The first screen: one photo, the promise, one line about it, "Build my
+ * plan", and a way back in for someone with a backup from another phone.
+ */
 @Composable
-internal fun WelcomeScreen(onStart: () -> Unit) {
+internal fun WelcomeScreen(onStart: () -> Unit, onRestore: () -> Unit = {}) {
     Box(modifier = Modifier.fillMaxSize()) {
         Photo(R.drawable.photo_welcome, modifier = Modifier.fillMaxSize())
         Box(
@@ -71,6 +75,7 @@ internal fun WelcomeScreen(onStart: () -> Unit) {
                 modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, bottom = ScreenPadding),
             ) {
                 AccentBar(text = stringResource(R.string.welcome_start), onClick = onStart)
+                QuietBar(text = stringResource(R.string.welcome_restore), onClick = onRestore)
                 Text(
                     text = stringResource(R.string.welcome_private),
                     fontSize = 12.sp,

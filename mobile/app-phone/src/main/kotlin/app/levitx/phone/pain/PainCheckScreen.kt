@@ -1,9 +1,5 @@
 package app.levitx.phone.pain
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,12 +11,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -35,6 +29,7 @@ import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.SecureWindow
 
 /** Height of the buttons pinned to the bottom, as on the workout screens. */
 private val BottomBarHeight = 64.dp
@@ -169,27 +164,4 @@ private fun StepButtons(text: String, enabled: Boolean, actions: PainCheckAction
                 .height(BottomBarHeight),
         )
     }
-}
-
-/**
- * Keeps what is on screen out of screenshots, screen recordings and the
- * recent apps list for as long as this is shown. The pain check is the one
- * screen where the person types in health details, so it is the one screen
- * that does this (see MASVS-REVIEW.md).
- */
-@Composable
-private fun SecureWindow() {
-    val view = LocalView.current
-    DisposableEffect(view) {
-        val window = view.context.findActivity()?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose { window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
-    }
-}
-
-/** The activity this context belongs to, or null in a preview. */
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }
