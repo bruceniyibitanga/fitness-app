@@ -43,6 +43,7 @@ import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -125,13 +126,7 @@ fun TodayScreen(uiState: TodayUiState, actions: TodayActions, modifier: Modifier
         Column(modifier = Modifier.fillMaxSize()) {
             when (uiState) {
                 TodayUiState.Loading -> Unit
-
-                TodayUiState.Unavailable -> Text(
-                    text = stringResource(R.string.data_unavailable),
-                    color = LevitxColors.TextMuted,
-                    modifier = Modifier.padding(ScreenPadding),
-                )
-
+                TodayUiState.Unavailable -> DataUnavailable()
                 is TodayUiState.Ready -> Ready(uiState, starting)
             }
         }

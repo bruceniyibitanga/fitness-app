@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,7 +31,6 @@ import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
-import app.levitx.phone.ui.SquareNote
 import app.levitx.phone.ui.measureText
 
 /** More reps than this and the rep squares would be too thin to read, so they show as a count. */
@@ -78,13 +76,6 @@ internal fun ColumnScope.Negatives(phase: TimerPhase, timer: SetTimer) {
     )
     TempoStrip(phase, timer, lowerSeconds)
     RepSquares(rep, timer.reps, done = phase is TimerPhase.Done)
-    Spacer(Modifier.weight(1f))
-    SquareNote(
-        title = null,
-        text = stringResource(R.string.workout_timer_negative_cue),
-        squareColor = LevitxColors.Ice,
-        modifier = Modifier.padding(bottom = 18.dp),
-    )
 }
 
 /** Seconds to the next lowering in ice, then the lowering's seconds in orange, over its length. */

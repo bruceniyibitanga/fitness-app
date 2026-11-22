@@ -64,6 +64,7 @@ import app.levitx.phone.progress.PastWorkoutUiState
 import app.levitx.phone.progress.ProgressNavigation
 import app.levitx.phone.progress.ProgressRange
 import app.levitx.phone.progress.ProgressScreen
+import app.levitx.phone.progress.ProgressUiState
 import app.levitx.phone.progress.exerciseProgressState
 import app.levitx.phone.progress.historyState
 import app.levitx.phone.progress.progressState
@@ -639,7 +640,7 @@ private fun previewDate(epochMillis: Long): LocalDate =
 private val noProgressNavigation = ProgressNavigation(onBack = {}, onOpenExercise = {}, onOpenHistory = {})
 
 @PreviewTest
-@Preview(name = "23 Progress", widthDp = 390, heightDp = 1500)
+@Preview(name = "23 Progress", widthDp = 390, heightDp = 1250)
 @Composable
 fun ProgressScreenshot() {
     val hang = checkNotNull(SkillCatalogue.gateById("muscle_up.dead_hang"))
@@ -707,7 +708,7 @@ private val noActivityResults = object : ActivityResultRegistryOwner {
 }
 
 @PreviewTest
-@Preview(name = "27 Settings", widthDp = 390, heightDp = 1320)
+@Preview(name = "27 Settings", widthDp = 390, heightDp = 1130)
 @Composable
 fun SettingsScreenshot() {
     LevitxTheme {
@@ -736,6 +737,28 @@ fun ProgressNotEnoughScreenshot() {
             navigation = noProgressNavigation,
             onChooseRange = {},
         )
+    }
+}
+
+@PreviewTest
+@Preview(name = "51 Progress, no sessions yet", widthDp = 390, heightDp = 500)
+@Composable
+fun ProgressEmptyScreenshot() {
+    LevitxTheme {
+        ProgressScreen(
+            uiState = progressState(emptyList(), muscleUp(), ProgressRange.FOUR_WEEKS, previewNow),
+            navigation = noProgressNavigation,
+            onChooseRange = {},
+        )
+    }
+}
+
+@PreviewTest
+@Preview(name = "52 Data locked", widthDp = 390, heightDp = 500)
+@Composable
+fun DataLockedScreenshot() {
+    LevitxTheme {
+        ProgressScreen(uiState = ProgressUiState.Unavailable, navigation = noProgressNavigation, onChooseRange = {})
     }
 }
 

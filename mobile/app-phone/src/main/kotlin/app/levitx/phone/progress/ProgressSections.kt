@@ -4,15 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,9 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.levitx.core.coach.CoachTuning
 import app.levitx.core.history.PassedGate
-import app.levitx.core.load.formatKg
 import app.levitx.core.skills.SkillCatalogue
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
@@ -88,81 +83,6 @@ internal fun Moves(moves: List<MoveRow>, onOpenExercise: (String) -> Unit) {
             )
         }
         Rule(Modifier.padding(horizontal = ScreenPadding))
-    }
-}
-
-/**
- * Hard sets of each movement this week, as bars to the coach's limit, with a
- * tick at what it planned.
- */
-@Composable
-internal fun WeekSetsSection(weekSets: List<WeekSets>) {
-    if (weekSets.isEmpty()) return
-    val limit = CoachTuning.MAX_WEEKLY_HARD_SETS
-    SectionTitle(
-        stringResource(R.string.progress_week_sets),
-        stringResource(R.string.progress_week_limit, limit.toInt()),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(horizontal = ScreenPadding)) {
-        weekSets.forEach { WeekSetsRow(it, limit) }
-        Text(
-            text = stringResource(R.string.progress_week_note, limit.toInt()),
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-            color = LevitxColors.TextMuted,
-            modifier = Modifier.padding(top = 4.dp, bottom = 22.dp),
-        )
-    }
-    Rule()
-}
-
-/** One movement's bar: hard sets done against the limit, with a tick at the plan. */
-@Composable
-private fun WeekSetsRow(row: WeekSets, limit: Double) {
-    val description = stringResource(
-        R.string.progress_week_sets_description,
-        patternName(row.pattern),
-        formatKg(row.done),
-        formatKg(row.planned),
-    )
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clearAndSetSemantics { contentDescription = description },
-    ) {
-        Text(
-            text = patternName(row.pattern),
-            fontSize = 13.sp,
-            color = LevitxColors.TextSoft,
-            modifier = Modifier.width(140.dp),
-        )
-        BoxWithConstraints(
-            modifier = Modifier
-                .weight(1f)
-                .height(12.dp)
-                .background(LevitxColors.Track),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxWidth((row.done / limit).toFloat().coerceIn(0f, 1f))
-                    .fillMaxHeight()
-                    .background(LevitxColors.Text),
-            )
-            Box(
-                Modifier
-                    .offset(x = maxWidth * (row.planned / limit).toFloat().coerceIn(0f, 1f) - 1.dp)
-                    .width(2.dp)
-                    .fillMaxHeight()
-                    .background(LevitxColors.Outline),
-            )
-        }
-        Text(
-            text = formatKg(row.done),
-            style = LevitxType.Caption,
-            color = LevitxColors.Text,
-            modifier = Modifier
-                .width(40.dp)
-                .padding(start = 10.dp),
-        )
     }
 }
 

@@ -122,7 +122,7 @@ private fun WhatOpens(pass: GatePass) {
             text = if (next == null) {
                 stringResource(R.string.gate_passed_path_done_body)
             } else {
-                stringResource(R.string.gate_passed_next_body, next.trains)
+                next.trains
             },
             modifier = Modifier.padding(top = 6.dp),
         )

@@ -27,14 +27,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.levitx.core.coach.WeighIn
-import app.levitx.core.load.WeightUnit
-import app.levitx.core.load.formatKg
 import app.levitx.design.LevitxColors
 import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Help
-import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.perRepCaption
@@ -191,25 +188,6 @@ internal fun OnTheBar(state: BodyUiState.Ready) {
     Rule()
     state.onTheBar.forEach { load ->
         LoadRow(load)
-        Rule()
-    }
-    state.trend?.let { trend ->
-        Help(
-            text = stringResource(
-                R.string.body_kilo_note,
-                formatKg(PERCENT * LocalWeightUnit.current.toKg(1.0) / trend.currentKg),
-                stringResource(
-                    if (LocalWeightUnit.current ==
-                        WeightUnit.KG
-                    ) {
-                        R.string.unit_kg_one
-                    } else {
-                        R.string.unit_lb_one
-                    },
-                ),
-            ),
-            modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 12.dp, bottom = 14.dp),
-        )
         Rule()
     }
 }

@@ -2,6 +2,7 @@ package app.levitx.phone.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,23 +17,28 @@ import app.levitx.phone.R
 
 /**
  * The data can't be opened, as the Data locked state on the States
- * artboard: what happened, that nothing is lost, and the one thing to do.
+ * artboard: what happened and that nothing is lost, in two short lines.
  * Nothing here blames the person.
+ *
+ * @param onBack Shown as a back arrow above, on screens with no header of their own.
  */
 @Composable
-fun DataUnavailable(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.padding(ScreenPadding)) {
-        Caption(stringResource(R.string.data_unavailable_label), color = LevitxColors.Accent)
-        Text(
-            text = stringResource(R.string.data_unavailable_title),
-            fontSize = 26.sp,
-            lineHeight = 30.sp,
-            fontWeight = FontWeight.Bold,
-            color = LevitxColors.Text,
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .semantics { heading() },
-        )
-        Lede(stringResource(R.string.data_unavailable), Modifier.padding(top = 10.dp))
+fun DataUnavailable(modifier: Modifier = Modifier, onBack: (() -> Unit)? = null) {
+    Column(modifier = modifier) {
+        onBack?.let { BackButton(it, Modifier.statusBarsPadding().padding(4.dp)) }
+        Column(modifier = Modifier.padding(ScreenPadding)) {
+            Caption(stringResource(R.string.data_unavailable_label), color = LevitxColors.Ice)
+            Text(
+                text = stringResource(R.string.data_unavailable_title),
+                fontSize = 22.sp,
+                lineHeight = 27.sp,
+                fontWeight = FontWeight.Bold,
+                color = LevitxColors.Text,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .semantics { heading() },
+            )
+            Lede(stringResource(R.string.data_unavailable), Modifier.padding(top = 8.dp))
+        }
     }
 }

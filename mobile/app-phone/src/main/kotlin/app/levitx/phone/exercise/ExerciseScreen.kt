@@ -44,6 +44,7 @@ import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.BackButton
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.PhotoHeader
@@ -105,7 +106,7 @@ fun ExerciseScreen(uiState: ExerciseUiState, onBack: () -> Unit, modifier: Modif
         when (uiState) {
             ExerciseUiState.Loading -> Unit
 
-            ExerciseUiState.Unavailable -> Message(stringResource(R.string.data_unavailable), onBack)
+            ExerciseUiState.Unavailable -> DataUnavailable(onBack = onBack)
 
             ExerciseUiState.NotFound -> Message(stringResource(R.string.exercise_not_found), onBack)
 

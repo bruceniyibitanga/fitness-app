@@ -55,7 +55,7 @@ public object CoachPhrases {
         CoachReason.Variety -> "A different mix from last time, same goal."
 
         is CoachReason.NeedsKit ->
-            "${reason.skillName} work needs ${kitList(reason.equipment)}. Add it under Body to start it."
+            "${reason.skillName} work needs ${kitList(reason.equipment)}. Add it on Body."
     }
 
     private fun safety(reason: CoachReason.Safety): String = when (reason) {

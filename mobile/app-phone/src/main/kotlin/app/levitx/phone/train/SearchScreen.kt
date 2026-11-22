@@ -61,6 +61,7 @@ import app.levitx.phone.intervals.intervalRowMeta
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.BackButton
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -104,11 +105,8 @@ fun SearchScreen(
             val ready = uiState as? TrainUiState.Ready
             when {
                 query.isBlank() -> Lede(stringResource(R.string.train_search_start), Modifier.padding(ScreenPadding))
-
                 ready != null -> Results(query, ready, navigation)
-
-                uiState == TrainUiState.Unavailable ->
-                    Lede(stringResource(R.string.data_unavailable), Modifier.padding(ScreenPadding))
+                uiState == TrainUiState.Unavailable -> DataUnavailable()
             }
         }
     }
