@@ -71,4 +71,7 @@ internal abstract class LevitxDatabase : RoomDatabase() {
 
     /** Access to the watch's cardio and mobility workouts on their way to the phone. */
     abstract fun intervalOutboxDao(): IntervalOutboxDao
+
+    /** Putting a backup in place of the person's data. */
+    abstract fun restoreDao(): RestoreDao
 }
