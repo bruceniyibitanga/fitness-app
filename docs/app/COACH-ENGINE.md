@@ -23,7 +23,7 @@ Every question costs the person something, so each one has to earn its place. Th
 | Equipment | Only "pull-up bar?" at setup | Other kit is asked about when an exercise would use it ("Got rings? Tap to unlock"). |
 | Bodyweight | Health Connect if allowed, otherwise an optional prompt before a session | See section 6. Never inferred. |
 | Effort per set | Easy / Right / Hard, one tap, optional | Reps are prefilled with the target, so a normal set is one tap or none. |
-| Pain | A one-tap check after sessions that loaded a sore area | Only asked when it could change something. |
+| Pain | The person says so (Body tab, or the end of a workout). Then a one-tap check after sessions that loaded a sore area | Only asked when it could change something. See "The pain check" in section 5. |
 | Age, sex, height | Not asked | They'd change very little in the plan and they're more personal data to hold. |
 
 Experience level isn't asked. It is measured: the starting check, then every logged set, gives a better answer than a self-rating.
@@ -163,6 +163,22 @@ A suggestion is always offered with three choices: **Keep it**, **Go lighter**, 
 
 Pain isn't a signal here. It works through the hard rules and needs nobody's agreement.
 
+### The pain check
+
+Pain reaches the coach through one flow on the phone, three short steps:
+
+1. **Where.** Wrist, elbow, shoulder, lower back, hip, knee or ankle. Areas the coach is already working around say so, and picking one again updates it.
+2. **Warning signs.** Six switches, from `RedFlag`: pain at night or at rest, numbness or tingling, swelling or a joint that looks wrong, a fall or a pop, weakness getting worse, fever or unexplained weight loss. Any one of them pauses the area (`SEE_PROFESSIONAL`) and no rating is asked.
+3. **How bad, at its worst.** 0 to 10. Up to 5 is inside the guide and changes nothing. Over 5 puts the area on light work (`EASE_OFF`). No number is picked to begin with, so a rating can't be saved by accident.
+
+After a session that loaded an area on light work, the summary asks "How was your elbow?" with three answers. **Fine** puts the area back to normal. **Still sore** keeps it light. **Worse** opens the full check. An area that was paused is never loaded, so it gets no question: checking it again with no warning signs and a rating inside the guide puts it back.
+
+One clean light session before going back to hard work is our own careful choice, not something the pain-monitoring model sets. It goes to the physiotherapist review with the warning-sign list.
+
+Only the advice for each area is stored. The rating and the warning signs are used once and dropped. The answers in progress are kept in memory, not in saved state, and the screen is kept out of screenshots and the recent apps list.
+
+Not built: morning-after ratings (the model takes them, nothing asks), reporting pain in the middle of a session, and a physio plan.
+
 The choice feeds back:
 
 - **Taking the easier day answers the signals that led to it.** They don't ask again until a fresh result is still down. Without this, someone who took the lighter session would be offered it forever, because light work doesn't produce new results.
@@ -269,7 +285,7 @@ Built, in `:core`:
 Not built yet:
 
 - **Health Connect.** The engine takes weigh-ins; nothing reads them from Health Connect yet.
-- **Some screens.** Setup, Today, the suggestion card, the weigh-in prompt, the week review, the comeback day, the workout, Skills and the Train library are built on the phone.
+- **Some screens.** Setup, Today, the suggestion card, the weigh-in prompt, the week review, the comeback day, the pain check, the workout, Skills and the Train library are built on the phone.
 - **Offering to trim sessions** that keep finishing early. The model records how long each session took; nothing acts on it yet.
 - **More goals.** Only the first pull-up and muscle-up paths exist. Handstand, front lever, pistol squat and push-up paths need their gates written. The general goals (stronger, muscle, lean, mobility) all get the same even plan for now.
 - **Conditioning and mobility in the plan.** Cardio and mobility workouts can be picked and run from the Train tab (section 11), but the coach never schedules them or suggests one on a rest day.

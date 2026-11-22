@@ -1,6 +1,7 @@
 package app.levitx.phone.workout
 
 import app.levitx.core.coach.AthleteModel
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.ExerciseResult
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.currentExercise
@@ -24,6 +25,7 @@ private const val MILLIS_PER_MINUTE = 60_000L
  * @property bests New bests on gates and exercises.
  * @property exercises Each exercise done, with its sets.
  * @property changes What the coach changed for next time.
+ * @property eased Sore areas on light work that this session loaded: the ones to ask about.
  */
 data class SessionReport(
     val sets: Int,
@@ -32,6 +34,7 @@ data class SessionReport(
     val bests: List<ReportBest>,
     val exercises: List<ReportExercise>,
     val changes: List<ReportChange>,
+    val eased: List<BodyArea> = emptyList(),
 )
 
 /**
@@ -98,6 +101,7 @@ internal fun sessionReport(
         bests = gateBests(before, result) + exerciseBests(before, done),
         exercises = done.map { ReportExercise(it.plan.exercise.name, it.plan.exercise.measure, it.sets) },
         changes = done.mapNotNull { change(before, after, it) }.distinctBy { it.name },
+        eased = after.easedAreasLoadedBy(result),
     )
 }
 

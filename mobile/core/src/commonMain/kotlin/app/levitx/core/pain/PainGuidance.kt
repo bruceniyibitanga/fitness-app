@@ -12,6 +12,38 @@ public const val MAX_PAIN_RATING: Int = 10
 public const val MAX_ACCEPTABLE_PAIN_DURING_EXERCISE: Int = 5
 
 /**
+ * Highest pain the apps describe as low. Only a label: advice turns on
+ * [MAX_ACCEPTABLE_PAIN_DURING_EXERCISE], never on this.
+ */
+public const val MAX_LOW_PAIN_DURING_EXERCISE: Int = 2
+
+/** Where a pain rating sits against the guide, for showing it. */
+public enum class PainZone {
+    /** Barely there. */
+    LOW,
+
+    /** Noticeable, and inside what the guide accepts during exercise. */
+    WITHIN_GUIDE,
+
+    /** Above what the guide accepts. */
+    OVER_GUIDE,
+}
+
+/**
+ * The zone a rating from [MIN_PAIN_RATING] to [MAX_PAIN_RATING] falls in.
+ *
+ * @throws IllegalArgumentException if the rating is outside the scale.
+ */
+public fun painZone(rating: Int): PainZone {
+    requireInRange(rating, MIN_PAIN_RATING, MAX_PAIN_RATING, "rating")
+    return when {
+        rating <= MAX_LOW_PAIN_DURING_EXERCISE -> PainZone.LOW
+        rating <= MAX_ACCEPTABLE_PAIN_DURING_EXERCISE -> PainZone.WITHIN_GUIDE
+        else -> PainZone.OVER_GUIDE
+    }
+}
+
+/**
  * Warning signs that mean training advice should stop and a professional
  * should take over.
  *

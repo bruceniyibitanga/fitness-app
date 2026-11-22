@@ -69,6 +69,7 @@ private const val DEFAULT_BODYWEIGHT_KG = 70.0
  * @property onChangeLoadKit Saves the vest, belt and plates.
  * @property onChooseAim Saves what the ladder work is tuned for.
  * @property onOpenSettings Opens Settings.
+ * @property onOpenPainCheck Opens the pain check.
  */
 data class BodyActions(
     val onSaveBodyweight: (Double) -> Unit,
@@ -78,11 +79,12 @@ data class BodyActions(
     val onOpenSettings: () -> Unit,
     val onChangeLoadKit: (LoadKit) -> Unit = {},
     val onChooseAim: (TrainingAim) -> Unit = {},
+    val onOpenPainCheck: () -> Unit = {},
 )
 
 /** Body tab: connects [BodyViewModel] to [BodyScreen]. */
 @Composable
-fun BodyRoute(onOpenSettings: () -> Unit, viewModel: BodyViewModel = hiltViewModel()) {
+fun BodyRoute(onOpenSettings: () -> Unit, onOpenPainCheck: () -> Unit, viewModel: BodyViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     BodyScreen(
         uiState = uiState,
@@ -94,6 +96,7 @@ fun BodyRoute(onOpenSettings: () -> Unit, viewModel: BodyViewModel = hiltViewMod
             onOpenSettings = onOpenSettings,
             onChangeLoadKit = viewModel::updateLoadKit,
             onChooseAim = viewModel::updateAim,
+            onOpenPainCheck = onOpenPainCheck,
         ),
     )
 }
@@ -141,6 +144,7 @@ fun BodyScreen(uiState: BodyUiState, actions: BodyActions, modifier: Modifier = 
                         onAddBand = actions.onAddBand,
                         onDeleteBand = actions.onDeleteBand,
                     )
+                    Pains(uiState.sore, actions.onOpenPainCheck)
                 }
                 if (weighing) {
                     WeighInBar(

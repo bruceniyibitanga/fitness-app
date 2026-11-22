@@ -159,6 +159,26 @@ class CoachTest {
     }
 
     @Test
+    fun onlyAreasOnLightWorkThatTheSessionLoadedAreAskedAbout() {
+        val pushUp = exercise("horizontal_push.hands_61cm")
+        val result = finished(0, done(hardPlan(pushUp, 6), 6))
+        val sore = newcomer()
+            .withPain(BodyArea.ELBOW, easeOff)
+            .withPain(BodyArea.WRIST, seeSomeone)
+            .withPain(BodyArea.KNEE, easeOff)
+        // Push-ups load the wrist, elbow and shoulder. The wrist is out of the plan and the knee wasn't loaded.
+        assertEquals(listOf(BodyArea.ELBOW), sore.easedAreasLoadedBy(result))
+        assertEquals(emptyList(), newcomer().easedAreasLoadedBy(result))
+    }
+
+    @Test
+    fun aSkippedExerciseLoadsNothing() {
+        val pushUp = hardPlan(exercise("horizontal_push.hands_61cm"), 6)
+        val skipped = finished(0, ExerciseResult(pushUp, emptyList(), skipped = true))
+        assertEquals(emptyList(), newcomer().withPain(BodyArea.ELBOW, easeOff).easedAreasLoadedBy(skipped))
+    }
+
+    @Test
     fun whenNothingIsSafeTheCoachSaysRest() {
         val everywhere = BodyArea.entries.fold(newcomer()) { model, area -> model.withPain(area, seeSomeone) }
         val recommendation = coach.recommend(everywhere, atDay(0))

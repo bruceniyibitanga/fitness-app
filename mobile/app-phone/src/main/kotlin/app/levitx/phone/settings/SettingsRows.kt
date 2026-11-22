@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
@@ -35,6 +33,7 @@ import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.SquareSwitch
 
 /* The rows Settings is made of. */
 
@@ -68,22 +67,7 @@ internal fun SwitchRow(title: String, note: String, checked: Boolean, onChange: 
             .padding(horizontal = ScreenPadding, vertical = 10.dp),
     ) {
         RowText(title, note, Modifier.weight(1f))
-        Box(
-            contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .width(44.dp)
-                .height(24.dp)
-                .background(if (checked) LevitxColors.Accent else LevitxColors.Background)
-                .border(1.dp, if (checked) LevitxColors.Accent else LevitxColors.Outline)
-                .padding(3.dp),
-        ) {
-            Box(
-                Modifier
-                    .size(16.dp)
-                    .background(if (checked) LevitxColors.Background else LevitxColors.TextFaint),
-            )
-        }
+        SquareSwitch(checked, Modifier.padding(start = 16.dp))
     }
     Rule(Modifier.padding(horizontal = ScreenPadding))
 }

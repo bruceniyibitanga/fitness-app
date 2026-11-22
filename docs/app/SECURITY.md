@@ -14,7 +14,8 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 
 | Data | Class | Where | Protection |
 |---|---|---|---|
-| Pain check-ins, red flags, physio plans | Health | Local database | Encrypted database, key in Android Keystore |
+| Pain check-ins and warning signs | Health | Not stored. Used once to work out the advice for the area, then dropped. While the check is open they are held in memory only (never in saved state) and the screen is marked secure | Nothing to protect at rest. The advice itself is in the row below |
+| Physio plans (not built yet) | Health | Local database | Encrypted database, key in Android Keystore |
 | Bodyweight (a log of readings), progress photos | Health | Local database / app-private files | Encrypted |
 | Bands and the help they give | Personal | Local database | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |
@@ -62,6 +63,13 @@ The database key is 256 random bits made on the device the first time the app ru
 - Text is read on the device. No image or text is sent anywhere.
 - We only extract the fields we need (exercises, sets, reps, limits). The user confirms each one.
 - The photo is deleted as soon as the user confirms, and names and other identifiers are not kept.
+
+## Feedback
+
+- Settings has a "Send feedback" row. It opens a draft in the person's own email app, addressed to support. Levitx sends nothing itself: the phone app has no internet permission to send with.
+- The draft carries three things: the app version, the Android version and the phone's model. They sit in plain sight at the bottom of the draft, and the person can delete them before sending.
+- Nothing about training, bodyweight, pain or settings goes in. The model and Android version are stripped of line breaks and control characters and cut to 40 characters, so a phone can't add lines to the draft.
+- If the phone has no email app, Settings shows the address to write to instead.
 
 ## Code and build
 

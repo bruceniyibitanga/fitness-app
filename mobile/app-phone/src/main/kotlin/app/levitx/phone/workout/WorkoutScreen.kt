@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.levitx.core.coach.AthleteModel
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
@@ -55,7 +56,12 @@ internal val BottomBarHeight = 64.dp
  * keeps the workout going when the screen is off or another app is in front.
  */
 @Composable
-fun WorkoutRoute(onDone: () -> Unit, viewModel: WorkoutViewModel = hiltViewModel()) {
+fun WorkoutRoute(
+    onDone: () -> Unit,
+    onOpenPainCheck: () -> Unit,
+    viewModel: WorkoutViewModel = hiltViewModel(),
+    painViewModel: PainAnswerViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LiveWorkoutEffects(active = uiState is WorkoutUiState.Active)
     WorkoutScreen(
@@ -73,6 +79,8 @@ fun WorkoutRoute(onDone: () -> Unit, viewModel: WorkoutViewModel = hiltViewModel
             onSkipExercise = viewModel::skipExercise,
             onFinish = viewModel::finish,
             onDone = onDone,
+            onAreaSettled = painViewModel::settled,
+            onOpenPainCheck = onOpenPainCheck,
         ),
     )
 }
@@ -90,6 +98,8 @@ fun WorkoutRoute(onDone: () -> Unit, viewModel: WorkoutViewModel = hiltViewModel
  * @property onSkipExercise Moves on to the next exercise.
  * @property onFinish Ends the workout and saves what was done.
  * @property onDone Leaves the workout screen. The workout stays saved as a draft to come back to.
+ * @property onAreaSettled After the workout, says a sore area felt fine, which puts it back to normal.
+ * @property onOpenPainCheck Opens the pain check, from the summary.
  */
 data class WorkoutActions(
     val onLogSet: (value: Int, repsInReserve: Int?, addedKg: Double, assistanceKg: Double) -> Unit,
@@ -101,6 +111,8 @@ data class WorkoutActions(
     val onSkipExercise: () -> Unit,
     val onFinish: () -> Unit,
     val onDone: () -> Unit,
+    val onAreaSettled: (BodyArea) -> Unit = {},
+    val onOpenPainCheck: () -> Unit = {},
 ) {
     /** Ready-made actions. */
     companion object {
@@ -131,7 +143,7 @@ fun WorkoutScreen(uiState: WorkoutUiState, now: () -> Long, actions: WorkoutActi
             WorkoutUiState.Unavailable -> DataUnavailable(onBack = actions.onDone)
             WorkoutUiState.NoWorkout -> Message(stringResource(R.string.workout_nothing), actions.onDone)
             is WorkoutUiState.Active -> ActiveWorkout(uiState, now, actions)
-            is WorkoutUiState.Finished -> Summary(uiState.report, actions.onDone)
+            is WorkoutUiState.Finished -> Summary(uiState.report, actions)
         }
     }
 }
