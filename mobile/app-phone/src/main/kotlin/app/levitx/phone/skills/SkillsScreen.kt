@@ -45,7 +45,7 @@ import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Chip
 import app.levitx.phone.ui.ChipRow
-import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.StatStrip
@@ -83,12 +83,7 @@ fun SkillsScreen(uiState: SkillsUiState, onOpenExercise: (String) -> Unit, modif
         TabHeader(stringResource(R.string.tab_skills))
         when (uiState) {
             SkillsUiState.Loading -> Unit
-
-            SkillsUiState.Unavailable -> Lede(
-                stringResource(R.string.data_unavailable),
-                Modifier.padding(ScreenPadding),
-            )
-
+            SkillsUiState.Unavailable -> DataUnavailable()
             is SkillsUiState.Ready -> Ladders(uiState.ladders, onOpenExercise)
         }
     }
@@ -217,30 +212,18 @@ private fun Figures(standing: LadderStanding) {
 @Composable
 private fun NextCard(standing: LadderStanding) {
     val exercise = standing.exercise
-    val (label, title, body) = when {
-        standing.isTrainedByGate -> Triple(
-            stringResource(R.string.skills_gate_label),
-            stringResource(R.string.skills_gate_title),
-            stringResource(R.string.skills_gate),
-        )
+    val (label, title) = when {
+        standing.isTrainedByGate ->
+            stringResource(R.string.skills_gate_label) to stringResource(R.string.skills_gate_title)
 
-        exercise == null -> Triple(
-            stringResource(R.string.skills_kit_label),
-            stringResource(R.string.skills_no_kit_title),
-            stringResource(R.string.skills_no_kit),
-        )
+        exercise == null ->
+            stringResource(R.string.skills_kit_label) to stringResource(R.string.skills_no_kit_title)
 
-        standing.next == null -> Triple(
-            stringResource(R.string.skills_top_label),
-            stringResource(R.string.skills_top),
-            stringResource(R.string.skills_top_body),
-        )
+        standing.next == null ->
+            stringResource(R.string.skills_top_label) to stringResource(R.string.skills_top)
 
-        else -> Triple(
-            stringResource(R.string.skills_next_label, standing.next.name),
-            stringResource(R.string.skills_next_title),
-            stringResource(R.string.skills_next_body),
-        )
+        else ->
+            stringResource(R.string.skills_next_label, standing.next.name) to stringResource(R.string.skills_next_title)
     }
     Column(
         modifier = Modifier
@@ -257,13 +240,6 @@ private fun NextCard(standing: LadderStanding) {
             fontWeight = FontWeight.SemiBold,
             color = LevitxColors.Text,
             modifier = Modifier.padding(top = 8.dp),
-        )
-        Text(
-            text = body,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-            color = LevitxColors.TextMuted,
-            modifier = Modifier.padding(top = 4.dp),
         )
     }
 }

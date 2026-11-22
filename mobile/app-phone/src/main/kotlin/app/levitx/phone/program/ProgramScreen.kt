@@ -40,6 +40,7 @@ import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.BackButton
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.GateStatus
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
@@ -88,7 +89,7 @@ fun ProgramScreen(uiState: ProgramUiState, onMakePlan: () -> Unit, onBack: () ->
         when (uiState) {
             ProgramUiState.Loading -> Unit
 
-            ProgramUiState.Unavailable -> Message(stringResource(R.string.data_unavailable), onBack)
+            ProgramUiState.Unavailable -> DataUnavailable(onBack = onBack)
 
             ProgramUiState.NotFound -> Message(stringResource(R.string.program_not_found), onBack)
 
@@ -140,7 +141,6 @@ private fun Title(state: ProgramUiState.Ready) {
             modifier = Modifier.padding(top = 4.dp),
         )
         Lede(state.path.about, modifier = Modifier.padding(top = 10.dp))
-        Help(stringResource(R.string.program_estimate), modifier = Modifier.padding(top = 6.dp))
     }
 }
 

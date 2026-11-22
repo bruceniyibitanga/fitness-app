@@ -1,10 +1,8 @@
 package app.levitx.phone.progress
 
 import app.levitx.core.coach.AthleteModel
-import app.levitx.core.coach.CoachTuning
 import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.SkillTraining
-import app.levitx.core.coach.VolumeTargets
 import app.levitx.core.coach.currentGate
 import app.levitx.core.history.LoadPoint
 import app.levitx.core.history.PassedGate
@@ -14,7 +12,6 @@ import app.levitx.core.skills.GateMeasure
 import app.levitx.core.skills.SkillCatalogue
 
 private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000
-private const val MILLIS_PER_HOUR = 60L * 60 * 1000
 
 private const val FOUR_WEEKS_DAYS = 28
 private const val THIRTEEN_WEEKS_DAYS = 91
@@ -75,15 +72,6 @@ data class MoveRow(
     val changeKg: Double?,
 )
 
-/**
- * Hard sets of one movement in the coach's week, against its plan.
- *
- * @property pattern The movement.
- * @property done Hard sets done, with indirect work counted as a share, as the coach counts them.
- * @property planned The coach's weekly target for it.
- */
-data class WeekSets(val pattern: MovementPattern, val done: Double, val planned: Double)
-
 /** The progress screen. */
 sealed interface ProgressUiState {
     /** Reading the history. */
@@ -98,7 +86,6 @@ sealed interface ProgressUiState {
      * @property range How far back it looks.
      * @property headline The lead movement's load over time, or null with no kilogram figures in range.
      * @property moves Every movement trained in range.
-     * @property weekSets Hard sets this week per movement the plan trains.
      * @property weeks Workouts in each of the last [WEEKS_SHOWN] weeks, oldest first.
      * @property gates Gates passed, oldest first.
      * @property workoutCount Every workout stored, in any range.
@@ -107,7 +94,6 @@ sealed interface ProgressUiState {
         val range: ProgressRange,
         val headline: Headline?,
         val moves: List<MoveRow>,
-        val weekSets: List<WeekSets>,
         val weeks: List<Int>,
         val gates: List<PassedGate>,
         val workoutCount: Int,
@@ -131,7 +117,6 @@ fun progressState(
         range = range,
         headline = headline(model, series),
         moves = MovementPattern.strength.mapNotNull { moveRow(it, inRange, series.getValue(it)) },
-        weekSets = weekSets(model, nowEpochMillis),
         weeks = Progress.workoutsPerWeek(workouts, WEEKS_SHOWN, nowEpochMillis),
         gates = Progress.passedGates(workouts, passedGates(model)),
         workoutCount = workouts.size,
@@ -160,14 +145,6 @@ private fun moveRow(pattern: MovementPattern, workouts: List<WorkoutRecord>, poi
         kgNow = points.lastOrNull()?.kgPerRep,
         changeKg = if (points.size > 1) points.last().kgPerRep - points.first().kgPerRep else null,
     )
-}
-
-private fun weekSets(model: AthleteModel, nowEpochMillis: Long): List<WeekSets> {
-    val weekStart = nowEpochMillis - CoachTuning.WEEK_WINDOW_HOURS * MILLIS_PER_HOUR
-    val planned = VolumeTargets.weekly(model.profile)
-    return MovementPattern.strength
-        .map { WeekSets(it, model.hardSets(it, weekStart, nowEpochMillis), planned[it] ?: 0.0) }
-        .filter { it.done > 0.0 || it.planned > 0.0 }
 }
 
 private fun passedGates(model: AthleteModel) = SkillCatalogue.all

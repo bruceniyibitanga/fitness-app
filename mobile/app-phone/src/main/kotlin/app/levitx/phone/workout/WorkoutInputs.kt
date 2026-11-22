@@ -121,7 +121,6 @@ internal fun RepsLeft(selected: Int, onSelect: (Int) -> Unit) {
                 }
             }
         }
-        Help(stringResource(R.string.workout_reps_left_help), modifier = Modifier.padding(top = 10.dp))
     }
 }
 

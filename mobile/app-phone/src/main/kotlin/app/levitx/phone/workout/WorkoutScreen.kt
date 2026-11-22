@@ -43,6 +43,7 @@ import app.levitx.phone.R
 import app.levitx.phone.live.LiveWorkoutEffects
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 
@@ -127,7 +128,7 @@ fun WorkoutScreen(uiState: WorkoutUiState, now: () -> Long, actions: WorkoutActi
     ) {
         when (uiState) {
             WorkoutUiState.Loading, WorkoutUiState.Saving -> Unit
-            WorkoutUiState.Unavailable -> Message(stringResource(R.string.data_unavailable), actions.onDone)
+            WorkoutUiState.Unavailable -> DataUnavailable(onBack = actions.onDone)
             WorkoutUiState.NoWorkout -> Message(stringResource(R.string.workout_nothing), actions.onDone)
             is WorkoutUiState.Active -> ActiveWorkout(uiState, now, actions)
             is WorkoutUiState.Finished -> Summary(uiState.report, actions.onDone)

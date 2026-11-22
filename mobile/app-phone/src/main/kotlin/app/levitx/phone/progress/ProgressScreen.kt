@@ -42,9 +42,12 @@ import app.levitx.phone.R
 import app.levitx.phone.ui.BackHeader
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.DataUnavailable
+import app.levitx.phone.ui.EmptyState
+import app.levitx.phone.ui.FirstPointLine
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
+import app.levitx.phone.ui.SquaresToGo
 import app.levitx.phone.ui.patternName
 import app.levitx.phone.ui.shortDate
 import app.levitx.phone.ui.signedWeight
@@ -113,11 +116,14 @@ fun ProgressScreen(
 
             is ProgressUiState.Ready -> Column(Modifier.verticalScroll(rememberScrollState())) {
                 if (uiState.workoutCount == 0) {
-                    Lede(stringResource(R.string.progress_empty), Modifier.padding(ScreenPadding))
+                    EmptyState(
+                        label = stringResource(R.string.progress_empty_label),
+                        title = stringResource(R.string.progress_empty),
+                        picture = { FirstPointLine() },
+                    )
                 } else {
                     HeadlineSection(uiState.headline)
                     Moves(uiState.moves, navigation.onOpenExercise)
-                    WeekSetsSection(uiState.weekSets)
                     WeeksSection(uiState.weeks, navigation.onOpenHistory)
                     GatesSection(uiState.gates)
                 }
@@ -185,7 +191,7 @@ private fun HeadlineSection(headline: Headline?) {
             }
         }
         if (headline.points.size < MIN_TREND_POINTS) {
-            NotEnoughYet(MIN_TREND_POINTS - headline.points.size)
+            NotEnoughYet(headline.points.size)
             return@Column
         }
         LoadChart(headline.points, Modifier.padding(top = 22.dp))
@@ -196,33 +202,24 @@ private fun HeadlineSection(headline: Headline?) {
             Spacer(Modifier.weight(1f))
             Caption(stringResource(R.string.progress_today), color = LevitxColors.TextFaint)
         }
-        Text(
-            text = stringResource(R.string.progress_load_note),
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-            color = LevitxColors.TextMuted,
-            modifier = Modifier.padding(top = 12.dp),
-        )
     }
     Rule()
 }
 
-/** Instead of a chart from too few workouts: how many more it needs, and why it waits. */
+/**
+ * Instead of a chart from too few workouts, the Not enough yet state: a
+ * square per workout so far, dashed squares for the rest, and how many more.
+ */
 @Composable
-private fun NotEnoughYet(more: Int) {
+private fun NotEnoughYet(have: Int) {
+    val more = MIN_TREND_POINTS - have
+    SquaresToGo(done = have, total = MIN_TREND_POINTS, modifier = Modifier.padding(top = 22.dp))
     Text(
         text = pluralStringResource(R.plurals.progress_not_enough, more, more),
         fontSize = 20.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         color = LevitxColors.Text,
-        modifier = Modifier.padding(top = 22.dp),
-    )
-    Text(
-        text = stringResource(R.string.progress_not_enough_note, MIN_TREND_POINTS),
-        fontSize = 13.sp,
-        lineHeight = 18.sp,
-        color = LevitxColors.TextMuted,
-        modifier = Modifier.padding(top = 6.dp),
+        modifier = Modifier.padding(top = 12.dp),
     )
 }
 

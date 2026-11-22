@@ -32,7 +32,6 @@ import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.ChoiceBar
 import app.levitx.phone.ui.ChoiceRow
-import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.weightText
 import kotlin.math.abs
@@ -71,8 +70,7 @@ private const val SAME_PLATE_KG = 0.005
 @Composable
 internal fun Weights(kit: LoadKit, unit: WeightUnit, onChange: (LoadKit) -> Unit) {
     Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 28.dp)) {
-        Caption(stringResource(R.string.body_weights_label))
-        Help(stringResource(R.string.body_weights_note), modifier = Modifier.padding(top = 6.dp, bottom = 8.dp))
+        Caption(stringResource(R.string.body_weights_label), modifier = Modifier.padding(bottom = 8.dp))
         Vest(kit, unit, onChange)
         ChoiceRow(modifier = Modifier.padding(top = 12.dp)) {
             ChoiceBar(

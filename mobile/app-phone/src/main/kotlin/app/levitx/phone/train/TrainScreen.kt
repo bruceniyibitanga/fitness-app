@@ -51,7 +51,7 @@ import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.Caption
 import app.levitx.phone.ui.Chip
 import app.levitx.phone.ui.ChipRow
-import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -109,10 +109,7 @@ fun TrainScreen(uiState: TrainUiState, navigation: TrainNavigation, modifier: Mo
             when (uiState) {
                 TrainUiState.Loading -> Unit
 
-                TrainUiState.Unavailable -> Lede(
-                    text = stringResource(R.string.data_unavailable),
-                    modifier = Modifier.padding(ScreenPadding),
-                )
+                TrainUiState.Unavailable -> DataUnavailable()
 
                 is TrainUiState.Ready -> {
                     Chips(selected = chip, onSelect = { chip = it })
@@ -161,7 +158,6 @@ private fun NoMatches(onClear: () -> Unit) {
             color = LevitxColors.Text,
             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
         )
-        Lede(stringResource(R.string.train_no_matches_body))
         OutlineBar(text = stringResource(R.string.train_clear_filters), onClick = onClear)
     }
 }

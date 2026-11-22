@@ -14,8 +14,7 @@ public object IntervalCatalogue {
         id = "quiet_cardio",
         name = "Quiet cardio",
         kind = IntervalKind.CARDIO,
-        about = "Forty seconds on, twenty off, with nothing that jumps. Kind to neighbours and knees, and a good " +
-            "first cardio session: you set the pace.",
+        about = "Nothing that jumps. Kind to knees and neighbours.",
         blocks = listOf(
             IntervalBlock(marching, workSeconds = 60, restSeconds = 0, rounds = 2),
             IntervalBlock(stepJacks, workSeconds = 40, restSeconds = 20, rounds = 4),
@@ -30,8 +29,7 @@ public object IntervalCatalogue {
         id = "bodyweight_intervals",
         name = "Bodyweight intervals",
         kind = IntervalKind.CARDIO,
-        about = "Thirty seconds hard, thirty easy, through four moves. No kit. Three of them jump: for a flat, " +
-            "try Quiet cardio.",
+        about = "Thirty hard, thirty easy. Three moves jump.",
         blocks = listOf(
             IntervalBlock(jumpingJacks, workSeconds = 40, restSeconds = 20, rounds = 3),
             IntervalBlock(burpees, workSeconds = 30, restSeconds = 30, rounds = 4),
@@ -45,9 +43,9 @@ public object IntervalCatalogue {
         id = "tabata",
         name = "Tabata",
         kind = IntervalKind.CARDIO,
-        about =
-            "Twenty seconds flat out, ten seconds rest, eight times, for three moves. The timing comes from Tabata's " +
-                "1996 study, which used a bike at a far higher intensity than bodyweight moves reach.",
+        // The 20/10 x 8 timing is from Tabata et al. 1996, which used a bike at a far higher
+        // intensity than bodyweight moves reach.
+        about = "Twenty seconds flat out, ten off, eight times.",
         blocks = listOf(
             IntervalBlock(jumpingJacks, workSeconds = 40, restSeconds = 20, rounds = 2, restAfterSeconds = 30),
             IntervalBlock(burpees, workSeconds = 20, restSeconds = 10, rounds = 8, restAfterSeconds = 60),
@@ -60,8 +58,9 @@ public object IntervalCatalogue {
         id = "one_minute_intervals",
         name = "Ten one-minute intervals",
         kind = IntervalKind.CARDIO,
-        about = "A minute hard, then 75 seconds easy, ten times. The format of Little and colleagues' 2010 study, " +
-            "where six of these sessions over two weeks raised the muscles' capacity for endurance work.",
+        // The format of Little et al. 2010: six of these sessions over two weeks raised the
+        // muscles' capacity for endurance work.
+        about = "A minute hard, 75 seconds easy, ten times.",
         blocks = listOf(
             IntervalBlock(marching, workSeconds = 60, restSeconds = 0, rounds = 3),
             IntervalBlock(hardMinute, workSeconds = 60, restSeconds = 75, rounds = 10),
@@ -72,7 +71,7 @@ public object IntervalCatalogue {
         id = "rope_intervals",
         name = "Rope intervals",
         kind = IntervalKind.CARDIO,
-        about = "Easy skipping to warm up, then thirty seconds fast and thirty easy, ten times.",
+        about = "Easy warm-up, then thirty fast, thirty easy.",
         blocks = listOf(
             IntervalBlock(ropeEasy, workSeconds = 60, restSeconds = 30, rounds = 3),
             IntervalBlock(ropeFast, workSeconds = 30, restSeconds = 30, rounds = 10),
@@ -85,7 +84,7 @@ public object IntervalCatalogue {
         name = "Morning mobility",
         kind = IntervalKind.MOBILITY,
         forBeginners = true,
-        about = "Spine, hips and upper back, gently. Good on rest days or before training.",
+        about = "Spine, hips and upper back, gently.",
         blocks = listOf(
             IntervalBlock(catCow, workSeconds = 45, restSeconds = 10, rounds = 2),
             IntervalBlock(worldsGreatest, workSeconds = 30, restSeconds = 10, rounds = 2),
@@ -100,7 +99,7 @@ public object IntervalCatalogue {
         name = "Hips and hamstrings",
         kind = IntervalKind.MOBILITY,
         forBeginners = true,
-        about = "The range pistols, shrimps and L-sits need. Each stretch adds up to a minute a side.",
+        about = "The range pistols, shrimps and L-sits need.",
         blocks = listOf(
             IntervalBlock(hipFlexor, workSeconds = 30, restSeconds = 10, rounds = 2),
             IntervalBlock(pigeon, workSeconds = 30, restSeconds = 10, rounds = 2),
@@ -115,7 +114,7 @@ public object IntervalCatalogue {
         name = "Shoulders and wrists",
         kind = IntervalKind.MOBILITY,
         forBeginners = true,
-        about = "Before handstands, planche work or a hard pushing day. You'll want a towel or a band.",
+        about = "Before handstands or hard pushing. Bring a towel or band.",
         blocks = listOf(
             IntervalBlock(wrists, workSeconds = 30, restSeconds = 10, rounds = 2),
             IntervalBlock(passThrough, workSeconds = 40, restSeconds = 10, rounds = 2),
@@ -130,7 +129,7 @@ public object IntervalCatalogue {
         name = "Full body stretch",
         kind = IntervalKind.MOBILITY,
         forBeginners = true,
-        about = "Everything, slowly, after a hard week. About a minute per stretch in all.",
+        about = "Everything, slowly, after a hard week.",
         blocks = listOf(
             IntervalBlock(catCow, workSeconds = 45, restSeconds = 10, rounds = 1),
             IntervalBlock(childsPose, workSeconds = 45, restSeconds = 10, rounds = 1),

@@ -42,10 +42,9 @@ import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.AimChoices
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.DecimalInput
-import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.KitPicker
-import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.LocalWeightUnit
 import app.levitx.phone.ui.QuietBar
 import app.levitx.phone.ui.Rule
@@ -127,10 +126,7 @@ fun BodyScreen(uiState: BodyUiState, actions: BodyActions, modifier: Modifier = 
         when (uiState) {
             BodyUiState.Loading -> Unit
 
-            BodyUiState.Unavailable -> Lede(
-                text = stringResource(R.string.data_unavailable),
-                modifier = Modifier.padding(ScreenPadding),
-            )
+            BodyUiState.Unavailable -> DataUnavailable()
 
             is BodyUiState.Ready -> {
                 Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -171,8 +167,7 @@ fun BodyScreen(uiState: BodyUiState, actions: BodyActions, modifier: Modifier = 
 @Composable
 private fun Kit(equipment: Set<Equipment>, onChoose: (Equipment?) -> Unit) {
     Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 22.dp)) {
-        Caption(stringResource(R.string.body_kit_label))
-        Help(stringResource(R.string.body_kit_note), modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
+        Caption(stringResource(R.string.body_kit_label), modifier = Modifier.padding(bottom = 12.dp))
         KitPicker(equipment, onChooseNone = { onChoose(null) }, onToggle = onChoose)
     }
 }
@@ -183,7 +178,7 @@ private fun Aim(aim: TrainingAim, onChoose: (TrainingAim) -> Unit) {
     Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 22.dp)) {
         Caption(stringResource(R.string.body_aim_label))
         AimChoices(aim, onChoose, modifier = Modifier.padding(top = 12.dp))
-        Help(stringResource(aimNote(aim)), modifier = Modifier.padding(top = 8.dp))
+        Caption(stringResource(aimNote(aim)), modifier = Modifier.padding(top = 10.dp), color = LevitxColors.TextFaint)
     }
 }
 

@@ -37,6 +37,7 @@ import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.BackButton
 import app.levitx.phone.ui.Caption
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.Lede
 import app.levitx.phone.ui.PhotoHeader
@@ -102,7 +103,7 @@ fun FocusWorkoutScreen(
         when (uiState) {
             FocusWorkoutUiState.Loading -> Unit
 
-            FocusWorkoutUiState.Unavailable -> Message(stringResource(R.string.data_unavailable), navigation.onBack)
+            FocusWorkoutUiState.Unavailable -> DataUnavailable(onBack = navigation.onBack)
 
             FocusWorkoutUiState.NotFound -> Message(stringResource(R.string.focus_workout_not_found), navigation.onBack)
 

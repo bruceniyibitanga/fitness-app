@@ -85,7 +85,7 @@ One rule sits above the scoring: when the goal's skill work can be done safely t
 
 ### Kit
 
-Nobody is assumed to own anything. A person with no kit trains on what every home has: the floor, a wall and a chair. Each exercise lists the kit it needs (a pull-up bar, a low bar, dip bars, rings, a band, or a box or step of a set height), and the ladders skip any rung the person can't do with what they have, up and down. If the goal itself needs kit they haven't added, Today says what is missing and where to add it ("Pull-up work needs a pull-up bar. Add it under Body to start it.") and the plan trains everything else in the meantime.
+Nobody is assumed to own anything. A person with no kit trains on what every home has: the floor, a wall and a chair. Each exercise lists the kit it needs (a pull-up bar, a low bar, dip bars, rings, a band, or a box or step of a set height), and the ladders skip any rung the person can't do with what they have, up and down. If the goal itself needs kit they haven't added, Today says what is missing and where to add it ("Pull-up work needs a pull-up bar. Add it on Body.") and the plan trains everything else in the meantime.
 
 Making candidates safe, instead of only throwing unsafe ones away, means a sore elbow gives "legs as normal, upper body light" and not a random other session.
 

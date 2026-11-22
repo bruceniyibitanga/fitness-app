@@ -26,7 +26,7 @@ import app.levitx.phone.R
 import app.levitx.phone.theme.LevitxTheme
 import app.levitx.phone.ui.BackHeader
 import app.levitx.phone.ui.Caption
-import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.levelName
@@ -70,8 +70,7 @@ fun AllProgramsScreen(
             when (uiState) {
                 TrainUiState.Loading -> Unit
 
-                TrainUiState.Unavailable ->
-                    Lede(stringResource(R.string.data_unavailable), Modifier.padding(ScreenPadding))
+                TrainUiState.Unavailable -> DataUnavailable()
 
                 is TrainUiState.Ready -> SkillLevel.entries.forEach { level ->
                     val programs = uiState.programs.filter { it.path.level == level }

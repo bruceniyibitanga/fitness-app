@@ -45,7 +45,7 @@ import app.levitx.design.LevitxType
 import app.levitx.phone.R
 import app.levitx.phone.ui.AccentBar
 import app.levitx.phone.ui.Caption
-import app.levitx.phone.ui.Lede
+import app.levitx.phone.ui.DataUnavailable
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.WeekBounds
@@ -88,8 +88,7 @@ fun WeekReviewScreen(uiState: WeekReviewUiState, onClose: () -> Unit, modifier: 
             when (uiState) {
                 WeekReviewUiState.Loading -> Unit
 
-                WeekReviewUiState.Unavailable ->
-                    Lede(stringResource(R.string.data_unavailable), Modifier.padding(ScreenPadding))
+                WeekReviewUiState.Unavailable -> DataUnavailable()
 
                 is WeekReviewUiState.Ready -> {
                     Sessions(uiState.review)
