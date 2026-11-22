@@ -1,24 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type { ComponentType } from "react";
-import { GUIDE_SLUGS, getGuide, type Guide, type GuideSlug } from "@/content/guides";
+import { GUIDE_SLUGS, getGuide } from "@/content/guides";
 import { photos } from "@/content/photos";
 import { guideStructuredData } from "@/lib/guide-schema";
 import { JsonLd } from "@/components/JsonLd";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { MuscleUpGuide } from "@/components/guides/layouts/MuscleUpGuide";
-import { FrontLeverGuide } from "@/components/guides/layouts/FrontLeverGuide";
-import { PlancheGuide } from "@/components/guides/layouts/PlancheGuide";
-import { HandstandGuide } from "@/components/guides/layouts/HandstandGuide";
-
-/** Each guide has its own layout. The content is shared; the composition isn't. */
-const LAYOUTS: Record<GuideSlug, ComponentType<{ guide: Guide }>> = {
-  "muscle-up": MuscleUpGuide,
-  "front-lever": FrontLeverGuide,
-  planche: PlancheGuide,
-  handstand: HandstandGuide,
-};
+import { GuideArticle } from "@/components/guides/GuideArticle";
 
 // Only the four guides exist; anything else is a 404 rather than a render attempt.
 export const dynamicParams = false;
@@ -49,13 +37,12 @@ export async function generateMetadata({ params }: PageProps<"/guides/[slug]">):
 export default async function GuidePage({ params }: PageProps<"/guides/[slug]">) {
   const guide = getGuide((await params).slug);
   if (!guide) notFound();
-  const Layout = LAYOUTS[guide.slug];
   return (
     <>
       <JsonLd data={guideStructuredData(guide)} />
       <Header />
       <main>
-        <Layout guide={guide} />
+        <GuideArticle guide={guide} />
       </main>
       <Footer />
     </>

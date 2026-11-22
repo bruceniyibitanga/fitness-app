@@ -49,6 +49,8 @@ export type Guide = {
   /** A note under the week plan. */
   weekNote: string;
   faq: { q: string; a: string }[];
+  /** The guide's own section titles, so each page keeps its voice. */
+  headings: { stages: string; plan: string; mistakes: string; week: string };
   /** An optional safety note the page sets large. */
   callout?: { title: string; body: string };
   plan: {
@@ -70,6 +72,12 @@ export const guides: Guide[] = [
     answer:
       "A muscle-up takes you from hanging under a bar to holding yourself above it in one move: a fast, high pull, a quick lean over the bar, then a dip to straight arms. Build 10 strict pull-ups and 10 straight-bar dips first, then train the high pull and the turn over the bar.",
     eyebrow: "Guide · Pull and push",
+    headings: {
+      stages: "Rung by rung to your first rep.",
+      plan: "Take the ladder with you.",
+      mistakes: "What usually stalls it.",
+      week: "Three days, with rest between.",
+    },
     photo: "muscleUp",
     photoPosition: "50% 22%",
     before: ["10 strict pull-ups", "10 straight-bar dips", "A 30 second dead hang"],
@@ -152,8 +160,14 @@ export const guides: Guide[] = [
     answer:
       "A front lever is a straight-arm hold under a bar or rings with your body level and facing up. Your lats and core do most of the work. Learn it in stages, from a tuck to a full lever, and move on only when each hold is clean with straight arms.",
     eyebrow: "Guide · Pull",
+    headings: {
+      stages: "Make the lever longer, one step at a time.",
+      plan: "Your front lever plan, ready to print.",
+      mistakes: "What breaks the line.",
+      week: "Hold, pull, hold.",
+    },
     photo: "frontLever",
-    photoPosition: "62% 45%",
+    photoPosition: "90% 50%",
     before: ["8 to 10 strict pull-ups", "A 30 second hollow body hold", "An active hang with the shoulders drawn down"],
     stages: [
       { name: "Tuck front lever", pass: "15 s with straight arms", cue: "Knees to chest, back level with the floor, push the bar toward your hips." },
@@ -232,6 +246,12 @@ export const guides: Guide[] = [
     answer:
       "A planche is a straight-arm hold with your body level above the floor, held up by your hands alone. Your shoulders lean well past your wrists to balance it. It's one of the hardest bodyweight skills, so work through a lean, a tuck and a straddle, and look after your wrists from day one.",
     eyebrow: "Guide · Push",
+    headings: {
+      stages: "From a lean to a full planche.",
+      plan: "The planche plan.",
+      mistakes: "Four things that hold people back.",
+      week: "Lean, hold, press.",
+    },
     photo: "planche",
     photoPosition: "55% 40%",
     before: ["A wrist warm-up every session", "20 push-ups in a row", "A 30 second hollow body hold"],
@@ -317,6 +337,12 @@ export const guides: Guide[] = [
     answer:
       "A handstand is balancing upside down on your hands with your body in one straight line. Start against a wall to build strength and shape, learn to bail out safely, then practise kicking up and balancing away from the wall with small corrections from your fingers.",
     eyebrow: "Guide · Balance",
+    headings: {
+      stages: "From the wall to the middle of the room.",
+      plan: "The handstand plan.",
+      mistakes: "Why it keeps tipping.",
+      week: "Short and often.",
+    },
     photo: "handstand",
     photoPosition: "86% 50%",
     before: ["A wrist warm-up every session", "A 30 second plank", "Clear space, or grass, around you"],
@@ -398,7 +424,6 @@ export const guideHub = {
   title: "Calisthenics Skill Guides: Free Progressions and Plans",
   description:
     "Step-by-step guides to the muscle-up, front lever, planche and handstand, with pass tests for every stage and a free printable plan for each skill.",
-  eyebrow: "Guides",
   h1: ["Four skills,", "one step at a time."],
   lede: "Each guide breaks a skill into stages with a clear test for each one, so you always know what to train next. Every guide comes with a free printable plan.",
 };
