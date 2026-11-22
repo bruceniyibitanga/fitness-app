@@ -553,6 +553,10 @@
     <string name="settings_off">OFF</string>
     <string name="settings_data">YOUR DATA</string>
     <string name="settings_data_note">On this phone only. Encrypted. No account.</string>
+    <string name="settings_backup">Back up</string>
+    <string name="settings_backup_kind">ENCRYPTED</string>
+    <string name="settings_restore">Restore</string>
+    <string name="settings_restore_kind">REPLACES ALL</string>
     <string name="settings_export">Export everything</string>
     <string name="settings_export_kind">ZIP · JSON + CSV</string>
     <string name="settings_exporting">Writing your export…</string>
@@ -573,11 +577,13 @@
     <string name="settings_feedback_subject">Levitx feedback</string>
     <string name="settings_feedback_footer">Levitx %1$s · Android %2$s · %3$s</string>
     <string name="settings_feedback_no_app">No email app. Write to %1$s.</string>
-    <string name="settings_credits">Photo credits</string>
+    <string name="settings_credits">Credits</string>
     <string name="settings_version">Version</string>
 
     <!-- Photo credits -->
     <string name="credits_intro">From Unsplash. Tap one to open it.</string>
+    <string name="credits_word_list">EFF Large Wordlist</string>
+    <string name="credits_word_list_use">BACKUP WORDS · ELECTRONIC FRONTIER FOUNDATION · CC BY 3.0 US</string>
     <string name="credits_on_unsplash">Photographer on Unsplash</string>
     <string name="credit_welcome">WELCOME</string>
     <string name="credit_first_pull_up">FIRST PULL-UP · PULLING</string>
@@ -891,4 +897,46 @@
     <string name="workout_pain_sore">Still sore</string>
     <string name="workout_pain_worse">Worse</string>
     <string name="workout_pain_open">Something hurt?</string>
+    <!-- Backup and restore -->
+    <string name="backup_title">Back up</string>
+    <string name="backup_step">STEP %1$d OF 3</string>
+    <string name="backup_words_title">Your six words.</string>
+    <string name="backup_write_label">WRITE THEM DOWN</string>
+    <string name="backup_write_body">Lose them and the backup can\'t be opened. Nobody can recover them, us included.</string>
+    <string name="backup_written">I\'ve written them down</string>
+    <string name="backup_check_title">Type two of them.</string>
+    <string name="backup_word_place">WORD %1$d</string>
+    <string name="backup_word_wrong">NOT IT</string>
+    <string name="backup_save">Save the backup</string>
+    <string name="backup_save_failed">COULDN\'T SAVE. TRY ANOTHER PLACE.</string>
+    <string name="backup_saving">SAVING</string>
+    <string name="backup_saved_title">Backup saved.</string>
+    <string name="backup_saved_encrypted">ENCRYPTED WITH YOUR WORDS</string>
+    <string name="backup_saved_cloud">SAFE IN A CLOUD DRIVE</string>
+    <string name="backup_done">Done</string>
+    <string name="backup_file_name">levitx-backup-%1$s.lvx</string>
+    <string name="restore_title">Restore</string>
+    <string name="restore_label">REPLACES EVERYTHING ON THIS PHONE</string>
+    <string name="restore_choose_title">Restore a backup.</string>
+    <string name="restore_choose">Choose the file</string>
+    <string name="restore_file_label">BACKUP CHOSEN</string>
+    <string name="restore_words_title">Your six words.</string>
+    <string name="restore_words_count">%1$d / %2$d</string>
+    <string name="restore_go">Restore</string>
+    <string name="restore_confirm_title">Replace everything on this phone?</string>
+    <string name="restore_confirm_body">Workouts, plan and weigh-ins here are replaced by the backup\'s. This can\'t be undone.</string>
+    <string name="restore_keep">Keep it</string>
+    <string name="restore_replace">Replace</string>
+    <string name="restore_working">UNLOCKING</string>
+    <string name="restore_done_label">RESTORED</string>
+    <string name="restore_done_title">Everything\'s back.</string>
+    <string name="restore_done">Done</string>
+    <string name="restore_issue_words">THESE WORDS DON\'T OPEN IT</string>
+    <string name="restore_issue_not_backup">NOT A LEVITX BACKUP</string>
+    <string name="restore_issue_newer">MADE BY A NEWER LEVITX. UPDATE FIRST.</string>
+    <string name="restore_issue_unusable">THIS BACKUP CAN\'T BE USED</string>
+    <string name="restore_issue_large">TOO LARGE TO BE A BACKUP</string>
+    <string name="restore_issue_workout">FINISH THE WORKOUT IN PROGRESS FIRST</string>
+    <string name="restore_issue_read">COULDN\'T READ THE FILE</string>
+    <string name="welcome_restore">Restore a backup</string>
 </resources>

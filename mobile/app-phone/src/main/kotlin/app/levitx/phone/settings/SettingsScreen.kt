@@ -67,6 +67,8 @@ private const val EXPORT_FILE_NAME = "levitx-export.zip"
  * @property onExport Writes the export to the chosen file's uri.
  * @property onDeleteEverything Deletes everything, once confirmed.
  * @property onSendFeedback Opens an email draft to support. False when the phone has no email app.
+ * @property onOpenBackup Opens the backup screen.
+ * @property onOpenRestore Opens the restore screen.
  */
 data class SettingsActions(
     val onLeadIn: (Int) -> Unit,
@@ -77,6 +79,8 @@ data class SettingsActions(
     val onExport: (String) -> Unit,
     val onDeleteEverything: () -> Unit,
     val onSendFeedback: () -> Boolean,
+    val onOpenBackup: () -> Unit = {},
+    val onOpenRestore: () -> Unit = {},
 )
 
 /**
@@ -88,6 +92,8 @@ fun SettingsRoute(
     onBack: () -> Unit,
     onOpenCredits: () -> Unit,
     onDeleted: () -> Unit,
+    onOpenBackup: () -> Unit,
+    onOpenRestore: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -111,6 +117,8 @@ fun SettingsRoute(
             onExport = viewModel::export,
             onDeleteEverything = viewModel::deleteEverything,
             onSendFeedback = { sendFeedback(context) },
+            onOpenBackup = onOpenBackup,
+            onOpenRestore = onOpenRestore,
         ),
         onBack = onBack,
         onOpenCredits = onOpenCredits,
@@ -151,6 +159,7 @@ fun SettingsScreen(
                 Sounds(uiState, notificationsOn, actions)
                 YourData(
                     task = uiState.task,
+                    actions = actions,
                     onExport = { saveExport.launch(EXPORT_FILE_NAME) },
                     onDelete = { confirming = true },
                 )
@@ -238,9 +247,9 @@ private fun openNotificationSettings(context: Context) {
     }
 }
 
-/** Where the data lives, the export, and deleting everything. */
+/** Where the data lives, backing up and restoring, the export, and deleting everything. */
 @Composable
-private fun YourData(task: DataTask, onExport: () -> Unit, onDelete: () -> Unit) {
+private fun YourData(task: DataTask, actions: SettingsActions, onExport: () -> Unit, onDelete: () -> Unit) {
     Group(stringResource(R.string.settings_data))
     Text(
         text = stringResource(R.string.settings_data_note),
@@ -248,6 +257,18 @@ private fun YourData(task: DataTask, onExport: () -> Unit, onDelete: () -> Unit)
         lineHeight = 20.sp,
         color = LevitxColors.TextSoft,
         modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 12.dp, bottom = 12.dp),
+    )
+    DataButton(
+        stringResource(R.string.settings_backup),
+        stringResource(R.string.settings_backup_kind),
+        true,
+        actions.onOpenBackup,
+    )
+    DataButton(
+        stringResource(R.string.settings_restore),
+        stringResource(R.string.settings_restore_kind),
+        true,
+        actions.onOpenRestore,
     )
     DataButton(
         stringResource(R.string.settings_export),

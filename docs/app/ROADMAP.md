@@ -84,7 +84,7 @@ Reading bodyweight from Health Connect moves here from Phase 4, because the coac
 - Bodyweight log feeding load per rep.
 - Strength trends: kg per rep and estimated max over time.
 - Health Connect: read bodyweight, write workouts. Only the permissions actually used.
-- Password-protected export and import.
+- Password-protected export and import. Done as an encrypted backup file with six recovery words (ADR 0009).
 
 ## Phase 5: Pain-aware training
 

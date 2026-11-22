@@ -113,6 +113,35 @@ fun PhotoCreditsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 }
                 Rule(Modifier.padding(horizontal = ScreenPadding))
             }
+            WordListCredit { uriHandler.openUri(EFF_WORD_LIST_URL) }
         }
     }
+}
+
+/** Where the backup words come from: the EFF's list, which its licence asks us to credit. */
+private const val EFF_WORD_LIST_URL = "https://www.eff.org/dice"
+
+/** The EFF Large Wordlist, which the backup words are drawn from (CC BY 3.0 US). */
+@Composable
+private fun WordListCredit(onOpen: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp)
+            .clickable(role = Role.Button, onClick = onOpen)
+            .padding(horizontal = ScreenPadding, vertical = 10.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.credits_word_list),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = LevitxColors.Text,
+            )
+            Caption(stringResource(R.string.credits_word_list_use), color = LevitxColors.TextFaint)
+        }
+        Icon(painterResource(R.drawable.ic_chevron_forward), contentDescription = null, tint = LevitxColors.TextFaint)
+    }
+    Rule(Modifier.padding(horizontal = ScreenPadding))
 }

@@ -54,9 +54,8 @@ class BackupDocumentTest {
     }
 
     @Test
-    fun anEmptyPhoneBacksUpToo() {
-        val empty = BackupDocument(BACKUP_DOCUMENT_VERSION, now, coach = null)
-        assertEquals(empty, empty.checked(now))
+    fun aBackupWithNoPlanIsRefused() {
+        assertEquals(BackupProblem.UNREADABLE_CONTENTS, problemOf(BackupDocument(BACKUP_DOCUMENT_VERSION, now, coach = null)))
     }
 
     @Test

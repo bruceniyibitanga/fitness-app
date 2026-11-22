@@ -40,7 +40,7 @@ private const val CLOCK_SLACK_MILLIS = 24L * 60 * 60 * 1000
  *
  * @property v Format, [BACKUP_DOCUMENT_VERSION].
  * @property madeAt When the backup was made, in UTC milliseconds.
- * @property coach The coach's stored document, as stored, or null before setup.
+ * @property coach The coach's stored document, as stored. Null only in a backup that is refused.
  */
 @Serializable
 internal data class BackupDocument(
@@ -105,8 +105,10 @@ internal data class BackedUpSet(
 internal fun BackupDocument.checked(nowEpochMillis: Long): BackupDocument {
     if (v > BACKUP_DOCUMENT_VERSION) fail(BackupProblem.NEWER_VERSION)
     val time = 0L..nowEpochMillis + CLOCK_SLACK_MILLIS
+    // A backup is only made after setup, so one with no plan is not one of ours.
     val valid = v >= 1 &&
         madeAt in time &&
+        coach != null &&
         coachReads() &&
         (goal == null || (goal.pathId.isId() && goal.chosenAt in time)) &&
         weighInsAreValid(time) &&

@@ -43,7 +43,11 @@ The database key is 256 random bits made on the device the first time the app ru
 
 - **Nothing is backed up or transferred automatically.** Both apps set `allowBackup="false"` and ship data extraction rules that exclude everything from cloud backup and from device-to-device transfer. From Android 12, `allowBackup` alone doesn't stop device transfer, so the rules are needed too.
 - **Why.** The database can only be decrypted with a Keystore key, and Keystore keys never leave the device. A backup would be unreadable on a new phone, and keeping one would only add another copy of health data to worry about. [Android's guidance](https://developer.android.com/privacy-and-security/risks/backup-best-practices) is to keep sensitive data out of backups.
-- **Moving to a new phone** works through a password-protected export the person makes themselves (Phase 4). See [ADR 0002](adr/0002-local-first-encrypted-storage.md).
+- **Moving to a new phone** works through a backup file the person makes themselves in Settings > Your data. See [ADR 0009](adr/0009-encrypted-backup-and-restore.md).
+  - Levitx makes six random words from the EFF's 7,776-word list (about 77 bits). The person writes them down and types two back before the file is saved. We never hold them, so lost words mean a lost backup.
+  - The key comes from the words through PBKDF2-HMAC-SHA256 with 600,000 rounds and a fresh salt. The contents are sealed with AES-256-GCM, with the header authenticated too, so a changed file or changed settings won't open.
+  - A file to restore is size-capped before it is read, and every value inside is checked against fixed limits before anything is written. Restore replaces everything in one transaction and is refused during a workout.
+  - The words are never logged, saved or sent. The backup screens are kept out of screenshots and the recent apps view.
 
 ## Phone and watch traffic
 

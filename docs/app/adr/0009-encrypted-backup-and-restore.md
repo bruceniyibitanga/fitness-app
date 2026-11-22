@@ -1,6 +1,6 @@
 # 0009: A backup file the person encrypts with words only they hold
 
-**Status:** Proposed, November 2026. Three choices below need the maintainer's yes before any code is written.
+**Status:** Accepted, November 2026. The maintainer chose 1a, 2a and 3a. What was built, and where it differs from the proposal, is at the end.
 
 ## Context
 
@@ -12,7 +12,7 @@ The export we have is a zip of JSON and CSV for reading in a spreadsheet. It is 
 
 **What we are defending against.** A backup file ends up in Drive, in an email to yourself, on a USB stick. Anyone who gets the file can guess at it on their own hardware, as fast as they like, forever. The app can't slow them down or lock them out. So the file is exactly as strong as the secret that encrypts it, and that is the choice that matters most here.
 
-## Decision (proposed)
+## Decision
 
 **One file, made and read only by Levitx.** Settings > Your data gets "Back up" and "Restore". The plain export stays as it is, for people who want to read their data.
 
@@ -64,3 +64,14 @@ Merging two coach histories has no obviously right answer (which target wins, wh
 - If (1a): a bundled word list (about 60 KB). Its licence is checked and credited before it ships.
 - Work: the file format and checks in `:data` (plain Kotlin, tested without a phone), two screens designed on the canvas first, and "Have a backup?" on the first setup screen.
 - Tests: published test vectors for the key function, round trips, a wrong secret, a flipped bit in every part of the file, cut-short and oversized files, unknown versions, changed header settings, out-of-range and oversized values inside a file that opens, and a restore cancelled part way.
+
+## As built
+
+- **Words.** Six from the [EFF Large Wordlist](https://www.eff.org/dice) (7,776 words, CC BY 3.0 US, credited on the Credits screen). The list ships in `:data` and is checked when it loads: exactly 7,776 words, no repeats, only lowercase letters and hyphens. Words are picked with `SecureRandom`. They live in the screen's memory only and are cleared when it closes.
+- **Key.** PBKDF2WithHmacSHA256, 600,000 rounds, a 16-byte salt, a 256-bit key. The rounds are in the header, which is authenticated, so a later version can raise them and still open old files.
+- **File.** `LVXB`, format 1, then the key settings, salt and 12-byte nonce, then the gzipped JSON sealed with AES-256-GCM. The header is the GCM associated data. The file is capped at 32 MiB and the unpacked contents at 64 MiB.
+- **What is in it.** The plan and the coach's stored state, the goal, weigh-ins, bands, gate bests, and every workout with its sets. Settings (count-in, sounds, buzzes) are not included: they are not personal and take seconds to set again. A backup needs a plan, so one made before setup can't exist and a file without one is refused.
+- **Restore.** Replaces everything in one transaction, after a confirm sheet. It is refused while a workout is in progress, checked again inside the transaction. Wrong words and a damaged file give the same message.
+- **Screens.** Settings > Your data has Back up and Restore, and the first setup screen has "Restore a backup". Both backup screens set `FLAG_SECURE`.
+- **Not built yet.** Settings doesn't show when the last backup was made. It needs a stored date, which can come with the next settings change.
+- **Code.** `mobile/data/src/main/kotlin/app/levitx/data/backup/` and `mobile/app-phone/src/main/kotlin/app/levitx/phone/backup/`.

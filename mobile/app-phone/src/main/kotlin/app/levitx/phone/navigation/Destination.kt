@@ -120,4 +120,15 @@ sealed interface Destination : NavKey {
     /** Who took the photos in the app. */
     @Serializable
     data object PhotoCredits : Destination
+
+    /**
+     * Backing up to an encrypted file. The key carries nothing: the words
+     * live only in the screen's ViewModel, never in saved state.
+     */
+    @Serializable
+    data object Backup : Destination
+
+    /** Restoring from a backup, from Settings or from the first setup screen. */
+    @Serializable
+    data object Restore : Destination
 }

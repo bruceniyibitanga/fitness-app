@@ -30,7 +30,7 @@ public object RecoveryWords {
             reader.readLines().filter { it.isNotBlank() }
         }
         check(words.size == LIST_SIZE && words.toSet().size == LIST_SIZE) { "word list has the wrong number of words" }
-        check(words.all { word -> word.all { it in 'a'..'z' || it == '-' } }) { "word list has unexpected characters" }
+        check(words.all { word -> word.isNotEmpty() && word.all { it in 'a'..'z' || it == '-' } }) { "word list has unexpected characters" }
         words
     }
 
