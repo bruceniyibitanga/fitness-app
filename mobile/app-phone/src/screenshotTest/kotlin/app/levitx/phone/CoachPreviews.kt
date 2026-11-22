@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import app.levitx.core.coach.MovementPattern
+import app.levitx.core.history.Noticed
 import app.levitx.core.history.PatternSets
 import app.levitx.core.history.WeekNote
 import app.levitx.core.history.WeekReview
@@ -52,7 +53,7 @@ fun FirstWeighInScreenshot() {
 }
 
 @PreviewTest
-@Preview(name = "43 Week review", widthDp = 390, heightDp = 1000)
+@Preview(name = "43 Week review", widthDp = 390, heightDp = 1080)
 @Composable
 fun WeekReviewScreenshot() {
     val review = WeekReview(
@@ -72,6 +73,7 @@ fun WeekReviewScreenshot() {
             WeekNote.ShortOf(MovementPattern.SQUAT, 2),
             WeekNote.LighterWeekDue(3),
         ),
+        noticed = Noticed.FeltEasy("horizontal_push.push_up"),
     )
     LevitxTheme {
         WeekReviewScreen(

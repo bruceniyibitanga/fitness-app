@@ -92,6 +92,7 @@ fun WeekReviewScreen(uiState: WeekReviewUiState, onClose: () -> Unit, modifier: 
 
                 is WeekReviewUiState.Ready -> {
                     Sessions(uiState.review)
+                    CoachNoticed(uiState.review.noticed)
                     Highlights(uiState.review)
                     HardSets(uiState.review.hardSets)
                     Notes(uiState.review)

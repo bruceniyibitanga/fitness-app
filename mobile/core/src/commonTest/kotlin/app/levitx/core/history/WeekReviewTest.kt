@@ -1,15 +1,23 @@
 package app.levitx.core.history
 
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachTuning
+import app.levitx.core.coach.Effort
+import app.levitx.core.coach.ExerciseMark
+import app.levitx.core.coach.ExerciseState
 import app.levitx.core.coach.SessionResult
 import app.levitx.core.coach.TrainingBlock
 import app.levitx.core.coach.done
 import app.levitx.core.coach.newcomer
+import app.levitx.core.pain.PainAdvice
+import app.levitx.core.pain.PainAssessment
+import app.levitx.core.pain.PainReason
 import app.levitx.core.session.LoggedSet
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class WeekReviewTest {
@@ -103,5 +111,71 @@ class WeekReviewTest {
             WeekReviews.isDue(trained.withWeekReviewed(weekStart + day), weekStart, weekEnd),
             "seen a week earlier",
         )
+    }
+
+    private fun mark(dayNumber: Int, effort: Effort?, hit: Boolean) = ExerciseMark(dayNumber * day, 10, effort, hit)
+
+    private fun withMarks(vararg byExercise: Pair<String, List<ExerciseMark>>) = newcomer().copy(
+        exercises = byExercise.associate { (id, marks) ->
+            id to
+                ExerciseState(target = 10, timesTrained = 3, marks = marks)
+        },
+    )
+
+    @Test
+    fun nothingTrainedMeansNothingNoticed() {
+        assertNull(WeekReviews.noticed(newcomer(), weekStart, weekEnd))
+    }
+
+    @Test
+    fun anExerciseThatFeltEasyTwiceRunningIsNoticed() {
+        val model = withMarks(
+            "horizontal_push.push_up" to listOf(mark(15, Effort.EASY, true), mark(17, Effort.EASY, true)),
+            "squat.bodyweight" to listOf(mark(15, Effort.RIGHT, true)),
+        )
+        assertEquals(Noticed.FeltEasy("horizontal_push.push_up"), WeekReviews.noticed(model, weekStart, weekEnd))
+    }
+
+    @Test
+    fun easyOnlyCountsWhenTheTargetWasHit() {
+        val model =
+            withMarks("horizontal_push.push_up" to listOf(mark(15, Effort.EASY, true), mark(17, Effort.EASY, false)))
+        assertEquals(Noticed.HitTargets(hit = 0, trained = 1), WeekReviews.noticed(model, weekStart, weekEnd))
+    }
+
+    @Test
+    fun marksFromOtherWeeksDontCount() {
+        val model = withMarks(
+            "horizontal_push.push_up" to listOf(mark(10, Effort.EASY, true), mark(15, Effort.EASY, true)),
+            "squat.bodyweight" to listOf(mark(22, Effort.RIGHT, false)),
+        )
+        assertEquals(Noticed.HitTargets(hit = 1, trained = 1), WeekReviews.noticed(model, weekStart, weekEnd))
+    }
+
+    @Test
+    fun takingTheEasierDayComesBeforeHowTheExercisesWent() {
+        val model = withMarks(
+            "horizontal_push.push_up" to listOf(mark(15, Effort.EASY, true), mark(17, Effort.EASY, true)),
+        )
+            .copy(lastEasedAtEpochMillis = 16 * day)
+        assertEquals(Noticed.TookEasierDay, WeekReviews.noticed(model, weekStart, weekEnd))
+        assertEquals(
+            Noticed.FeltEasy("horizontal_push.push_up"),
+            WeekReviews.noticed(model.copy(lastEasedAtEpochMillis = 3 * day), weekStart, weekEnd),
+        )
+    }
+
+    @Test
+    fun aSoreAreaComesFirst() {
+        val model = newcomer().copy(lastEasedAtEpochMillis = 16 * day)
+            .withPain(BodyArea.KNEE, PainAssessment(PainAdvice.EASE_OFF, PainReason.TOO_HIGH_DURING_EXERCISE))
+            .withPain(BodyArea.ELBOW, PainAssessment(PainAdvice.SEE_PROFESSIONAL, PainReason.RED_FLAG))
+        assertEquals(Noticed.WorkingAround(BodyArea.ELBOW), WeekReviews.noticed(model, weekStart, weekEnd))
+    }
+
+    @Test
+    fun theReviewCarriesWhatWasNoticed() {
+        val model = withMarks("horizontal_push.push_up" to listOf(mark(15, Effort.RIGHT, true)))
+        assertEquals(Noticed.HitTargets(1, 1), WeekReviews.of(model, emptyList(), weekStart, weekEnd).noticed)
     }
 }

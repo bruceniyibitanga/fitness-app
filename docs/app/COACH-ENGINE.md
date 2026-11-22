@@ -233,6 +233,8 @@ Examples:
 
 The engine returns the reason as data, and one place (`CoachPhrases`) turns it into English. So the sentence is always what the engine actually did, phone and watch say the same thing, and the wording can change or be translated without touching the logic.
 
+The week review adds one line on top: what the coach noticed over the week and what it did. It picks the first that applies: an area it is working around, an easier day the person took (targets held), an exercise that hit its target at Easy twice running (its target went up faster), or how many exercises hit every target. Each is a fact from the model (`WeekReviews.noticed`), never a guess about how the person feels.
+
 ## 8. Testing
 
 - **Unit tests** for every hard rule, every scoring term, progression, blocks, readiness, the bodyweight trend and the wording.
