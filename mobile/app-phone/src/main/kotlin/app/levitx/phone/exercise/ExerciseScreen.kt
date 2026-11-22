@@ -76,26 +76,34 @@ private val TitleOverlap = (-18).dp
  *
  * @param exerciseId The exercise's id from the back stack.
  * @param onBack Leaves the screen.
+ * @param onOpenExercise Opens another exercise's page, from the swap list.
  */
 @Composable
 fun ExerciseRoute(
     exerciseId: String,
     onBack: () -> Unit,
+    onOpenExercise: (String) -> Unit,
     viewModel: ExerciseViewModel = hiltViewModel<ExerciseViewModel, ExerciseViewModel.Factory>(
         creationCallback = { factory -> factory.create(exerciseId) },
     ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ExerciseScreen(uiState, onBack)
+    ExerciseScreen(uiState, onBack, onOpenExercise = onOpenExercise, onTrainInstead = viewModel::trainInstead)
 }
 
 /**
  * One exercise, laid out as the "Exercise detail" artboard: its photo and
  * name, the person's numbers on it, how to do it, and where it sits on its
- * ladder.
+ * ladder, and swapping it at the same level.
  */
 @Composable
-fun ExerciseScreen(uiState: ExerciseUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun ExerciseScreen(
+    uiState: ExerciseUiState,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenExercise: (String) -> Unit = {},
+    onTrainInstead: () -> Unit = {},
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -112,7 +120,7 @@ fun ExerciseScreen(uiState: ExerciseUiState, onBack: () -> Unit, modifier: Modif
 
             is ExerciseUiState.Ready -> {
                 PhotoHeader(patternPhoto(uiState.exercise.pattern), onBack, height = ExercisePhotoHeight)
-                Exercise(uiState)
+                Exercise(uiState) { Swap(uiState, onOpenExercise, onTrainInstead) }
             }
         }
     }
@@ -126,7 +134,7 @@ private fun Message(text: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun Exercise(state: ExerciseUiState.Ready) {
+private fun Exercise(state: ExerciseUiState.Ready, swap: @Composable () -> Unit) {
     val exercise = state.exercise
     Column(modifier = Modifier.offset(y = TitleOverlap).padding(horizontal = ScreenPadding)) {
         Text(
@@ -156,6 +164,8 @@ private fun Exercise(state: ExerciseUiState.Ready) {
         Rule()
         guide.note?.let { Note(it) }
     }
+    // Swapping sits above the ladder, so it's seen without scrolling past every rung.
+    swap()
     val ladder = state.ladder
     if (ladder == null) Note(stringResource(R.string.exercise_skill)) else Ladder(ladder)
 }

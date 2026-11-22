@@ -14,9 +14,11 @@ import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
+import app.levitx.core.coach.ExerciseCatalogue
 import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.ExercisePlan
 import app.levitx.core.coach.Intensity
+import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.PlannedSession
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
@@ -444,6 +446,33 @@ fun WorkoutDetailScreenshot() {
 fun ExerciseScreenshot() {
     LevitxTheme {
         ExerciseScreen(uiState = exerciseState(muscleUp(), "horizontal_push.push_up", nowEpochMillis = 0), onBack = {})
+    }
+}
+
+/** Someone on the split squat rung, where a reverse lunge is the other option. */
+private val onSplitSquats = muscleUp().copy(
+    rungs = mapOf(
+        MovementPattern.SQUAT to ExerciseCatalogue.ladder(MovementPattern.SQUAT).rungs.indexOfFirst { rung ->
+            rung.options.any { it.id == "squat.split" }
+        },
+    ),
+)
+
+@PreviewTest
+@Preview(name = "53 Exercise, swap at the same level", widthDp = 390, heightDp = 1200)
+@Composable
+fun ExerciseSwapScreenshot() {
+    LevitxTheme {
+        ExerciseScreen(uiState = exerciseState(onSplitSquats, "squat.split", nowEpochMillis = 0), onBack = {})
+    }
+}
+
+@PreviewTest
+@Preview(name = "54 Exercise, train this instead", widthDp = 390, heightDp = 1100)
+@Composable
+fun ExerciseTrainInsteadScreenshot() {
+    LevitxTheme {
+        ExerciseScreen(uiState = exerciseState(onSplitSquats, "squat.reverse_lunge", nowEpochMillis = 0), onBack = {})
     }
 }
 

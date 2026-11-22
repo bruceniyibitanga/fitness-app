@@ -6,9 +6,11 @@ import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.CoachTuning
+import app.levitx.core.coach.ExerciseLookup
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.QuickTest
 import app.levitx.core.coach.SessionResult
+import app.levitx.core.coach.withPreferred
 import app.levitx.core.history.Forgetting
 import app.levitx.core.pain.PainAssessment
 import app.levitx.data.DefaultDispatcher
@@ -115,6 +117,10 @@ internal class RoomCoachRepository @Inject constructor(
 
     override suspend fun recordPain(area: BodyArea, assessment: PainAssessment) = update {
         it.withPain(area, assessment)
+    }
+
+    override suspend fun prefer(exerciseId: String) = update { model ->
+        ExerciseLookup.byId(exerciseId)?.let(model::withPreferred) ?: model
     }
 
     override suspend fun markShown(prompt: CoachPrompt, atEpochMillis: Long) =

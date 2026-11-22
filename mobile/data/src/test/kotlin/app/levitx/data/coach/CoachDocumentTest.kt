@@ -7,6 +7,7 @@ import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Effort
 import app.levitx.core.coach.Equipment
 import app.levitx.core.coach.ExerciseResult
+import app.levitx.core.coach.MovementPattern
 import app.levitx.core.coach.PlanStyle
 import app.levitx.core.coach.PullUpAnswer
 import app.levitx.core.coach.SessionResult
@@ -55,6 +56,7 @@ class CoachDocumentTest {
             .withWeightNoticeShown()
             .copy(
                 skips = mapOf("squat.bodyweight" to 1),
+                preferred = mapOf(MovementPattern.SQUAT to "squat.reverse_lunge"),
                 lastEasedAtEpochMillis = at(3),
                 weighInAskedAtEpochMillis = at(2),
             )
@@ -70,6 +72,19 @@ class CoachDocumentTest {
         val document = roundTrip(model)
         assertEquals(model, document.toModel())
         assertEquals(days, document.days())
+    }
+
+    @Test
+    fun aDocumentFromBeforeSwapsReadsAsNoChoicesMade() {
+        val json = CoachCodec.encode(coachDocumentOf(trained(), days)).replace(Regex(""","preferred":\{[^}]*\}"""), "")
+        assertEquals(emptyMap<MovementPattern, String>(), CoachCodec.decodeCoach(json).toModel().preferred)
+    }
+
+    @Test
+    fun aChoiceForAMovementThatNoLongerExistsIsDropped() {
+        val json = CoachCodec.encode(coachDocumentOf(trained(), days))
+            .replace(""""preferred":{"SQUAT"""", """"preferred":{"TELEPORT"""")
+        assertEquals(emptyMap<MovementPattern, String>(), CoachCodec.decodeCoach(json).toModel().preferred)
     }
 
     @Test

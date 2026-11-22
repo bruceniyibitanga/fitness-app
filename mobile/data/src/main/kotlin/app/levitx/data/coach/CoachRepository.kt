@@ -79,6 +79,13 @@ interface CoachRepository {
     suspend fun recordPain(area: BodyArea, assessment: PainAssessment)
 
     /**
+     * The person chose to train the exercise with [exerciseId] for its
+     * movement (see `AthleteModel.withPreferred`). Nothing changes for an id
+     * that isn't an exercise, or isn't an option at the rung they train at.
+     */
+    suspend fun prefer(exerciseId: String)
+
+    /**
      * Records that [prompt] was shown at [atEpochMillis], so it isn't shown
      * again until its own rule says so.
      *

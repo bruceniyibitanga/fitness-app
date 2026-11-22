@@ -48,6 +48,8 @@ internal data class CoachDocument(
     val block: StoredBlock = StoredBlock(),
     val suggestionOutcomes: List<StoredOutcome> = emptyList(),
     val skips: Map<String, Int> = emptyMap(),
+    // Added with exercise swaps. Older documents read as no choices made.
+    val preferred: Map<String, String> = emptyMap(),
     val weightNoticeShown: Boolean = false,
     val lastEasedAt: Long? = null,
     val weighInAskedAt: Long? = null,
@@ -155,6 +157,7 @@ internal fun coachDocumentOf(model: AthleteModel, trainingDays: Set<DayOfWeek>):
     block = model.block.let { StoredBlock(it.index, it.sessionsDone, it.lighterSessionsLeft) },
     suggestionOutcomes = model.suggestionOutcomes.map { StoredOutcome(it.choice.name, it.wentWell) },
     skips = model.skips,
+    preferred = model.preferred.mapKeys { it.key.name },
     weightNoticeShown = model.weightNoticeShown,
     lastEasedAt = model.lastEasedAtEpochMillis,
     weighInAskedAt = model.weighInAskedAtEpochMillis,
@@ -207,6 +210,7 @@ internal fun CoachDocument.toModel(): AthleteModel = AthleteModel(
         outcome.choice.toEnumOrNull<SuggestionChoice>()?.let { SuggestionOutcome(it, outcome.wentWell) }
     },
     skips = skips,
+    preferred = preferred.withEnumKeys<MovementPattern, String>(),
     weightNoticeShown = weightNoticeShown,
     lastEasedAtEpochMillis = lastEasedAt,
     weighInAskedAtEpochMillis = weighInAskedAt,

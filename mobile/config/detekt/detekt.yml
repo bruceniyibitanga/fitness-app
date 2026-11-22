@@ -21,7 +21,10 @@ complexity:
     ignoreAnnotated: ['Composable']
   TooManyFunctions:
     # A screenshot file is a catalogue of screens, one function each, so the
-    # count says nothing about its design. The rest are detekt's defaults.
+    # count says nothing about its design. A class can't have fewer functions
+    # than the interface it implements, so overrides aren't counted: the
+    # interface's own count is still checked. The rest are detekt's defaults.
+    ignoreOverridden: true
     excludes:
       - '**/test/**'
       - '**/androidTest/**'

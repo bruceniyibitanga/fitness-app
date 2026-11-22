@@ -69,8 +69,10 @@ internal class CoachContext(val model: AthleteModel, val nowEpochMillis: Long) {
 /**
  * The ladder exercise this person trains for [pattern] in block [blockIndex].
  *
- * Goal patterns always use the first option on the rung, because skills need
- * repetition. Other patterns rotate through the rung's options block by block.
+ * An exercise the person chose ([AthleteModel.preferred]) wins while it is
+ * an option on the rung they train at, with their kit. Otherwise goal
+ * patterns use the first option on the rung, because skills need repetition,
+ * and other patterns rotate through the rung's options block by block.
  * Planning and progression both pick through here, so they can't disagree.
  */
 internal fun AthleteModel.exerciseFor(
@@ -79,10 +81,37 @@ internal fun AthleteModel.exerciseFor(
     blockIndex: Int = block.index,
 ): Exercise? {
     val ladder = ExerciseCatalogue.ladder(pattern)
+    val rung = ladder.usableRungAtOrBelow(rung(pattern), profile.equipment) ?: return null
+    val chosen = preferred[pattern]?.let { id -> ladder.optionsAt(rung, profile.equipment).firstOrNull { it.id == id } }
     val variant = if (pattern in goalPatterns) 0 else blockIndex
-    return ladder.usableRungAtOrBelow(rung(pattern), profile.equipment)
-        ?.let { ladder.exerciseAt(it, profile.equipment, variant) }
+    return chosen ?: ladder.exerciseAt(rung, profile.equipment, variant)
 }
+
+/**
+ * The exercises this person could train for [pattern] at the rung they're
+ * on, with their kit, the one they train now included. One or none means
+ * there's nothing to swap to.
+ */
+public fun AthleteModel.swapOptions(pattern: MovementPattern): List<Exercise> {
+    if (!pattern.isStrength) return emptyList()
+    val ladder = ExerciseCatalogue.ladder(pattern)
+    return ladder.usableRungAtOrBelow(rung(pattern), profile.equipment)
+        ?.let { ladder.optionsAt(it, profile.equipment) }
+        .orEmpty()
+}
+
+/**
+ * The person chose to train [exercise] for its movement. It stays their
+ * pick while it is an option on the rung they train at; moving up a rung
+ * lets the coach choose again. Unchanged when [exercise] isn't one of
+ * [swapOptions], for example because the rung moved since it was offered.
+ */
+public fun AthleteModel.withPreferred(exercise: Exercise): AthleteModel =
+    if (swapOptions(exercise.pattern).any { it.id == exercise.id }) {
+        copy(preferred = preferred + (exercise.pattern to exercise.id))
+    } else {
+        this
+    }
 
 /**
  * The ladder exercise this person trains for [pattern] right now, or null

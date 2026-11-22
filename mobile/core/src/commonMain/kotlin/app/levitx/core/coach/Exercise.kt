@@ -141,6 +141,10 @@ public data class Ladder(val pattern: MovementPattern, val rungs: List<Rung>) {
         return usable.getOrNull(variant.mod(usable.size.coerceAtLeast(1)))
     }
 
+    /** The exercises at [rung] the person can do with the kit they [owned], in the rung's order. */
+    public fun optionsAt(rung: Int, owned: Set<Equipment>): List<Exercise> =
+        rungs.getOrNull(rung)?.let { usableAt(rung, owned) }.orEmpty()
+
     private fun usableAt(rung: Int, owned: Set<Equipment>): List<Exercise> = rungs[rung].options.filter {
         it.fits(owned)
     }

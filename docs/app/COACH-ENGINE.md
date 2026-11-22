@@ -40,6 +40,7 @@ The coach keeps a small model of each person, updated after every session. It is
 - **Bodyweight readings** (section 6).
 - **The block** they're in and how far through it.
 - **What they skip,** per exercise. This nudges exercise choice; it never overrides a hard rule.
+- **What they chose,** per movement: an exercise they swapped in at their level (see Variation).
 - **How past suggestions went,** and when they last took an easier day.
 
 The model holds health data (pain and bodyweight), so it stays on the phone.
@@ -145,6 +146,7 @@ Variation is useful when it's planned and harmful when it's random. A systematic
 - **Accessory exercises rotate between blocks,** within a rung of the ladder, so the swap is to something of the same difficulty that trains the same thing (split squats one block, reverse lunges the next).
 - **Sessions vary through the template chosen:** which movements, in what order.
 - **Novelty only breaks ties.** It has the smallest weight of the six terms.
+- **The person can swap.** On the exercise page, an exercise they train lists the others on the same rung that fit their kit. Picking one ("Train this instead") makes it theirs for that movement, ahead of the block's rotation and the goal's usual first pick, until they move up a rung. Then the coach chooses again. Skill gates can't be swapped. A new exercise has no target yet, so its first two sessions find the level as any new exercise does.
 
 ## 5. Readiness and suggestions
 
