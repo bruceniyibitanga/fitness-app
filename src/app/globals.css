@@ -154,6 +154,16 @@ html[data-theme="dark"] {
       animation-range: entry 0% entry 80%;
     }
 
+    /*
+     * An answer that lands a beat after its question: it waits until it's fully on
+     * screen, then rises over the next stretch of scroll.
+     */
+    .reveal-late {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 100% cover 35%;
+    }
+
     /* A photo opens out of its frame as it scrolls in. */
     .mask {
       animation: unmask linear both;

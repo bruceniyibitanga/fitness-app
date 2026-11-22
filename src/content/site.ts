@@ -59,154 +59,95 @@ export const path = {
 };
 
 /**
- * Meet Levi: the coach, shown at work over a few months. The cards copy the app's own screens
- * and wording (CoachPhrases in mobile/core and the phone's strings.xml), and every behaviour is
- * one the coach engine really has (see the coach-engine design doc). Keep them in step: if the
- * app's wording or the engine changes, this changes in the same pull request.
+ * Meet Levi. Written from the visitor's side: each story is a thought people really have a
+ * few weeks into training (drawn from forum threads and app reviews: not knowing your level,
+ * when to make it harder, flat weeks, sore elbows, stale routines, starting over after time
+ * off), answered by what Levi shows in the app at that moment.
+ *
+ * Every reply uses the app's own wording (CoachPhrases in mobile/core, the phone's
+ * strings.xml) and site.test.ts checks it. Every behaviour is one the coach engine has.
  */
-
-/** A line of a session as the Today screen lists it. */
-export type CoachRow = { name: string; dose: string; tag?: string };
-
-/** A small copy of an app screen. Every field is optional because each moment shows a different screen. */
-export type CoachCard = {
-  /** The small capitals label at the top of the screen. */
-  kicker: string;
-  /** The screen's headline, when it has one. */
+export type CoachReply = {
+  /** A screen headline, when the app shows one. */
   title?: string;
-  /** Levi's one-line reason for the session. */
-  reason?: string;
-  /** A target change: before and after. */
-  change?: { exercise: string; from: string; to: string };
-  /** What Levi noticed, on a suggestion card. */
-  noticed?: string[];
-  /** The session, on screens that list it. */
-  rows?: CoachRow[];
-  /** The choices offered, first one highlighted as the app does. */
+  /** Levi's line, word for word from the app. */
+  line?: string;
+  /** Choices the app offers. The first is the one it highlights. */
   choices?: string[];
-  /** Small print under the card. */
-  note?: string;
 };
 
-export type CoachMoment = {
-  /** When in the timeline, such as "Week 3". */
+export type CoachStory = {
+  /** Roughly when this comes up, as a small tag. */
   when: string;
-  /** What happened, in a few words. */
-  what: string;
-  title: string;
-  body: string;
-  card: CoachCard;
+  /** What the person is thinking. Short, in their voice. */
+  thought: string;
+  reply: CoachReply;
+  photo: PhotoKey;
+  /** Where the subject sits in the photo, so the crop keeps them in frame. */
+  position?: string;
+  /** Put the words at the top when the subject sits low in the photo. Bottom by default. */
+  textAt?: "top" | "bottom";
 };
 
 export const coach = {
   id: "coach",
   eyebrow: "Meet Levi",
   title: ["You show up.", "Levi does the rest."],
-  body: "Levi is the coach inside Levitx. Like a good personal trainer, it watches every session and changes the next one before you think to ask, then tells you why in one line.",
+  body: "Levi reads every set you log and plans your next session around it.",
   photo: "adapts" as PhotoKey,
-  timelineLabel: "A few months with Levi",
-  moments: [
+  storiesTitle: "Where most training plans fall apart.",
+  stories: [
     {
       when: "Week 1",
-      what: "Your first sessions",
-      title: "No fitness quiz. It watches.",
-      body: "Your first two sessions end each exercise with one best-effort set. Levi sets your level from what you actually do, not from what you guess.",
-      card: {
-        kicker: "Today · Training",
-        reason: "Still learning your numbers. Targets are on the easy side for now.",
-        rows: [
-          { name: "Dead hang", dose: "3 × 20 s" },
-          { name: "Knee push-up", dose: "3 × 8" },
-          { name: "Bodyweight squat", dose: "3 × 12" },
-        ],
-      },
+      thought: "I don't even know my level.",
+      reply: { line: "Still learning your numbers. Targets are on the easy side for now." },
+      photo: "levelCheck",
+      textAt: "top",
     },
     {
       when: "Week 3",
-      what: "After a strong session",
-      title: "A rep more, when you've earned it.",
-      body: "Hit every set and the target goes up. Top out the range and you move to a harder version. That's progressive overload, done for you every session.",
-      card: {
-        kicker: "Today · Training",
-        change: { exercise: "Knee push-up", from: "3 × 8", to: "3 × 9" },
-        reason: "Knee push-up: target up. You hit every set last time.",
-      },
+      thought: "When do I make it harder?",
+      reply: { line: "Knee push-up: target up. You hit every set last time." },
+      photo: "pushStart",
+      position: "55% 40%",
     },
     {
       when: "Week 4",
-      what: "Recovery running slow",
-      title: "It notices before you do.",
-      body: "Reps dropping two sessions running, sets that keep feeling hard. When the signs add up, Levi offers an easier day. Nothing changes unless you say so.",
-      card: {
-        kicker: "Before you start",
-        title: "You might want an easier day",
-        noticed: ["Australian row: 10 → 8 → 8 over your last sessions.", "Australian row felt hard two sessions running."],
-        choices: ["Keep it", "Go lighter", "Rest today"],
-        note: "Whatever you pick is fine. The coach learns what works for you.",
-      },
+      thought: "Everything feels heavy this week.",
+      reply: { title: "You might want an easier day", choices: ["Keep it", "Go lighter", "Rest today"] },
+      photo: "lighter",
     },
     {
       when: "Week 5",
-      what: "Your elbow's sore",
-      title: "Works around pain. Knows when to stop.",
-      body: "Report a sore elbow and Levi trains around it: legs as normal, pushing kept light. If the warning signs point to more than soreness, it stops loading that area and tells you to get it looked at.",
-      card: {
-        kicker: "Today · Training",
-        reason: "Working around your elbow today.",
-        rows: [
-          { name: "Split squat", dose: "3 × 10" },
-          { name: "Glute bridge", dose: "3 × 15" },
-          { name: "Knee push-up", dose: "2 × 7", tag: "Light" },
-        ],
-      },
+      thought: "My elbow's started complaining.",
+      reply: { line: "Working around your elbow today." },
+      photo: "elbow",
+      position: "50% 30%",
     },
     {
       when: "Week 7",
-      what: "A new block",
-      title: "Fresh, never random.",
-      body: "After every lighter week, the extra exercises change to something just as hard that trains the same muscles. Your goal work stays put, because skills need repetition.",
-      card: {
-        kicker: "Today · Training",
-        change: { exercise: "Split squat", from: "Split squat", to: "Reverse lunge" },
-        reason: "Reverse lunge: new this block. Same muscles, a fresh challenge.",
-      },
+      thought: "Same workout. Again.",
+      reply: { line: "Reverse lunge: new this block. Same muscles, a fresh challenge." },
+      photo: "freshBlock",
+      position: "45% 60%",
     },
     {
       when: "Week 10",
-      what: "Back after a break",
-      title: "Come back. Don't restart.",
-      body: "Missed days don't turn red and the plan doesn't fall apart. The next session simply starts where you are.",
-      card: {
-        kicker: "Comeback day · 16 days away",
-        title: "Welcome back.",
-        reason: "You're not starting over: every exercise picks up where you left it. Today is lighter, and the next session is back to normal.",
-        choices: ["Lighter", "Full session"],
-      },
+      thought: "Two weeks off. Back to day one?",
+      reply: { line: "You're not starting over: every exercise picks up where you left it." },
+      photo: "comeback",
+      position: "50% 35%",
     },
-  ] satisfies CoachMoment[],
-  /** Photos set between the moments, to keep the story breathing. Index is the moment they follow. */
-  breaks: [
-    { after: 1, photo: "lighter" as PhotoKey },
-    { after: 4, photo: "comeback" as PhotoKey },
-  ],
+  ] satisfies CoachStory[],
   builtIn: {
     title: "Built in, so you never have to plan it.",
     items: [
-      {
-        title: "Progressive overload",
-        body: "A rep at a time, then slower lowering, then a harder move. You never have to work out when to step up.",
-      },
-      {
-        title: "Recovery",
-        body: "A rest day between hard sessions for each movement, and a lighter week at the end of every block.",
-      },
-      {
-        title: "Your joints",
-        body: "Weekly limits keep your strength from outrunning your tendons, and pain changes the plan straight away.",
-      },
+      { title: "Progressive overload", body: "A small step up every time you've earned one." },
+      { title: "Recovery", body: "A day between hard sessions. A lighter week every block." },
+      { title: "Your joints", body: "Weekly limits, and pain changes the plan straight away." },
     ],
   },
-  note: "Levi is software, not a person, a doctor or a physio. Its rules come from published training research and are being reviewed by a qualified coach before launch.",
+  note: "Levi is software, not a physio. Its rules come from published training research and are being reviewed by a qualified coach.",
 };
 
 type SkillItem = { name: string; range: string; photo: PhotoKey; guide: GuideSlug };

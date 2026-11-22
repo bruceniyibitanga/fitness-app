@@ -15,7 +15,7 @@ export function llmsText(): string {
     "",
     `## ${coach.eyebrow}`,
     `${coach.title.join(" ")} ${coach.body}`,
-    ...coach.moments.map((m) => `- ${m.what}: ${m.body}`),
+    ...coach.stories.map((s) => `- "${s.thought}" Levi: ${[s.reply.title, s.reply.line].filter(Boolean).join(". ")}`),
     ...coach.builtIn.items.map((i) => `- ${i.title}: ${i.body}`),
     coach.note,
     "",

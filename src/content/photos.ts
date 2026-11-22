@@ -74,6 +74,26 @@ export const photos = {
     alt: "Woman stretching on the floor in soft daylight",
     credit: unsplashCredit("Logan Weaver", "lgnwvr"),
   },
+  levelCheck: {
+    src: unsplash("photo-1758521959675-5874879f3977"),
+    alt: "Man in a beanie gripping an outdoor pull-up bar, looking up at it",
+    credit: unsplashCredit("Vitaly Gariev", "silverkblack"),
+  },
+  pushStart: {
+    src: unsplash("photo-1597347409198-f190c008a3bd"),
+    alt: "Man setting up for a push-up on a park path",
+    credit: unsplashCredit("Lawrence Crayton", "lawrencecrayton"),
+  },
+  freshBlock: {
+    src: unsplash("photo-1791521157197-91d81003fc12"),
+    alt: "Woman in a split squat on a mat in a park",
+    credit: unsplashCredit("Yazid N", "mzynasx"),
+  },
+  elbow: {
+    src: unsplash("photo-1785926262461-8a7cb6a3678a"),
+    alt: "Man stretching his arm across his chest on an outdoor court",
+    credit: unsplashCredit("Alekon pictures", "alekonpictures"),
+  },
   join: {
     src: unsplash("photo-1573858129585-6ca05f716932"),
     alt: "Man kicking up to a handstand beside a concrete wall",

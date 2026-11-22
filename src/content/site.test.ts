@@ -58,11 +58,16 @@ describe("Meet Levi", () => {
   const patterns = [...phrases, ...strings]
     .filter((parts) => parts.join("").trim().length >= 6)
     .map((parts) => new RegExp(`^${parts.map(escape).join(".+?")}$`));
-  const isAppWording = (text: string) => patterns.some((pattern) => pattern.test(text));
+  /** Plain app strings, for replies that quote one whole sentence of a longer message. */
+  const plain = strings.filter((parts) => parts.length === 1).map(([text]) => text);
 
-  it("uses the app's own wording on every card", () => {
-    for (const { card } of coach.moments) {
-      const shown = [card.reason, card.title, card.note, ...(card.noticed ?? []), ...(card.choices ?? [])];
+  const isAppWording = (text: string) =>
+    patterns.some((pattern) => pattern.test(text)) ||
+    (/[.!?]$/.test(text) && plain.some((full) => full.startsWith(text) || full.includes(` ${text}`)));
+
+  it("uses the app's own wording in every reply", () => {
+    for (const { reply } of coach.stories) {
+      const shown = [reply.title, reply.line, ...(reply.choices ?? [])];
       for (const text of shown.filter((t): t is string => Boolean(t))) {
         expect(isAppWording(text), text).toBe(true);
       }
@@ -71,15 +76,17 @@ describe("Meet Levi", () => {
 
   it("catches wording the app doesn't use", () => {
     expect(isAppWording("Knee push-up: target up. You hit every set last time.")).toBe(true);
+    expect(isAppWording("You're not starting over: every exercise picks up where you left it.")).toBe(true);
     expect(isAppWording("Great job! You're crushing it.")).toBe(false);
+    expect(isAppWording("You're not starting over")).toBe(false);
   });
 
-  it("gives every moment a unique key and every photo break a real place", () => {
-    const keys = coach.moments.map((m) => m.when);
+  it("gives every story a reply, a unique key and a short thought", () => {
+    const keys = coach.stories.map((s) => s.when);
     expect(new Set(keys).size).toBe(keys.length);
-    for (const { after } of coach.breaks) {
-      expect(after).toBeGreaterThanOrEqual(0);
-      expect(after).toBeLessThan(coach.moments.length - 1);
+    for (const { thought, reply } of coach.stories) {
+      expect(thought.split(/\s+/).length).toBeLessThanOrEqual(8);
+      expect(reply.title ?? reply.line).toBeTruthy();
     }
   });
 
