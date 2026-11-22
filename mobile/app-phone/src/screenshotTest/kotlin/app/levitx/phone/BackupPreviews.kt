@@ -2,7 +2,6 @@ package app.levitx.phone
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import app.levitx.design.LevitxTheme
 import app.levitx.phone.backup.BackupActions
 import app.levitx.phone.backup.BackupScreen
 import app.levitx.phone.backup.BackupUiState
@@ -10,6 +9,7 @@ import app.levitx.phone.backup.RestoreActions
 import app.levitx.phone.backup.RestoreIssue
 import app.levitx.phone.backup.RestoreScreen
 import app.levitx.phone.backup.RestoreUiState
+import app.levitx.phone.theme.LevitxTheme
 import com.android.tools.screenshot.PreviewTest
 
 /** Sample words, all on the list. Never a real backup's. */

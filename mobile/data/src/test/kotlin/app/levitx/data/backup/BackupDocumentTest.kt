@@ -55,7 +55,10 @@ class BackupDocumentTest {
 
     @Test
     fun aBackupWithNoPlanIsRefused() {
-        assertEquals(BackupProblem.UNREADABLE_CONTENTS, problemOf(BackupDocument(BACKUP_DOCUMENT_VERSION, now, coach = null)))
+        assertEquals(
+            BackupProblem.UNREADABLE_CONTENTS,
+            problemOf(BackupDocument(BACKUP_DOCUMENT_VERSION, now, coach = null)),
+        )
     }
 
     @Test

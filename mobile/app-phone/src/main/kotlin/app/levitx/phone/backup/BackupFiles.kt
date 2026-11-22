@@ -41,18 +41,18 @@ internal class DocumentBackupFiles @Inject constructor(
     private val backups: BackupRepository,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : BackupFiles {
-    override suspend fun write(uri: String, words: List<String>) {
-        val out = withContext(ioDispatcher) {
-            // "wt": write, and cut off anything a file the person chose to replace held before.
-            context.contentResolver.openOutputStream(uri.toUri(), "wt")
-        } ?: throw FileNotFoundException("The chosen file couldn't be opened")
+    // Each stream is opened and closed inside one block, so it can't be left open if the work fails.
+    override suspend fun write(uri: String, words: List<String>): Unit = withContext(ioDispatcher) {
+        // "wt": write, and cut off anything a file the person chose to replace held before.
+        val out = context.contentResolver.openOutputStream(uri.toUri(), "wt")
+            ?: throw FileNotFoundException("The chosen file couldn't be opened")
         out.use { backups.write(it, words) }
     }
 
-    override suspend fun restore(uri: String, words: List<String>): RestoreResult {
-        val input = withContext(ioDispatcher) { context.contentResolver.openInputStream(uri.toUri()) }
+    override suspend fun restore(uri: String, words: List<String>): RestoreResult = withContext(ioDispatcher) {
+        val input = context.contentResolver.openInputStream(uri.toUri())
             ?: throw FileNotFoundException("The chosen file couldn't be opened")
-        return input.use { backups.restore(it, words) }
+        input.use { backups.restore(it, words) }
     }
 }
 
