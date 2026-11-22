@@ -19,7 +19,6 @@ import app.levitx.core.pain.PainAdvice
 import app.levitx.design.LevitxColors
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
-import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.Rule
 import app.levitx.phone.ui.ScreenPadding
@@ -37,8 +36,12 @@ private val RowHeight = 48.dp
 @Composable
 internal fun Pains(sore: Map<BodyArea, PainAdvice>, onOpenPainCheck: () -> Unit) {
     Column(modifier = Modifier.padding(start = ScreenPadding, end = ScreenPadding, top = 22.dp, bottom = 24.dp)) {
-        Caption(stringResource(R.string.body_pain_label), modifier = Modifier.semantics { heading() })
-        Help(stringResource(R.string.body_pain_note), modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
+        Caption(
+            stringResource(R.string.body_pain_label),
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .semantics { heading() },
+        )
         // In body order, whatever order they were reported in.
         BodyArea.entries.filter { it in sore }.forEach { area ->
             Row(

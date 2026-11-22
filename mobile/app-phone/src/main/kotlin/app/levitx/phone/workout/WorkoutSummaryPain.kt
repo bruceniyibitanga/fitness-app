@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -28,7 +30,6 @@ import app.levitx.core.coach.BodyArea
 import app.levitx.design.LevitxColors
 import app.levitx.phone.R
 import app.levitx.phone.ui.Caption
-import app.levitx.phone.ui.Help
 import app.levitx.phone.ui.OutlineBar
 import app.levitx.phone.ui.ScreenPadding
 import app.levitx.phone.ui.areaName
@@ -68,7 +69,7 @@ internal fun PainQuestions(eased: List<BodyArea>, onSettled: (BodyArea) -> Unit,
                 Answer(stringResource(R.string.workout_pain_sore), onClick = { answered = answered + area })
                 Answer(stringResource(R.string.workout_pain_worse), onClick = onOpenPainCheck)
             }
-            Help(stringResource(R.string.workout_pain_note), modifier = Modifier.padding(top = 8.dp, bottom = 18.dp))
+            Spacer(Modifier.height(18.dp))
         }
         OutlineBar(text = stringResource(R.string.workout_pain_open), onClick = onOpenPainCheck)
     }
