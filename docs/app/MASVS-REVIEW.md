@@ -44,6 +44,7 @@ Levitx keeps training and bodyweight data, which is health data, so storage and 
 **MASVS-PLATFORM-1: IPC is secure. Met.**
 - Exported components are only the ones Android needs: the phone's and watch's launcher activities, the Data Layer listeners (which only Google Play services can call, and only with data from our own signed app), and the watch Tile service (bound only by the system). The phone's workout service and the watch's are not exported.
 - All `PendingIntent`s are immutable and explicit.
+- The intents Levitx sends to other apps carry no personal data: Android's notification settings, the system's save dialog for the export, and an email draft for feedback (`Feedback.kt`) that holds the app version, Android version and phone model.
 - Everything that arrives over the Data Layer is size-limited and validated field by field before use, and unreadable payloads are dropped (`SyncCodec.kt`, with tests that send bad input on purpose).
 
 **MASVS-PLATFORM-2: WebViews are secure. Not applicable.** There are none.

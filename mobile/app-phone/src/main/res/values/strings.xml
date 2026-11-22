@@ -578,6 +578,12 @@
     <string name="settings_deleting">Deleting…</string>
     <string name="settings_delete_failed">Couldn\'t delete right now. Nothing was changed. Close Levitx, open it again, and try once more.</string>
     <string name="settings_about">ABOUT</string>
+    <string name="settings_feedback">Send feedback</string>
+    <string name="settings_feedback_note">An email to the person who makes Levitx. It adds your app version and phone model, nothing about your training.</string>
+    <string name="settings_feedback_kind">EMAIL</string>
+    <string name="settings_feedback_subject">Levitx feedback</string>
+    <string name="settings_feedback_footer">Levitx %1$s · Android %2$s · %3$s</string>
+    <string name="settings_feedback_no_app">No email app on this phone. You can write to %1$s from anywhere.</string>
     <string name="settings_credits">Photo credits</string>
     <string name="settings_version">Version</string>
 
