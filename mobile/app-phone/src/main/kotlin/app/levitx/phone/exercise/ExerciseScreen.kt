@@ -120,8 +120,7 @@ fun ExerciseScreen(
 
             is ExerciseUiState.Ready -> {
                 PhotoHeader(patternPhoto(uiState.exercise.pattern), onBack, height = ExercisePhotoHeight)
-                Exercise(uiState)
-                Swap(uiState, onOpenExercise, onTrainInstead)
+                Exercise(uiState) { Swap(uiState, onOpenExercise, onTrainInstead) }
             }
         }
     }
@@ -135,7 +134,7 @@ private fun Message(text: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun Exercise(state: ExerciseUiState.Ready) {
+private fun Exercise(state: ExerciseUiState.Ready, swap: @Composable () -> Unit) {
     val exercise = state.exercise
     Column(modifier = Modifier.offset(y = TitleOverlap).padding(horizontal = ScreenPadding)) {
         Text(
@@ -165,6 +164,8 @@ private fun Exercise(state: ExerciseUiState.Ready) {
         Rule()
         guide.note?.let { Note(it) }
     }
+    // Swapping sits above the ladder, so it's seen without scrolling past every rung.
+    swap()
     val ladder = state.ladder
     if (ladder == null) Note(stringResource(R.string.exercise_skill)) else Ladder(ladder)
 }
