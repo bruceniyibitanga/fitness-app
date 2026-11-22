@@ -14,7 +14,8 @@ The app handles health information: pain ratings, injuries, physio plans and bod
 
 | Data | Class | Where | Protection |
 |---|---|---|---|
-| Pain check-ins, red flags, physio plans | Health | Local database | Encrypted database, key in Android Keystore |
+| Pain check-ins and warning signs | Health | Not stored. Used once to work out the advice for the area, then dropped. While the check is open they are held in memory only (never in saved state) and the screen is marked secure | Nothing to protect at rest. The advice itself is in the row below |
+| Physio plans (not built yet) | Health | Local database | Encrypted database, key in Android Keystore |
 | Bodyweight (a log of readings), progress photos | Health | Local database / app-private files | Encrypted |
 | Bands and the help they give | Personal | Local database | Encrypted |
 | Sets, reps, holds, sessions | Personal | Local database | Encrypted (one database, one policy) |

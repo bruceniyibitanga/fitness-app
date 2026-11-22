@@ -20,7 +20,7 @@ Levitx keeps training and bodyweight data, which is health data, so storage and 
 - Logs carry codes and counts, never values (`SyncReport.kt`, the watch's service logs). There are no other log calls.
 - No clipboard use, no WebViews, no files in shared storage except the export the person saves.
 - **Choice:** the workout notifications are public, so they show on a locked phone or watch. They show the exercise, the set and the clocks, never reps, loads or weight ([ADR 0008](adr/0008-phone-workout-off-screen.md)).
-- **Choice:** screens aren't marked secure, so they show in the recent apps list and can be screenshotted. People share their training on purpose; blocking screenshots would get in their way more than it protects them. Revisit if the app ever shows something more sensitive, like pain notes.
+- **Choice:** training screens aren't marked secure, so they show in the recent apps list and can be screenshotted. People share their training on purpose; blocking screenshots would get in their way more than it protects them. The pain check is the exception: it is where the person enters health details, so it sets `FLAG_SECURE` for as long as it is open (`PainCheckScreen.kt`) and clears it on the way out.
 
 ## Cryptography
 

@@ -88,7 +88,8 @@ Reading bodyweight from Health Connect moves here from Phase 4, because the coac
 
 ## Phase 5: Pain-aware training
 
-- Pain check-ins, the red-flag screen and swap suggestions.
+- Pain check-ins and the red-flag screen. Done: the pain check on the Body tab and at the end of a workout (COACH-ENGINE.md, section 5).
+- Swap suggestions.
 - Physio plan entry by hand.
 - Physio plan from a photo: text read on the device, every field confirmed by the user, photo deleted straight after.
 - A physiotherapist reviews the rules and wording before this ships.

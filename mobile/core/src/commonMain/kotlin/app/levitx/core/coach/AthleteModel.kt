@@ -179,6 +179,19 @@ public data class AthleteModel(
         return copy(pain = if (settled) pain - area else pain + (area to assessment.advice))
     }
 
+    /**
+     * The areas on light work that [result] loaded, in [BodyArea] order: the
+     * ones worth asking about after the session, because the answer can put
+     * them back to normal. Areas taken out of the plan aren't listed, as no
+     * planned session loads them. Skipped exercises load nothing.
+     */
+    public fun easedAreasLoadedBy(result: SessionResult): List<BodyArea> {
+        val loaded = result.results
+            .filter { it.sets.isNotEmpty() }
+            .flatMapTo(mutableSetOf()) { it.plan.exercise.pattern.loads }
+        return BodyArea.entries.filter { it in loaded && pain[it] == PainAdvice.EASE_OFF }
+    }
+
     /** Adds a bodyweight reading, dropping ones too old for the trend. */
     public fun withWeighIn(weighIn: WeighIn): AthleteModel {
         val oldest = weighIn.atEpochMillis - CoachTuning.HISTORY_DAYS * MILLIS_PER_DAY

@@ -39,4 +39,28 @@ class PainGuidanceTest {
         assertFailsWith<IllegalArgumentException> { PainCheckIn(duringExercise = 11) }
         assertFailsWith<IllegalArgumentException> { PainCheckIn(duringExercise = 2, morningAfter = -1) }
     }
+
+    @Test
+    fun zonesFollowTheSameLineAsTheAdvice() {
+        assertEquals(PainZone.LOW, painZone(0))
+        assertEquals(PainZone.LOW, painZone(MAX_LOW_PAIN_DURING_EXERCISE))
+        assertEquals(PainZone.WITHIN_GUIDE, painZone(MAX_LOW_PAIN_DURING_EXERCISE + 1))
+        assertEquals(PainZone.WITHIN_GUIDE, painZone(MAX_ACCEPTABLE_PAIN_DURING_EXERCISE))
+        assertEquals(PainZone.OVER_GUIDE, painZone(MAX_ACCEPTABLE_PAIN_DURING_EXERCISE + 1))
+        assertEquals(PainZone.OVER_GUIDE, painZone(MAX_PAIN_RATING))
+    }
+
+    @Test
+    fun aRatingIsOverTheGuideExactlyWhenTheAdviceIsToEaseOff() {
+        for (rating in MIN_PAIN_RATING..MAX_PAIN_RATING) {
+            val easesOff = assessPain(PainCheckIn(duringExercise = rating)).advice == PainAdvice.EASE_OFF
+            assertEquals(easesOff, painZone(rating) == PainZone.OVER_GUIDE, "rating $rating")
+        }
+    }
+
+    @Test
+    fun aZoneNeedsARatingOnTheScale() {
+        assertFailsWith<IllegalArgumentException> { painZone(-1) }
+        assertFailsWith<IllegalArgumentException> { painZone(11) }
+    }
 }

@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityOptionsCompat
 import app.levitx.core.coach.AthleteModel
+import app.levitx.core.coach.BodyArea
 import app.levitx.core.coach.Coach
 import app.levitx.core.coach.CoachProfile
 import app.levitx.core.coach.Equipment
@@ -31,6 +32,7 @@ import app.levitx.core.history.ExerciseRecord
 import app.levitx.core.history.WorkoutRecord
 import app.levitx.core.load.LoadKit
 import app.levitx.core.load.WeightUnit
+import app.levitx.core.pain.PainAdvice
 import app.levitx.core.session.LoggedSet
 import app.levitx.core.session.PlannedSet
 import app.levitx.core.session.SetLoad
@@ -339,7 +341,7 @@ fun RestScreenshot() {
 }
 
 @PreviewTest
-@Preview(name = "11 Body", widthDp = 390, heightDp = 1900)
+@Preview(name = "11 Body", widthDp = 390, heightDp = 2100)
 @Composable
 fun BodyScreenshot() {
     val day = 24L * 60 * 60 * 1_000
@@ -367,6 +369,7 @@ fun BodyScreenshot() {
                         platesKg = listOf(2.5, 2.5, 5.0),
                         hasBelt = true,
                     ),
+                    sore = mapOf(BodyArea.ELBOW to PainAdvice.EASE_OFF),
                 ),
                 actions = BodyActions({}, {}, { _, _ -> }, {}, {}),
             )
@@ -494,7 +497,7 @@ fun NegativeTimerScreenshot() {
 }
 
 @PreviewTest
-@Preview(name = "19 Session summary", widthDp = 390, heightDp = 1100)
+@Preview(name = "19 Session summary", widthDp = 390, heightDp = 1300)
 @Composable
 fun SessionSummaryScreenshot() {
     fun sets(vararg pairs: Pair<Int, Int?>) =
@@ -518,6 +521,7 @@ fun SessionSummaryScreenshot() {
             ReportChange.MovedUp("Feet-up push-up", next = "Box-elevated push-up"),
             ReportChange.Held("Hollow body hold", GateMeasure.HOLD_SECONDS, target = 30),
         ),
+        eased = listOf(BodyArea.ELBOW),
     )
     LevitxTheme {
         WorkoutScreen(uiState = WorkoutUiState.Finished(report), now = { 0L }, actions = noWorkoutActions)

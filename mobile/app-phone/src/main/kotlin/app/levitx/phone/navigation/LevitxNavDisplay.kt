@@ -23,6 +23,7 @@ import app.levitx.phone.launch.LaunchViewModel
 import app.levitx.phone.main.MainNavigation
 import app.levitx.phone.main.MainRoute
 import app.levitx.phone.onboarding.OnboardingRoute
+import app.levitx.phone.pain.PainCheckRoute
 import app.levitx.phone.program.ProgramRoute
 import app.levitx.phone.progress.ExerciseProgressNavigation
 import app.levitx.phone.progress.ExerciseProgressRoute
@@ -121,6 +122,7 @@ private fun EntryProviderScope<NavKey>.mainEntries(backStack: MutableList<NavKey
                 onOpenSearch = { backStack.add(Destination.Search) },
                 onOpenWeekReview = { backStack.add(Destination.WeekReview) },
                 onOpenAllPrograms = { backStack.add(Destination.AllPrograms) },
+                onOpenPainCheck = { backStack.add(Destination.PainCheck) },
             ),
         )
     }
@@ -129,7 +131,10 @@ private fun EntryProviderScope<NavKey>.mainEntries(backStack: MutableList<NavKey
 /** The screens that open over the tabs: a workout, a single workout's page, an exercise and a program. */
 private fun EntryProviderScope<NavKey>.detailEntries(backStack: MutableList<NavKey>) {
     entry<Destination.Workout> {
-        WorkoutRoute(onDone = { backStack.removeLastOrNull() })
+        WorkoutRoute(
+            onDone = { backStack.removeLastOrNull() },
+            onOpenPainCheck = { backStack.add(Destination.PainCheck) },
+        )
     }
     entry<Destination.FocusWorkout> { key ->
         FocusWorkoutRoute(
@@ -169,6 +174,7 @@ private fun EntryProviderScope<NavKey>.trainEntries(backStack: MutableList<NavKe
         )
     }
     entry<Destination.WeekReview> { WeekReviewRoute(onClose = { backStack.removeLastOrNull() }) }
+    entry<Destination.PainCheck> { PainCheckRoute(onClose = { backStack.removeLastOrNull() }) }
     entry<Destination.AllPrograms> {
         AllProgramsRoute(
             onBack = { backStack.removeLastOrNull() },
