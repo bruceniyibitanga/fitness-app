@@ -22,7 +22,7 @@ android-minSdk-wear = "30"
 # Build tooling. AGP 9 compiles Kotlin itself ("built-in Kotlin"), so the app
 # modules don't apply the Kotlin Android plugin. Declaring the Kotlin plugins
 # below at a newer version upgrades the compiler AGP uses.
-agp = "9.5.1"
+agp = "9.5.2"
 kotlin = "2.4.21"
 # KSP2 versions are independent of the Kotlin version since KSP 2.3.0.
 ksp = "2.3.13"
@@ -36,7 +36,7 @@ play-services-wearable = "20.0.1"
 
 # Dependency injection. Hilt 2.59 and later support AGP 9.
 hilt = "2.60.1"
-androidx-hilt = "1.3.0"
+androidx-hilt = "1.4.0"
 
 # AndroidX
 # NotificationCompat's Live Update support (promoted notifications, ProgressStyle) needs core 1.17 or later.
@@ -47,7 +47,7 @@ androidx-navigation3 = "1.2.1"
 room = "2.8.5"
 # Small settings that aren't personal (sounds, the count-in). The training data stays in the encrypted database.
 datastore = "1.3.0"
-compose-bom = "2026.09.00"
+compose-bom = "2026.11.01"
 wear-compose = "1.7.1"
 # Health Services: heart rate and the workout session on the watch.
 health-services = "1.1.0"
@@ -55,8 +55,8 @@ health-services = "1.1.0"
 wear-ongoing = "1.1.0"
 # Tiles, and ProtoLayout, the layout library tiles are drawn with. The two are
 # released together: tiles 1.5 goes with protolayout 1.3.
-wear-tiles = "1.5.0"
-wear-protolayout = "1.3.0"
+wear-tiles = "1.6.2"
+wear-protolayout = "1.4.2"
 
 # Code quality
 # detekt 1.23.8 is built against Kotlin 2.0.21. Its Gradle task runs the
@@ -74,7 +74,7 @@ sqlcipher = "4.20.0"
 # Testing
 junit = "4.13.2"
 # Compose Preview Screenshot Testing engine and its validation API, released together.
-screenshot = "0.0.1-alpha16"
+screenshot = "0.0.1-alpha17"
 androidx-test-runner = "1.7.0"
 androidx-test-ext-junit = "1.3.0"
 
